@@ -79,13 +79,13 @@ a:visited { color: #734559 }
 <table width=100% class="menubar"><tr>
   <td width=100%>
   <div class="toolbar">
-    <a href="about.html">About</a>
-    <a href="sitemap.html">Sitemap</a>
-    <a href="docs.html">Documentation</a>
-    <a href="download.html">Download</a>
-    <a href="copyright.html">License</a>
-    <a href="news.html">News</a>
-    <a href="support.html">Support</a>
+    <a href="about.html">关于</a>
+    <a href="sitemap.html">网站地图</a>
+    <a href="docs.html">文档</a>
+    <a href="download.html">下载</a>
+    <a href="copyright.html">许可</a>
+    <a href="news.html">新闻</a>
+    <a href="support.html">支持</a>
   </div>
 <script>
   gMsg = "Search SQLite Docs..."
@@ -120,7 +120,7 @@ a:visited { color: #734559 }
     <div style="padding:0 1em 0px 0;white-space:nowrap">
     <form name=f method="GET" action="http://www.sqlite.org/search">
       <input id=q name=q type=text
-       onfocus="entersearch()" onblur="leavesearch()" style="width:24ex;padding:1px 1ex; border:solid white 1px; font-size:0.9em ; font-style:italic;color:#044a64;" value="Search SQLite Docs...">
+       onfocus="entersearch()" onblur="leavesearch()" style="width:24ex;padding:1px 1ex; border:solid white 1px; font-size:0.9em ; font-style:italic;color:#044a64;" value="搜索 SQLite 文档...">
       <input type=submit value="Go" style="border:solid white 1px;background-color:#044a64;color:white;font-size:0.9em;padding:0 1ex">
     </form>
     </div>
@@ -130,117 +130,89 @@ a:visited { color: #734559 }
   
 
 
-<h1 align=center>About SQLite</h1>
+<h1 align=center>关于 SQLite</h1>
 
 <table align="right" border="1" cellpadding="10" hspace="20" cellspacing="0">
 <tr><td>
-<b>See Also...</b>
+<b>参考...</b>
 <p><ul>
 <li> <a href="features.html">Features</a> </li>
-<li> <a href="faq.html">Frequently Asked Questions</a> </li>
-<li> <a href="famous.html">Well-known Users</a> </li>
-<li> <a href="books.html">Books About SQLite</a> </li>
-<li> <a href="quickstart.html">Getting Started</a> </li>
-<li> <a href="lang.html">SQL Syntax</a>
+<li> <a href="faq.html">常见问题</a> </li>
+<li> <a href="famous.html">著名用户</a> </li>
+<li> <a href="books.html">SQLite相关书籍</a> </li>
+<li> <a href="quickstart.html">起步</a> </li>
+<li> <a href="lang.html">SQL 语法</a>
 <ul>
-<li> <a href="pragma.html#toc">Pragmas</a>
-<li> <a href="lang_corefunc.html">SQL functions</a>
-<li> <a href="lang_datefunc.html">Date &amp; time functions</a>
-<li> <a href="lang_aggfunc.html">Aggregate functions</a>
+<li> <a href="pragma.html#toc">语法</a>
+<li> <a href="lang_corefunc.html">SQL 函数</a>
+<li> <a href="lang_datefunc.html">日期时间函数</a>
+<li> <a href="lang_aggfunc.html">聚合函数</a>
 </ul>
 </li>
-<li> <a href="c3ref/intro.html">C/C++ Interface Spec</a>
+<li> <a href="c3ref/intro.html">C/C++ 接口说明</a>
 <ul>
-<li> <a href="cintro.html">Introduction</a>
-<li> <a href="c3ref/funclist.html">List of C-language APIs</a>
+<li> <a href="cintro.html">介绍</a>
+<li> <a href="c3ref/funclist.html">C-language API 列表</a>
 </ul>
 </li>
-<li> <a href="tclsqlite.html">The TCL Interface Spec</a>
-<li> <a href="http://www.sqlite.org/src/timeline">Development Timeline</a> </li>
-<li> <a href="http://www.sqlite.org/src/wiki?name=Bug+Reports">Report a Bug</a> </li>
+<li> <a href="tclsqlite.html">The TCL 接口说明</a>
+<li> <a href="http://www.sqlite.org/src/timeline">开放时间线</a> </li>
+<li> <a href="http://www.sqlite.org/src/wiki?name=Bug+Reports">提交漏洞</a> </li>
 </ul></p>
 </table>
 
-<p>SQLite is an in-process library that implements a
-<a href="selfcontained.html">self-contained</a>, 
-<a href="serverless.html">serverless</a>,
-<a href="zeroconf.html">zero-configuration</a>,
-<a href="transactional.html">transactional</a>
-SQL database engine.
-The code for SQLite is in the
-<a href="copyright.html">public domain</a> and is thus free for
-use for any purpose, commercial or private.
-SQLite is currently found in more applications than we can
-count, including several <a href="famous.html">high-profile projects.</a></p>
+<p>SQLite 是一个实现了
+<a href="selfcontained.html">自包含</a>, 
+<a href="serverless.html">无服务器</a>,
+<a href="zeroconf.html">零配置</a>,
+<a href="transactional.html">事务处理</a>
+的进程内的SQL 数据库引擎库.
+SQLite 的代码位于
+<a href="copyright.html">公有领域</a> 并且可以自由运用于商业，私有等任何目的。
+SQLite 被普遍的应用于众多的软件当中，包括一些 <a href="famous.html">备受瞩目的项目</a></p>
 
-<p>SQLite is an embedded SQL database engine.
-Unlike most other SQL databases, SQLite does not have a separate
-server process.  SQLite reads and writes directly to ordinary disk
-files.  A complete SQL database with multiple tables, indices,
-triggers, and views, is contained in a single disk file.
-The database file format is cross-platform - you can freely copy a database
-between 32-bit and 64-bit systems or between 
-<a href="http://en.wikipedia.org/wiki/Endianness">big-endian</a> and
-<a href="http://en.wikipedia.org/wiki/Endianness">little-endian</a>
-architectures.  These features make SQLite a popular choice as
-an <a href="appfileformat.html">Application File Format</a>.
-Think of SQLite not as a replacement for 
-<a href="http://www.oracle.com/database/index.html">Oracle</a> but
-as a replacement for <a href="http://man.he.net/man3/fopen">fopen()</a></p>
+<p>SQLite 是一个嵌入式 SQL 数据库引擎。
+于大多数的SQL数据库不同的是SQLite不需要独立的服务进程。SQLite直接读写普通的磁盘文件。
+一个包含多个表、索引、触发器、视图的SQL数据库被存储在了一个唯一的磁盘文件中。
+数据库文件使用了跨平台的文件格式——你可以自由的在32位系统和64系统之间或者<a href="http://en.wikipedia.org/wiki/Endianness">大端</a> 和
+<a href="http://en.wikipedia.org/wiki/Endianness">小端</a>架构之间复制数据库文件。
+这些特性使得SQLite成为了一种备受欢迎的<a href="appfileformat.html">应用程序文件格式</a>
+SQLite可以作为<a href="http://man.he.net/man3/fopen">fopen()</a>的替代者，但是不建议作为
+<a href="http://www.oracle.com/database/index.html">Oracle</a>的替代者 
+</p>
 
-<p>SQLite is a compact library.
-With all features enabled, the <a href="footprint.html">library size</a> can be less than 500KiB,
-depending on the target platform and compiler optimization settings.
-(64-bit code is larger.  And some compiler optimizations
-such as aggressive function inlining and loop unrolling can cause the
-object code to be much larger.)  If optional features are omitted, the
-size of the SQLite library can be reduced below 300KiB.  SQLite can also
-be made to run in minimal stack space (4KiB) and
-very little heap (100KiB), making SQLite a popular database engine 
-choice on memory constrained gadgets such as cellphones, PDAs, and MP3 players.
-There is a tradeoff between memory usage and speed.  
-SQLite generally runs faster the more memory
-you give it.  Nevertheless, performance is usually quite good even
-in low-memory environments.</p>
+<p>SQLite 是一个微型的库。
+当所有特性全打开时 <a href="footprint.html">库大小</a> 依然小于 500KiB，
+这也依赖于目标平台和编译优化选项的不同（64位会稍大一些。同时aggressive function inlining 和 loop unrolling等一些优化选项也会导致目标文件变大。）如果取消可选的特性，SQLite库的大小能减少到300KiB以下。
+SQLite可以在级小的栈空间（4KiB）和很小的堆空间上运行，这使得SQLite数据库引擎在内存敏感设备上大受欢迎，例如手机、PDA和MP3播放器。
+SQLite通常可用内存越多运行速度就越快，当然这也是需要在内存和速度之间做权衡的。
+不过在小内存环境下速度通常也是一样优秀的。
+</p>
 
-<p>SQLite is 
-<a href="testing.html">very carefully tested</a> prior to every
-release and has a reputation for being very reliable.
-Most of the SQLite source code is devoted purely to testing and
-verification.  An automated test suite runs millions and millions of
-test cases involving hundreds of millions of individual SQL statements
-and achieves <a href="testing.html#coverage">100% branch test coverage</a>.  
-SQLite responds gracefully to memory
-allocation failures and disk I/O errors.  Transactions are
-<a href="http://en.wikipedia.org/wiki/ACID">ACID</a>
-even if interrupted by system crashes or power failures.  
-All of this is verified by
-the automated tests using special test harnesses which simulate 
-system failures.
-Of course, even with all this testing, there are still bugs.
-But unlike some similar projects (especially commercial competitors)
-SQLite is open and honest about all bugs and provides
-<a href="http://www.sqlite.org/src/rptview?rn=2">bugs lists</a>
-including lists of
-<a href="http://www.sqlite.org/cvstrac/wiki?p=DatabaseCorruption">
-critical bugs</a> and
-minute-by-minute <a href="http://www.sqlite.org/src/timeline">
-chronologies</a> of bug reports and code changes.</p>
+<p>SQLite 在发布前会进行
+<a href="testing.html">非常详细的测试</a>，因此SQLite一直一来都非常的可靠。
+SQLite中绝大多数的源代码都经过了完整的测试和验证。
+通过自动化测试，数百万的SQL语句在测试用例中执行，以达到<a href="testing.html#coverage">100% 分支覆盖测试</a>。
+当内存不足或者磁盘错误时SQLite的响应都非常的友好。
+即使系统崩溃或者断电，事务一样能保证<a href="http://en.wikipedia.org/wiki/ACID">ACID</a>。
+这些情况都在自动化测试中都通过可以模拟系统崩溃等情况的测试工具一一验证通过。
+当然即使通过了所有的测试，依然会有漏洞存在。不过与其它类似的项目（特别是商业对手）不同，SQLite对于所有的漏洞都是非常开放和诚实的，并且提供了<a href="http://www.sqlite.org/src/rptview?rn=2">漏洞列表</a>来罗列<a href="http://www.sqlite.org/cvstrac/wiki?p=DatabaseCorruption">
+危险的漏洞</a>和一个时刻变化的的漏洞报告和代码改动<a href="http://www.sqlite.org/src/timeline">时间表</a>
+<p>
+SQLite由专职的<a href="crew.html">国际团队</a>开发者提供基础的支持。
+这些开发者持续不断的扩展SQLite的特性，提高SQLite的性能和稳定性，并且一直能够依照<a href="c3ref/intro.html">已发布接口说明</a>，
+<a href="lang.html">SQL 语法</a>和数据库文件格式提供向后兼容性。
+源代码对于任何人都是完全自由获取的，除了<a href="support.html#prosupport">专业支持</a>。
+</p>
 
-<p>The SQLite code base is supported by an
-<a href="crew.html">international team</a> of developers who work on
-SQLite full-time.
-The developers continue to expand the capabilities of SQLite
-and enhance its reliability and performance while maintaining
-backwards compatibility with the 
-<a href="c3ref/intro.html">published interface spec</a>,
-<a href="lang.html">SQL syntax</a>, and database file format.
-The source code is absolutely free to anybody who wants it,
-but <a href="support.html#prosupport">professional support</a> is also available.</p>
-
-<p>We the developers hope that you find SQLite useful and we
+<p>
+我们的开发者希望你能发现SQLite是有用的，并且由我们来支援你更好的使用它：开发更美好的，并且能快速、可靠、简单的使用的产品。
+We the developers hope that you find SQLite useful and we
 charge you to use it well: to make good and beautiful products that
-are fast, reliable, and simple to use.  Seek forgiveness for yourself
-as you forgive others.  And just as you have received SQLite for free,
+are fast, reliable, and simple to use.  
+希望你能像原谅别人一样来原谅我们。
+Seek forgiveness for yourself as you forgive others.  
+正如你自由的获取了SQLite一样，自由的提供给他人。
+And just as you have received SQLite for free,
 so also freely give, paying the debt forward.</p>
 
