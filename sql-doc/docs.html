@@ -79,16 +79,16 @@ a:visited { color: #734559 }
 <table width=100% class="menubar"><tr>
   <td width=100%>
   <div class="toolbar">
-    <a href="about.html">About</a>
-    <a href="sitemap.html">Sitemap</a>
-    <a href="docs.html">Documentation</a>
-    <a href="download.html">Download</a>
-    <a href="copyright.html">License</a>
-    <a href="news.html">News</a>
-    <a href="support.html">Support</a>
+    <a href="about.html">关于</a>
+    <a href="sitemap.html">网站地图</a>
+    <a href="docs.html">文档</a>
+    <a href="download.html">下载</a>
+    <a href="copyright.html">许可</a>
+    <a href="news.html">新闻</a>
+    <a href="support.html">支持</a>
   </div>
 <script>
-  gMsg = "Search SQLite Docs..."
+  gMsg = "搜索 SQLite 文档..."
   function entersearch() {
     var q = document.getElementById("q");
     if( q.value == gMsg ) { q.value = "" }
@@ -120,7 +120,7 @@ a:visited { color: #734559 }
     <div style="padding:0 1em 0px 0;white-space:nowrap">
     <form name=f method="GET" action="http://www.sqlite.org/search">
       <input id=q name=q type=text
-       onfocus="entersearch()" onblur="leavesearch()" style="width:24ex;padding:1px 1ex; border:solid white 1px; font-size:0.9em ; font-style:italic;color:#044a64;" value="Search SQLite Docs...">
+       onfocus="entersearch()" onblur="leavesearch()" style="width:24ex;padding:1px 1ex; border:solid white 1px; font-size:0.9em ; font-style:italic;color:#044a64;" value="搜索 SQLite 文档...">
       <input type=submit value="Go" style="border:solid white 1px;background-color:#044a64;color:white;font-size:0.9em;padding:0 1ex">
     </form>
     </div>
@@ -130,182 +130,285 @@ a:visited { color: #734559 }
   
 
 
-<h1 align="center">Categorical Index Of SQLite Documents</h1>
+<h1 align="center">SQLite 文档分类导航
+<br />Categorical Index Of SQLite Documents
+</h1>
 
 <table width="100%" cellpadding="5">
 
-<tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>Overview Documents</b><tr><td valign="top" align="right"><a href="about.html">About&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
-  A high-level overview of what SQLite is and why you might be
-  interested in using it.
-</td></tr><tr><td valign="top" align="right"><a href="whentouse.html">Appropriate&nbsp;Uses&nbsp;For&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
-  This document describes situations where SQLite is an appropriate
-  database engine to use versus situations where a client/server
-  database engine might be a better choice.
-</td></tr><tr><td valign="top" align="right"><a href="different.html">Distinctive&nbsp;Features</a></td><td width="10"></td><td valign="top" align="left">
-  This document enumerates and describes some of the features of
-  SQLite that make it different from other SQL database engines.
-</td></tr><tr><td valign="top" align="right"><a href="testing.html">How&nbsp;SQLite&nbsp;Is&nbsp;Tested</a></td><td width="10"></td><td valign="top" align="left">
-  The reliability and robustness of SQLite is achieved in large part
-  by thorough and careful testing.  This document identifies the
-  many tests that occur before every release of SQLite.
-</td></tr><tr><td valign="top" align="right"><a href="copyright.html">Copyright</a></td><td width="10"></td><td valign="top" align="left">
-  SQLite is in the public domain.  This document describes what that means
-  and the implications for contributors.
-</td></tr><tr><td valign="top" align="right"><a href="faq.html">Frequently&nbsp;Asked&nbsp;Questions</a></td><td width="10"></td><td valign="top" align="left">
-  The title of the document says all...
-</td></tr><tr><td valign="top" align="right"><a href="books.html">Books&nbsp;About&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
-  A list of independently written books about SQLite.
-</td></tr><tr><td valign="top" align="right"><a href="doclist.html">Alphabetical&nbsp;Listing&nbsp;Of&nbsp;Documents</a></td><td width="10"></td><td valign="top" align="left">
-  A list of all titled pages on this website, sorted by title.
-</td></tr><tr><td valign="top" align="right"><a href="keyword_index.html">Website&nbsp;Keyword&nbsp;Index</a></td><td width="10"></td><td valign="top" align="left">
+<tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>文档概览
+<br />Overview Documents</b><tr><td valign="top" align="right"><a href="about.html">关于&nbsp;SQLite
+<br />About SQLite</a></td><td width="10"></td><td valign="top" align="left">
+  对SQLite的高度概览以及为何你会想使用它。
+<br />A high-level overview of what SQLite is and why you might be interested in using it.
+</td></tr><tr><td valign="top" align="right"><a href="whentouse.html">适合SQLite的用户
+<br />Appropriate Uses For SQLite</a></td><td width="10"></td><td valign="top" align="left">
+这篇文档描述了什么场景下合适使用SQLite数据库引擎以及什么场景下客户端/服务端型的数据库引擎更合适。
+<br />This document describes situations where SQLite is an appropriate database engine to use versus situations where a client/server database engine might be a better choice.
+</td></tr><tr><td valign="top" align="right"><a href="different.html">特点
+<br />Distinctive Features</a></td><td width="10"></td><td valign="top" align="left">
+ 这篇文档列举并描述了SQLite有别于其他数据库引擎的一些特点。
+<br />This document enumerates and describes some of the features of SQLite that make it different from other SQL database engines.
+ </td></tr><tr><td valign="top" align="right"><a href="testing.html">如何测试SQLite
+<br />How SQLite Is Tested	</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite通过大量周密和详细的测试来保证其可靠性和鲁棒性。该文档确定了在发布SQLite之前需要做多少测试。
+<br />The reliability and robustness of SQLite is achieved in large part by thorough and careful testing. This document identifies the many tests that occur before every release of SQLite.
+</td></tr><tr><td valign="top" align="right"><a href="copyright.html">版权
+<br />Copyright</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite是完全公开的。本文描述了这其中的含义以及贡献者们带来的影响。
+<br />SQLite is in the public domain. This document describes what that means and the implications for contributors.
+</td></tr><tr><td valign="top" align="right"><a href="faq.html">常见问题
+<br/>Frequently&nbsp;Asked&nbsp;Questions</a></td><td width="10"></td><td valign="top" align="left">
+  如题
+  <br/>The title of the document says all...
+</td></tr><tr><td valign="top" align="right"><a href="books.html">SQLite相关书籍
+<br/>Books&nbsp;About&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
+  罗列了关于SQLite的书籍。
+  <br/>A list of independently written books about SQLite.
+</td></tr><tr><td valign="top" align="right"><a href="doclist.html">字母序文档列表
+<br/>Alphabetical&nbsp;Listing&nbsp;Of&nbsp;Documents</a></td><td width="10"></td><td valign="top" align="left">
+  按照标题字母序列出了本站点的所有页面。
+  <br/>A list of all titled pages on this website, sorted by title.
+</td></tr><tr><td valign="top" align="right"><a href="keyword_index.html">站点关键词索引
+<br/>Website&nbsp;Keyword&nbsp;Index</a></td><td width="10"></td><td valign="top" align="left">
+  本站中关键词到页面的相互参照。
   A cross-reference from keywords to various pages within this website.
-</td></tr><tr><td valign="top" align="right"><a href="sitemap.html#pindex">Permuted&nbsp;Title&nbsp;Index</a></td><td width="10"></td><td valign="top" align="left">
-  Also known as a "keyword in context" or "KWIC" index or as a concordance,
+</td></tr><tr><td valign="top" align="right"><a href="sitemap.html#pindex">标题索引
+Permuted&nbsp;Title&nbsp;Index</a></td><td width="10"></td><td valign="top" align="left">
+  一般称为关键字上下文索引，本文按照关键字顺序列出了所有文档。
+  <br/>Also known as a "keyword in context" or "KWIC" index or as a concordance,
   this document is a listing of all other documents sorted by keyword.
-</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>SQLite Programming Interfaces</b><br />
-  Documentation describing the APIs used to program SQLite, and the SQL
+</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>SQLite编程接口
+<br/>SQLite Programming Interfaces</b><br />
+  文档记录了在编程中如何使用SQLite的API，以及SQL俗语的解释。
+  <br/>Documentation describing the APIs used to program SQLite, and the SQL
   dialect that it interprets.
-<tr><td valign="top" align="right"><a href="quickstart.html">SQLite&nbsp;In&nbsp;5&nbsp;Minutes&nbsp;Or&nbsp;Less</a></td><td width="10"></td><td valign="top" align="left">
-  A very quick introduction to programming with SQLite.
-</td></tr><tr><td valign="top" align="right"><a href="cintro.html">Introduction&nbsp;to&nbsp;the&nbsp;C/C++&nbsp;API&nbsp;</a></td><td width="10"></td><td valign="top" align="left">
-  This document introduces the C/C++ API. Users should read this document 
+<tr><td valign="top" align="right"><a href="quickstart.html">SQLite 5分钟快速入门
+<br/>SQLite&nbsp;In&nbsp;5&nbsp;Minutes&nbsp;Or&nbsp;Less</a></td><td width="10"></td><td valign="top" align="left">
+  关于如何使用SQLite的快速入门
+  <br/>A very quick introduction to programming with SQLite.
+</td></tr><tr><td valign="top" align="right"><a href="cintro.html">C/C++ API介绍
+<br/>Introduction&nbsp;to&nbsp;the&nbsp;C/C++&nbsp;API&nbsp;</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍了C/C++ API。开发者应该先阅读本文，然后再阅读下面的C/C++参考手册。
+  <br/>This document introduces the C/C++ API. Users should read this document 
   before the C/C++ API Reference Guide linked below.
-</td></tr><tr><td valign="top" align="right"><a href="c3ref/intro.html">C/C++&nbsp;API&nbsp;Reference</a></td><td width="10"></td><td valign="top" align="left">
-  This document describes each API function separately.
+</td></tr><tr><td valign="top" align="right"><a href="c3ref/intro.html">C/C++参考手册
+<br/>C/C++&nbsp;API&nbsp;Reference</a></td><td width="10"></td><td valign="top" align="left">
+  本文详细描述了API中的每一个方法。
+  <br/>This document describes each API function separately.
 </td></tr><tr><td valign="top" align="right"><a href="tclsqlite.html">Tcl&nbsp;API</a></td><td width="10"></td><td valign="top" align="left">
-  A description of the TCL interface bindings for SQLite.
-</td></tr><tr><td valign="top" align="right"><a href="lang.html">SQL&nbsp;Syntax</a></td><td width="10"></td><td valign="top" align="left">
-  This document describes the SQL language that is understood by
+  介绍TCL的SQLite接口。
+  <br/>A description of the TCL interface bindings for SQLite.
+</td></tr><tr><td valign="top" align="right"><a href="lang.html">SQL语法
+SQL&nbsp;Syntax</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍在SQLite下得SQL语法。
+  <br/>This document describes the SQL language that is understood by
   SQLite.  
-</td></tr><tr><td valign="top" align="right"><a href="pragma.html">Pragma&nbsp;commands</a></td><td width="10"></td><td valign="top" align="left">
-  This document describes SQLite performance tuning options and other 
+</td></tr><tr><td valign="top" align="right"><a href="pragma.html">其它命令
+<br/>Pragma&nbsp;commands</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍SQLite的性能调优参数和一些其它的数据库命令。
+  <br/>This document describes SQLite performance tuning options and other 
   special purpose database commands.
-</td></tr><tr><td valign="top" align="right"><a href="datatype3.html">Version&nbsp;3&nbsp;DataTypes&nbsp;</a></td><td width="10"></td><td valign="top" align="left">
-  SQLite version 3 introduces the concept of manifest typing, where the
+</td></tr><tr><td valign="top" align="right"><a href="datatype3.html">SQLite3的数据类型
+<br/>Version&nbsp;3&nbsp;DataTypes&nbsp;</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite3引入了显示类型的概念，值得类型只和值本身有关，而与所存储的列无关。本文更深入的讲解了SQLite3的数据类型。
+  <br/>SQLite version 3 introduces the concept of manifest typing, where the
   type of a value is associated with the value itself, not the column that
   it is stored in.
   This page describes data typing for SQLite version 3 in further detail.
-</td></tr><tr><td valign="top" align="right"><a href="nulls.html">Null&nbsp;Handling</a></td><td width="10"></td><td valign="top" align="left">
-  Different SQL database engines handle NULLs in different ways.  The
+</td></tr><tr><td valign="top" align="right"><a href="nulls.html">处理Null
+<br/>Null&nbsp;Handling</a></td><td width="10"></td><td valign="top" align="left">
+  不同的数据库处理NULL是不同的。SQL标准也是模糊不清的。本文对照着其他的数据库引擎介绍SQLite是如何处理NULL的。
+  <br/>Different SQL database engines handle NULLs in different ways.  The
   SQL standards are ambiguous.  This document describes how SQLite handles
   NULLs in comparison with other SQL database engines.
-</td></tr><tr><td valign="top" align="right"><a href="omitted.html">Unsupported&nbsp;SQL</a></td><td width="10"></td><td valign="top" align="left">
-  This page describes features of SQL that SQLite does not support.
-</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>SQLite Features and Extensions</b><br />
-  Pages describing specific features or extension modules of SQLite.
-<tr><td valign="top" align="right"><a href="asyncvfs.html">Asynchronous&nbsp;IO&nbsp;Mode</a></td><td width="10"></td><td valign="top" align="left">
-  This page describes the asynchronous IO extension developed alongside
-  SQLite. Using asynchronous IO can cause SQLite to appear more responsive
+</td></tr><tr><td valign="top" align="right"><a href="omitted.html">不支持的SQL
+<br/>Unsupported&nbsp;SQL</a></td><td width="10"></td><td valign="top" align="left">
+    本文介绍SQLite不支持的SQL特性。
+  <br />This page describes features of SQL that SQLite does not support.
+</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>SQLite的特性和扩展
+<br />SQLite Features and Extensions</b><br />
+  本文介绍SQLite特有的特性以及扩展模块
+<br />Pages describing specific features or extension modules of SQLite.
+<tr><td valign="top" align="right"><a href="asyncvfs.html">异步IO模式
+<br />Asynchronous&nbsp;IO&nbsp;Mode</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍如何在SQLite做异步IO模块的开发。异步IO通过将数据库写入交个后台线程来换取更快的响应。
+<br />IOThis page describes the asynchronous IO extension developed alongside SQLite. Using asynchronous IO can cause SQLite to appear more responsive
   by delegating database writes to a background thread.
-</td></tr><tr><td valign="top" align="right"><a href="foreignkeys.html">Foreign&nbsp;Key&nbsp;Support</a></td><td width="10"></td><td valign="top" align="left">
-  This document describes the support for foreign key constraints introduced
+</td></tr><tr><td valign="top" align="right"><a href="foreignkeys.html">外键支持
+<br />Foreign&nbsp;Key&nbsp;Support</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍了在3.6.19版引入的对外键约束的支持。
+<br />This document describes the support for foreign key constraints introduced
   in version 3.6.19.
-</td></tr><tr><td valign="top" align="right"><a href="sharedcache.html">Shared&nbsp;Cache&nbsp;Mode</a></td><td width="10"></td><td valign="top" align="left">
-  Version 3.3.0 and later supports the ability for two or more
+</td></tr><tr><td valign="top" align="right"><a href="sharedcache.html">共享缓存模式
+<br />Shared&nbsp;Cache&nbsp;Mode</a></td><td width="10"></td><td valign="top" align="left">
+  在3.3.0版之后，SQLite能够支持在两个以上的数据库连接之间共享相同的页(page)和模式(schema)的缓存。这个特性对某些程序会特别有用。
+<br />Version 3.3.0 and later supports the ability for two or more
   database connections to share the same page and schema cache.
   This feature is useful for certain specialized applications.
-</td></tr><tr><td valign="top" align="right"><a href="unlock_notify.html">Unlock&nbsp;Notify</a></td><td width="10"></td><td valign="top" align="left">
-  The "unlock notify" feature can be used in conjunction with
+</td></tr><tr><td valign="top" align="right"><a href="unlock_notify.html">解锁通知
+<br />Unlock&nbsp;Notify</a></td><td width="10"></td><td valign="top" align="left">
+  解锁通知(unlock notify)特性与<a href="sharedcache.html">共享缓存模式</a>结合，能更有效的管理资源（数据库表锁）访问冲突问题。
+<br />The "unlock notify" feature can be used in conjunction with
   <a href="sharedcache.html">shared cache mode</a> to more efficiently manage resource conflict (database
   table locks).
-</td></tr><tr><td valign="top" align="right"><a href="backup.html">Using&nbsp;The&nbsp;Online&nbsp;Backup&nbsp;Interface</a></td><td width="10"></td><td valign="top" align="left">
-  The <a href="c3ref/backup_finish.html#sqlite3backupinit">online-backup interface</a> can be used to
+</td></tr><tr><td valign="top" align="right"><a href="backup.html">使用在线备份接口
+<br />Using&nbsp;The&nbsp;Online&nbsp;Backup&nbsp;Interface</a></td><td width="10"></td><td valign="top" align="left">
+  <a href="c3ref/backup_finish.html#sqlite3backupinit">在线备份接口</a>可以用来将磁盘数据库文件中的内容复制到内存数据库，反之亦然。还可以用来对正在使用的数据库做热备份。本文给出了一个示例讲解如何使用它。
+<br />The <a href="c3ref/backup_finish.html#sqlite3backupinit">online-backup interface</a> can be used to
   copy content from a disk file into an in-memory database or vice
   versa and it can make a hot backup of a live database.  This application
   note gives examples of how.
-</td></tr><tr><td valign="top" align="right"><a href="rtree.html">R-Trees</a></td><td width="10"></td><td valign="top" align="left">
-  A description of the SQLite R-Tree extension. An R-Tree is a specialized
+</td></tr><tr><td valign="top" align="right"><a href="rtree.html">R树(R-Trees)
+<br />R-Trees</a></td><td width="10"></td><td valign="top" align="left">
+  本文描述了SQLite 的R-Tree扩展。R-Tree是一种支持快速多维空间范围查询的特殊数据结构，经常用户地理信息系统。
+<br />A description of the SQLite R-Tree extension. An R-Tree is a specialized
   data structure that supports fast multi-dimensional range queries often
   used in geospatial systems.
-</td></tr><tr><td valign="top" align="right"><a href="fts3.html">Full&nbsp;Text&nbsp;Search</a></td><td width="10"></td><td valign="top" align="left">
-  A description of the SQLite Full Text Search (FTS3) extension.
-</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>Upgrading SQLite, Backwards Compatibility</b><tr><td valign="top" align="right"><a href="35to36.html">Moving&nbsp;From&nbsp;SQLite&nbsp;3.5&nbsp;to&nbsp;3.6</a></td><td width="10"></td><td valign="top" align="left">
-  A document describing the differences between SQLite version 3.5.9
+</td></tr><tr><td valign="top" align="right"><a href="fts3.html">全文搜索
+<br />Full&nbsp;Text&nbsp;Search</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍SQLite的 全文搜索（FTS3）扩展。
+<br />A description of the SQLite Full Text Search (FTS3) extension.
+</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>SQLite升级与向后兼容性
+<br />Upgrading SQLite, Backwards Compatibility</b><tr><td valign="top" align="right"><a href="35to36.html">
+从SQLite 3.5迁移到3.6
+<br />Moving&nbsp;From&nbsp;SQLite&nbsp;3.5&nbsp;to&nbsp;3.6</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍SQLite3.5.9与3.6.0版本之间的差别。
+<br />A document describing the differences between SQLite version 3.5.9
   and 3.6.0.
-</td></tr><tr><td valign="top" align="right"><a href="34to35.html">Moving&nbsp;From&nbsp;SQLite&nbsp;3.4&nbsp;to&nbsp;3.5</a></td><td width="10"></td><td valign="top" align="left">
-  A document describing the differences between SQLite version 3.4.2
+</td></tr><tr><td valign="top" align="right"><a href="34to35.html">从SQLite3.4迁移到3.5
+<br />Moving&nbsp;From&nbsp;SQLite&nbsp;3.4&nbsp;to&nbsp;3.5</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍SQLite3.4.2与3.5.0版本之间的差别。
+<br />A document describing the differences between SQLite version 3.4.2
   and 3.5.0.
-</td></tr><tr><td valign="top" align="right"><a href="changes.html">Release&nbsp;History</a></td><td width="10"></td><td valign="top" align="left">
-  A chronology of SQLite releases going back to version 1.0.0
-</td></tr><tr><td valign="top" align="right"><a href="formatchng.html">Backwards&nbsp;Compatibility</a></td><td width="10"></td><td valign="top" align="left">
-  This document details all of the incompatible changes to the SQLite
+</td></tr><tr><td valign="top" align="right"><a href="changes.html">发布历史
+<br />Release&nbsp;History</a></td><td width="10"></td><td valign="top" align="left">
+  一个从SQLite1.0.0至今的发布年表。
+<br />A chronology of SQLite releases going back to version 1.0.0
+</td></tr><tr><td valign="top" align="right"><a href="formatchng.html">向后兼容性
+<br />Backwards&nbsp;Compatibility</a></td><td width="10"></td><td valign="top" align="left">
+  本文详细记录了SQLite文件格式从1.0.0至今的所有不兼容的变动。
+<br />This document details all of the incompatible changes to the SQLite
   file format that have occurred since version 1.0.0.
-</td></tr><tr><td valign="top" align="right"><a href="privatebranch.html">Private&nbsp;Branches</a></td><td width="10"></td><td valign="top" align="left">
-  This document suggests procedures for maintaining a private branch
+</td></tr><tr><td valign="top" align="right"><a href="privatebranch.html">私有分支
+<br />Private&nbsp;Branches</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍维护一个私有分支的推荐流程，创建分支，以及如何与公共SQLite源码保持同步。
+<br />This document suggests procedures for maintaining a private branch
   or fork of SQLite and keeping that branch or fork in sync with the
   public SQLite source tree.
-</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>SQLite Technical/Design Documentation</b><tr><td valign="top" align="right"><a href="tempfiles.html">Temporary&nbsp;Files&nbsp;Used&nbsp;By&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
-  SQLite can potentially use many different temporary files when
+</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>SQLite技术设计文档
+<br />SQLite Technical/Design Documentation</b><tr><td valign="top" align="right"><a href="tempfiles.html">SQLite是如何使用临时文件的
+<br />Temporary&nbsp;Files&nbsp;Used&nbsp;By&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite当处理某些SQL语句时可能会使用很多种临时文件。本文介绍许多种SQLite使用的临时文件以及在一些创建文件代价很高的机器上如何避免创建临时文件。
+<br />SQLite can potentially use many different temporary files when
   processing certain SQL statements.  This document describes the
   many kinds of temporary files that SQLite uses and offers suggestions
   for avoiding them on systems where creating a temporary file is an
   expensive operation.
-</td></tr><tr><td valign="top" align="right"><a href="inmemorydb.html">In-Memory&nbsp;Databases</a></td><td width="10"></td><td valign="top" align="left">
-  SQLite normally stores content in a disk file.  However, it can also
+</td></tr><tr><td valign="top" align="right"><a href="inmemorydb.html">内存数据库
+<br />In-Memory&nbsp;Databases</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite数据库通常存储在磁盘文件中，不过，SQLite同样也可以用做内存数据库。本文就是介绍如何使用内存数据库。
+<br />SQLite normally stores content in a disk file.  However, it can also
   be used as an in-memory database engine.  This document explains how.
-</td></tr><tr><td valign="top" align="right"><a href="atomiccommit.html">How&nbsp;SQLite&nbsp;Implements&nbsp;Atomic&nbsp;Commit</a></td><td width="10"></td><td valign="top" align="left">
-  A description of the logic within SQLite that implements
+</td></tr><tr><td valign="top" align="right"><a href="atomiccommit.html">SQLite是如何实现原子提交的
+<br />How&nbsp;SQLite&nbsp;Implements&nbsp;Atomic&nbsp;Commit</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍了SQLite内部实现事务原子提交的逻辑，即是面对断电也不会产生错误。
+<br />A description of the logic within SQLite that implements
   transactions with atomic commit, even in the face of power
   failures.
-</td></tr><tr><td valign="top" align="right"><a href="malloc.html">Dynamic&nbsp;Memory&nbsp;Allocation&nbsp;in&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
-  SQLite has a sophisticated memory allocation subsystem that can be
+</td></tr><tr><td valign="top" align="right"><a href="malloc.html">SQLite内部的动态内存分配
+<br />Dynamic&nbsp;Memory&nbsp;Allocation&nbsp;in&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite有一个非常复杂的内存分配子系统，能够进行配置和定制以满足应用中不同的内存需求，并且在内存溢出时保持鲁棒性，防止内存泄露。本文就是介绍这个系统的。
+<br />SQLite has a sophisticated memory allocation subsystem that can be
   configured and customized to meet memory usage requirements of the
   application and that is robust against out-of-memory conditions and
   leak-free.  This document provides the details.
-</td></tr><tr><td valign="top" align="right"><a href="custombuild.html">Customizing&nbsp;And&nbsp;Porting&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
-  This document explains how to customize the build of SQLite and
+</td></tr><tr><td valign="top" align="right"><a href="custombuild.html">定制和移植SQLite
+<br />Customizing&nbsp;And&nbsp;Porting&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍了如何定制构造一个SQLite以及如何移植到新的平台上。
+<br />This document explains how to customize the build of SQLite and
   how to port SQLite to new platforms.
-</td></tr><tr><td valign="top" align="right"><a href="lockingv3.html">Locking&nbsp;And&nbsp;Concurrency<br>In&nbsp;SQLite&nbsp;Version&nbsp;3</a></td><td width="10"></td><td valign="top" align="left">
-  A description of how the new locking code in version 3 increases
+</td></tr><tr><td valign="top" align="right"><a href="lockingv3.html">SQLite3中的锁和并发
+<br />Locking&nbsp;And&nbsp;Concurrency
+<br>In&nbsp;SQLite&nbsp;Version&nbsp;3</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍SQLite3中新的锁代码是如何增加并发能力并减少写饥饿的问题的。
+<br />A description of how the new locking code in version 3 increases
   concurrency and decreases the problem of writer starvation.
-</td></tr><tr><td valign="top" align="right"><a href="optoverview.html">Overview&nbsp;Of&nbsp;The&nbsp;Optimizer</a></td><td width="10"></td><td valign="top" align="left">
-  A quick overview of the various query optimizations that are
+</td></tr><tr><td valign="top" align="right"><a href="optoverview.html">优化概览
+<br />Overview&nbsp;Of&nbsp;The&nbsp;Optimizer</a></td><td width="10"></td><td valign="top" align="left">
+  快速浏览SQLite代码生成器尝试的查询优化。
+<br />A quick overview of the various query optimizations that are
   attempted by the SQLite code generator.
-</td></tr><tr><td valign="top" align="right"><a href="arch.html">Architecture</a></td><td width="10"></td><td valign="top" align="left">
-  An architectural overview of the SQLite library, useful for those who want
+</td></tr><tr><td valign="top" align="right"><a href="arch.html">体系结构
+<br />Architecture</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite库的体系结构概览，用于方便需要修改源码的用户。
+<br />An architectural overview of the SQLite library, useful for those who want
   to hack the code.
-</td></tr><tr><td valign="top" align="right"><a href="opcode.html">VDBE&nbsp;Opcodes</a></td><td width="10"></td><td valign="top" align="left">
-  This document is an automatically generated description of the various
+</td></tr><tr><td valign="top" align="right"><a href="opcode.html">虚拟数据库引擎(VDBE)操作码
+<br />VDBE&nbsp;Opcodes</a></td><td width="10"></td><td valign="top" align="left">
+  这是一篇自动生成的各种VDBE支持的操作码的描述。可以作为一个参考手册，方便更好的理解SQLite中EXPLAIN的输出。
+<br />This document is an automatically generated description of the various
   opcodes that the VDBE understands.  Programmers can use this document as
   a reference to better understand the output of EXPLAIN listings from
   SQLite.
-</td></tr><tr><td valign="top" align="right"><a href="fileformat2.html">SQLite&nbsp;File&nbsp;Format</a></td><td width="10"></td><td valign="top" align="left">
-  A description of the format used for SQLite database and journal files, and
+</td></tr><tr><td valign="top" align="right"><a href="fileformat2.html">SQLite文件结构
+<br />SQLite&nbsp;File&nbsp;Format</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍了SQLite的数据库文件和日志文件的文件格式，以及使用非SQLite程序读写SQLite数据库的一些细节。
+<br />A description of the format used for SQLite database and journal files, and
   other details required to create software to read and write SQLite 
   databases without using SQLite.
-</td></tr><tr><td valign="top" align="right"><a href="compile.html">Compilation&nbsp;Options</a></td><td width="10"></td><td valign="top" align="left">
-  This document describes the compile time options that may be set to 
+</td></tr><tr><td valign="top" align="right"><a href="compile.html">编译选项
+<br />Compilation&nbsp;Options</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍编译器选项，用户修改SQLite的一些默认行为或者去处一些可选的特性以减少库大小。
+<br />This document describes the compile time options that may be set to 
   modify the default behavior of the library or omit optional features
   in order to reduce binary size.
-</td></tr><tr><td valign="top" align="right"><a href="limits.html">Limits&nbsp;In&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
-  This document describes limitations of SQLite (the maximum length of a
+</td></tr><tr><td valign="top" align="right"><a href="limits.html">SQLite的限制
+<br />Limits&nbsp;In&nbsp;SQLite</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍SQLite的一些限制（string和blob的最大长度，数据库的最大大小，表的最大数量等），以及如何在编译期和运行期修改这些限制。
+<br />This document describes limitations of SQLite (the maximum length of a
   string or blob, the maximum size of a database, the maximum number of
   tables in a database, etc.) and how these limits can be altered at
   compile-time and run-time.
-</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>Old Documents</b><br />
-  These documents either pertain to SQLite version 2 or were written
+</td></tr><tr><td colspan=3 style="padding: 3ex 0 2ex 0"><b>旧文档
+<br />Old Documents</b><br />
+  这些文档是属于SQLite2的或者是版本2到3过度期的。以及不完全适用于当前版本，不过一些信息依然是有用的缓存。
+<br />These documents either pertain to SQLite version 2 or were written
   during the transition period between versions 2 and 3. They are no longer
   strictly applicable to recent versions of SQLite, but the information
   found within may still be useful.
-<tr><td valign="top" align="right"><a href="c_interface.html">Version&nbsp;2&nbsp;C/C++&nbsp;API</a></td><td width="10"></td><td valign="top" align="left">
-  A description of the C/C++ interface bindings for SQLite through version 
+<tr><td valign="top" align="right"><a href="c_interface.html">SQLite2的C/C++ API
+<br />Version&nbsp;2&nbsp;C/C++&nbsp;API</a></td><td width="10"></td><td valign="top" align="left">
+  本文介绍SQLite 2.8的C/C++接口。
+<br />A description of the C/C++ interface bindings for SQLite through version 
   2.8
-</td></tr><tr><td valign="top" align="right"><a href="datatypes.html">Version&nbsp;2&nbsp;DataTypes&nbsp;</a></td><td width="10"></td><td valign="top" align="left">
-  A description of how SQLite version 2 handles SQL datatypes.
+</td></tr><tr><td valign="top" align="right"><a href="datatypes.html">SQLite2数据类型
+<br />Version&nbsp;2&nbsp;DataTypes&nbsp;</a></td><td width="10"></td><td valign="top" align="left">
+  介绍SQLite2是如何处理SQL数据类型的。简单说：所有都是string。
+<br />A description of how SQLite version 2 handles SQL datatypes.
   Short summary:  Everything is a string.
-</td></tr><tr><td valign="top" align="right"><a href="vdbe.html">VDBE&nbsp;Tutorial</a></td><td width="10"></td><td valign="top" align="left">
-  The VDBE is the subsystem within SQLite that does the actual work of
+</td></tr><tr><td valign="top" align="right"><a href="vdbe.html">VDBE教程
+<br />VDBE&nbsp;Tutorial</a></td><td width="10"></td><td valign="top" align="left">
+  VDBE是SQLite中真正负责执行SQL语句的子系统。本文介绍了SQLite2.7中VDBE的执行原则。对于想修改SQLite源码的人来说这是必读的。
+<br />The VDBE is the subsystem within SQLite that does the actual work of
   executing SQL statements.  This page describes the principles of operation
   for the VDBE in SQLite version 2.7.  This is essential reading for anyone
   who want to modify the SQLite sources.
-</td></tr><tr><td valign="top" align="right"><a href="version3.html">SQLite&nbsp;Version&nbsp;3</a></td><td width="10"></td><td valign="top" align="left">
-  A summary of of the changes between SQLite version 2.8 and SQLite version 3.0.
-</td></tr><tr><td valign="top" align="right"><a href="capi3.html">Version&nbsp;3&nbsp;C/C++&nbsp;API</a></td><td width="10"></td><td valign="top" align="left">
-  A summary of of the API related changes between SQLite version 2.8 and 
+</td></tr><tr><td valign="top" align="right"><a href="version3.html">SQLite3
+<br />SQLite&nbsp;Version&nbsp;3</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite2.8到SQlite3.0的改动概要。
+<br />A summary of of the changes between SQLite version 2.8 and SQLite version 3.0.
+</td></tr><tr><td valign="top" align="right"><a href="capi3.html">SQLite3的C/C++ API
+<br />Version&nbsp;3&nbsp;C/C++&nbsp;API</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite2.8到SQLite3.0，C/C++ API的修改概要。
+<br />A summary of of the API related changes between SQLite version 2.8 and 
   SQLite version 3.0. 
-</td></tr><tr><td valign="top" align="right"><a href="speed.html">Speed&nbsp;Comparison</a></td><td width="10"></td><td valign="top" align="left">
-  The speed of version 2.7.6 of SQLite is compared against PostgreSQL and
+</td></tr><tr><td valign="top" align="right"><a href="speed.html">速度对比
+<br />Speed&nbsp;Comparison</a></td><td width="10"></td><td valign="top" align="left">
+  SQLite2.7.6与PostgreSQL和MySQL的速度对比。
+<br />The speed of version 2.7.6 of SQLite is compared against PostgreSQL and
   MySQL.
+
 </td></tr>
 </table>
 
