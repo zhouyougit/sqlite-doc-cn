@@ -129,18 +129,22 @@ a:visited { color: #734559 }
 <div class=startsearch></div>
   
 
-<h1 align=center>Distinctive Features Of SQLite</h1>
+<h1 align=center>SQLite的特色
+<br /> Distinctive Features Of SQLite</h1>
 
 <p>
-This page highlights some of the characteristics of SQLite that are
+本页重点介绍了一些SQLite有别于其他数据库系统的与众不同的特征。
+<br />This page highlights some of the characteristics of SQLite that are
 unusual and which make SQLite different from many other SQL
 database engines.
 </p>
 
 <a name="zeroconfig"></a>
-<p><b>Zero-Configuration</b></p>
+<p><b>零配置
+<br />Zero-Configuration</b></p>
 <blockquote>
-  SQLite does not need to be "installed" before it is used. 
+  SQLite无需安装就可以直接使用。不需要启动、配置、停止服务进程。不需要管理员来创建新的数据库实例，也不需要为用户分配权限列表。SQLite没有配置文件。不需要告诉运行SQLite的系统任何事情。当系统故障或者断电后无需任何恢复操作。无需维护。
+<br />SQLite does not need to be "installed" before it is used. 
   There is no "setup" procedure.  There is no
   server process that needs to be started, stopped, or configured.
   There is
@@ -151,16 +155,22 @@ database engines.
   No actions are required to recover after a system crash or power failure.
   There is nothing to troubleshoot.
   <p>
+  SQLite总是正常的工作。
+<br />
   SQLite just works.
   <p>
+  其他熟知的数据库引擎当配置好后会稳定的工作，但是安装盒配置是非常非常复杂的。
+<br />
   Other more familiar database engines run great once you get them going.
   But doing the initial installation and configuration can be
   intimidatingly complex.
 </blockquote>
 <a name="serverless"></a>
-<p><b>Serverless</b></p>
+<p><b>无服务化
+<br />Serverless</b></p>
 <blockquote>
-  Most SQL database engines are implemented as a separate server
+  大多数的SQL数据库引擎都是一个独立的服务进程。程序如果想要与数据库服务通讯需要通过一些进程间通讯（常见的TCP/IP）的方法来向服务发送请求并接收结果。SQLite则不是这样工作的。在SQLite中，需要读写数据库的程序只需要直接访问磁盘上的数据库文件即可。不需要中间的服务进程。
+<br />Most SQL database engines are implemented as a separate server
   process.  Programs that want to access the database communicate
   with the server using some kind of interprocess communication
   (typically TCP/IP) to send requests to the server and to receive
@@ -169,7 +179,8 @@ database engines.
   directly from the database files on disk.  There is no intermediary
   server process.
   <p>
-  There are advantages and disadvantages to being serverless.  The
+  无服务化既有优点也有缺点。最大的优点是没有独立的服务进程，无需安装、配置、初始化、管理、维护等。这也是SQLite“零配置”的原因之一。使用SQLite的程序运行之前无需设置数据库引擎。任何能够访问磁盘的程序都可以使用SQlite数据库。
+<br />There are advantages and disadvantages to being serverless.  The
   main advantage is that there is no separate server process
   to install, setup, configure, initialize, manage, and troubleshoot.
   This is one reason why SQLite is a "zero-configuration" database
@@ -177,27 +188,32 @@ database engines.
   for setting up the database engine before they are run.  Any program
   that is able to access the disk is able to use an SQLite database.
   <p>
-  On the other hand, a database engine that uses a server can provide
+  另一方面，有独立服务的数据库引擎在面对客户端bug时可以提供更好的保护——客户端上的迷失指针不会破坏服务端的内存空间。并且由于服务端是一个独立稳定的进程，所以可以提供更精确的访问控制，允许更细粒度的锁和更好的并发性能。
+<br />On the other hand, a database engine that uses a server can provide
   better protection from bugs in the client application - stray pointers
   in a client cannot corrupt memory on the server.  And because a server
   is a single persistent process, it is able control database access with
   more precision, allowing for finer grain locking and better concurrency.
   <p>
-  Most SQL database engines are client/server based.  Of those that are
+  大多数SQL数据库都是客户端/服务的架构。在无服务化的数据库当中，SQLite也是仅有的能够允许多个应用同时访问同一个数据库的。
+<br />Most SQL database engines are client/server based.  Of those that are
   serverless, SQLite is the only one that this author knows of that
   allows multiple applications to access the same database at the same time.
 </blockquote>
 <a name="onefile"></a>
-<p><b>Single Database File</b></p>
+<p><b>唯一的数据库文件
+<br />Single Database File</b></p>
 <blockquote>
-  An SQLite database is a single ordinary disk file that can be located
+  一个SQLite数据库就是一个可以存放在磁盘任意位置的唯一的普通文件。如果SQLite能够访问磁盘文件，就能访问这个数据库中的任何内容。如果文件和目录是可写的，则SQLite就能够修改数据库中的任意内容。数据库文件可以轻易的复制到U盘中或者通过Email分享给他人。
+<br />An SQLite database is a single ordinary disk file that can be located
   anywhere in the directory hierarchy.  If SQLite can read
   the disk file then it can read anything in the database.  If the disk
   file and its directory are writable, then SQLite can change anything
   in the database.   Database files can easily be copied onto a USB
   memory stick or emailed for sharing.
   <p>
-  Other SQL database engines tend to store data as a large collection of
+  其它SQL数据库引擎更喜欢将数据存储在一大堆文件当中。这些文件通常位于一个只有数据库能够访问的标准目录当中。一些SQL数据库提供了绕过文件系统，直接写磁盘的选项。这提高了性能，但是是以大量复杂的设置和维护作为代价的。
+<br />Other SQL database engines tend to store data as a large collection of
   files.  Often these files are in a standard location that only the
   database engine itself can access.  This makes the data more secure,
   but also makes it harder to access.  Some SQL database engines provide
@@ -206,9 +222,11 @@ database engines.
   considerable setup and maintenance complexity.
 </blockquote>
 <a name="onefile"></a>
-<p><b>Stable Cross-Platform Database File</b></p>
+<p><b>稳定的跨平台数据库文件
+<br />Stable Cross-Platform Database File</b></p>
 <blockquote>
-  The SQLite file format is cross-platform.  A database file written
+  SQLite的文件格式是跨平台的。在一个服务器上写的数据库文件可以复制到其它不同架构的机器上直接使用。无论是大端还是小端，32位还是64位。所有的机器都使用同样的文件格式。并且开发者还保证了文件格式的稳定和向后兼容性，所以新版本的SQLite可以读写旧的数据库文件。
+<br />The SQLite file format is cross-platform.  A database file written
   on one machine can be copied to and used on a different machine with
   a different architecture.  Big-endian or little-endian, 32-bit or
   64-bit does not matter.  All machines use the same file format.
@@ -216,21 +234,25 @@ database engines.
   stable and backwards compatible, so newer versions of SQLite can
   read and write older database files.
   <p>
-  Most other SQL database engines require you to dump and restore
+  其它大多数SQL数据库在迁移平台或者升级软件到新版本时都需要你去备份和恢复数据库。
+<br />Most other SQL database engines require you to dump and restore
   the database when moving from one platform to another and often
   when upgrading to a newer version of the software.
 </blockquote>
 <a name="small"></a>
-<p><b>Compact</b></p>
+<p><b>紧凑的
+<br />Compact</b></p>
 <blockquote>
-  When optimized for size, the whole SQLite library with everything enabled
+  当最大限度优化大小时，一个包含所有功能的完整的SQLite库只有<a href="footprint.html">不到 400KiB大小</a>（在ix86平台上使用GNU工具包中的“size”工具进行测量。）如果仍然需要减小大小，则可以再编译期禁用一些不需要的特性，最多能将库大小见到190KiB一下。
+<br />When optimized for size, the whole SQLite library with everything enabled
   is <a href="footprint.html">less than 400KiB in size</a>
   (as measured on an ix86 using the "size"
   utility from the GNU compiler suite.)  Unneeded features can be disabled
   at compile-time to further reduce the size of the library to under
   190KiB if desired.
   <p>
-  Most other SQL database engines are much larger than this.  IBM boasts
+  其它大多数的SQL数据库都要比这大得多。IBM自夸其最新版的云图(CloudScape)数据库引擎“仅仅“2MiB的jar文件——即使压缩后也仍然比SQLite大一个数量级！Firebird自夸它的客户端库只有350KiB。这已经和SQLite一般大小了，而且还么有包含数据库引擎。来自Oracle的Berkely DB库有450KiB但是它抛弃了对SQL的支持，只提供了简单的键值对支持。
+<br />Most other SQL database engines are much larger than this.  IBM boasts
   that its recently released CloudScape database engine is "only" a 2MiB
   jar file - an order of magnitude larger than SQLite even after it is
   compressed!
@@ -240,9 +262,11 @@ database engines.
   support, providing the programmer with only simple key/value pairs.
 </blockquote>
 <a name="typing"></a>
-<p><b>Manifest typing</b></p>
+<p><b>弱类型
+<br />Manifest typing</b></p>
 <blockquote>
-  Most SQL database engines use static typing.  A datatype is associated
+  大多数的SQL数据库引擎使用静态类型。表中的每一行都有指定的数据类型，并且只有特定的数据类型才能允许存入该列。SQLite通过弱类型放宽了这个约束。在弱类型中，数据类型是值自己的一个属性，而不是值存入的列的属性。SQLite允许在任意列存入任意类型的任意值，而不无需关心列已经定义的类型。（也有一些例外：一个INTEGER PRIMARY KEY的列只能存储integer数值。并且SQLite会尝试强制转换插入的值到列定义的类型。）
+<br />Most SQL database engines use static typing.  A datatype is associated
   with each column in a table and only values of that particular datatype
   are allowed to be stored in that column.  SQLite relaxes this restriction
   by using manifest typing.
@@ -254,7 +278,8 @@ database engines.
   PRIMARY KEY column may only store integers.  And SQLite attempts to coerce
   values into the declared datatype of the column when it can.)
   <p>
-  As far as we can tell, the SQL language specification allows the use
+  就目前而言，SQL语法规定中是允许使用弱类型的。不过，大部分SQL数据库使用的是静态类型，所以大部分人认为使用弱类型是SQLite的一个bug。但是SQLite的作者非常确定的认为这是一个特性。在SQLite中使用弱类型设计的决定已经在实践中证明可以使SQLite更加可靠和易用，尤其是当在一些支持动态类型的编程语言中使用时，例如Tcl和Python。
+<br />As far as we can tell, the SQL language specification allows the use
   of manifest typing.   Nevertheless, most other SQL database engines are
   statically typed and so some people
   feel that the use of manifest typing is a bug in SQLite.  But the authors
@@ -265,9 +290,11 @@ database engines.
   Python.
 </blockquote>
 <a name="flex"></a>
-<p><b>Variable-length records</b></p>
+<p><b>变长记录
+<br />Variable-length records</b></p>
 <blockquote>
-  Most other SQL database engines allocated a fixed amount of disk space
+  其它大多数SQL数据库引擎为大多数表的每一行在磁盘上分配一个固定大小的空间。通过运用特殊的技巧来处理任意长度的BLOB和CLOB。但是在大多数的表中，如果你定义一列的类型为VARCHAR(100)，那么无论实际上存储了多少信息，数据库引擎都会分配一个100字节的磁盘空间。
+<br />Most other SQL database engines allocated a fixed amount of disk space
   for each row in most tables.  They play special tricks for handling
   BLOBs and CLOBs which can be of wildly varying length.  But for most
   tables, if you declare a column to be a VARCHAR(100) then the database
@@ -275,30 +302,36 @@ database engines.
   100 bytes of disk space regardless of how much information you actually
   store in that column.
   <p>
-  SQLite, in contrast, use only the amount of disk space actually
+  相比之下，SQLite只分配一行中实际存储的信息大小的磁盘空间，如果你在一个VARCHAR(100)的列中存储一个字节，那么只会消耗一个byte的磁盘空间。（实际上是2byte——在每一列的开始地方会有一些空间用于记录数据类型和长度。
+<br />SQLite , in contrast, use only the amount of disk space actually
   needed to store the information in a row.  If you store a single
   character in a VARCHAR(100) column, then only a single byte of disk
   space is consumed.  (Actually two bytes - there is some overhead at
   the beginning of each column to record its datatype and length.)
   <p>
-  The use of variable-length records by SQLite has a number of advantages.
+  SQLite使用变长记录有许多的好处。缩小数据库文件尺寸是显而易见的。由于减少了磁盘输入输出的数据量，所以这使得数据库运行的更快。并且，使用变长记录使得SQLite使用弱类型代替静态类型成为可能。
+<br />The use of variable-length records by SQLite has a number of advantages.
   It results in smaller database files, obviously.  It also makes the
   database run faster, since there is less information to move to and from
   disk.  And, the use of variable-length records makes it possible for
   SQLite to employ manifest typing instead of static typing.
 </blockquote>
 <a name="readable"></a>
-<p><b>Readable source code</b></p>
+<p><b>易读的源码
+<br />Readable source code</b></p>
 <blockquote>
-  The source code to SQLite is designed to be readable and accessible to
+  SQLite的源码对于多数程序员都是易读易懂的。所有的函数和数据结构以及许多自动变量都有详细的注释来告诉你它使做什么的。
+<br />The source code to SQLite is designed to be readable and accessible to
   the average programmer.  All procedures and data structures and many
   automatic variables are carefully commented with useful information about
   what they do.  Boilerplate commenting is omitted.
 </blockquote>
 <a name="vdbe"></a>
-<p><b>SQL statements compile into virtual machine code</b></p>
+<p><b>SQL语句被编译成虚机码
+<br />SQL statements compile into virtual machine code</b></p>
 <blockquote>
-  Every SQL database engine compiles each SQL statement into some kind of
+  每一个SQL数据库引擎都会将每一条SQL语句编译成一些内部数据结构，然后使用这些内部数据结构来完成语句的工作。但是在大多数SQL引擎中内部数据结构是一个复杂的网状的相互连接的数据结构和对象。在SQLite中，语句被编译成一个类似机器语言描述的小程序。数据库用户可以通过在查询语句前加上<a href="lang_explain.html">EXPLAIN</a>关键词来查看<a href="opcode.html">虚机码</a>。
+<br />Every SQL database engine compiles each SQL statement into some kind of
   internal data structure which is then used to carry out the work of the
   statement.  But in most SQL engines that internal data structure is a
   complex web of interlinked structures and objects.  In SQLite, the compiled
@@ -308,7 +341,8 @@ database engines.
   by prepending the <a href="lang_explain.html">EXPLAIN</a> keyword
   to a query.
   <p>
-  The use of a virtual machine in SQLite has been a great benefit to the
+  在SQLite中使用虚机给库的开发带来了巨大的好处。虚机为SQLite的前端（这一部分处理SQL语句并生产虚机码）和后端（这部分执行虚机码并计算出结果）提供了一个很薄的，定义明确的连接层。开发者通过虚机码可以更清晰易读的知道到SQLite中每条编译后的语句会尝试如何执行，这对于调试是非常有帮助的。因为编译过程的存在，所以SQLite也能够跟踪虚机的执行过程——通过打印每一个虚机指令与其执行结果
+<br />The use of a virtual machine in SQLite has been a great benefit to the
   library's development.  The virtual machine provides a crisp, well-defined
   junction between the front-end of SQLite (the part that parses SQL
   statements and generates virtual machine code) and the back-end (the
@@ -321,9 +355,11 @@ database engines.
   virtual machine instruction and its result as it executes.
 </blockquote>
 <a name="license"></a>
-<p><b>Public domain</b></p>
+<p><b>公共领域
+<br />Public domain</b></p>
 <blockquote>
-  The source code for SQLite is in the public domain.  No claim of copyright
+  SQLite的源码位于公共领域。所有源码都没有设置版权。（文档和测试代码不同，一些文档章节和测试逻辑是添加了开源许可的。）所有的SQLite核心源码贡献者都需要签署一份禁止在源码中加入版权信息的特别声明。这意味着任何人都可以对SQLite源码做任何事儿。
+<br />The source code for SQLite is in the public domain.  No claim of copyright
   is made on any part of the core source code.  (The documentation and test
   code is a different matter - some sections of documentation and test logic
   are governed by open-source licenses.)  All contributors to the
@@ -331,25 +367,35 @@ database engines.
   copyright interest in the code.  This means that anybody is able to legally
   do anything they want with the SQLite source code.
   <p>
-  There are other SQL database engines with liberal licenses that allow
+  其它数据库引擎都是在自由许可的管理下允许代码被广泛的自由使用，但是还有一些数据库引擎已然是受到版权法保护的。而SQLite直接不接受版权法。
+<br />There are other SQL database engines with liberal licenses that allow
   the code to be broadly and freely used.  But those other engines are
   still governed by copyright law.  SQLite is different in that copyright
   law simply does not apply.  
   <p>
-  The source code files for other SQL database engines typically begin
+  其它SQL数据库引擎的源码文件起始处通常会加入一段注释解释你的浏览和复制源码的权限。而SQLite自从不接受版权以来就不包含任何许可，而只是添加了一段祝福。
+<br />The source code files for other SQL database engines typically begin
   with a comment describing your license rights to view and copy that file.
   The SQLite source code contains no license since it is not governed by
   copyright.  Instead of a license, the SQLite source code offers a blessing:
   <blockquote>
-  <i>May you do good and not evil<br>
-  May you find forgiveness for yourself and forgive others<br>
-  May you share freely, never taking more than you give.</i>
+  <i>希望你能做好事儿而不是坏事儿
+<br />May you do good and not evil<br>
+  希望你能怀着一颗宽容的心来宽恕别人
+<br />May you find forgiveness for yourself and forgive others<br>
+  希望你能自由的与他人分享，而不计较付出
+<br />May you share freely, never taking more than you give.</i>
   </blockquote>
 </blockquote>
 <a name="extensions"></a>
-<p><b>SQL language extensions</b></p>
+<p><b>SQL语言扩展
+<br />SQL language extensions</b></p>
 <blockquote>
-  SQLite provides a number of enhancements to the SQL language 
+  SQLite提供了一些在其它数据库中不常见的SQL语言增强扩展。EXPLAIN关键字和弱类型上面已经提到了。SQLite还提供了<a href="lang_replace.html">REPLACE</a> 和
+  <a href="lang_conflict.html">ON CONFLICT</a>字句能够允许当出现约束冲突时添加处理逻辑。SQLite提供了<a href="lang_attach.html">ATTACH</a> 和
+  <a href="lang_detach.html">DETACH</a>命令能够支持在一个查询语句中访问多个独立的数据库。同事，SQLite提供了允许用户添加自定义<a href="c3ref/create_function.html">SQL 函数</a>
+  和 <a href="c3ref/create_collation.html">排序序列</a>的API。
+<br />SQLite provides a number of enhancements to the SQL language 
   not normally found in other database engines.
   The EXPLAIN keyword and manifest typing have already been mentioned
   above.  SQLite also provides statements such as 
