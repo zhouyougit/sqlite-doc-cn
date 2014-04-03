@@ -130,9 +130,11 @@ a:visited { color: #734559 }
   
 
 
-<h1 align=center>SQL As Understood By SQLite</h1>
+<h1 align=center>SQLite里的SQL
+<br />SQL As Understood By SQLite</h1>
 
-<p>SQLite understands most of the standard SQL
+<p>SQLite能够支持大部分的标准SQL语法，并且增加了少量独有的特性，不过与此同时也<a href="omitted.html">省略了一些特性</a>。本文会准确的介绍SQLite支持哪些SQL语法，不支持哪些语法，并提供了一份<a href="lang_keywords.html">SQL 关键词</a>列表。使用了一个<a href="syntaxdiagrams.html">语法图</a>来描述SQL语言的语法。
+<br />SQLite understands most of the standard SQL
 language.  But it does <a href="omitted.html">omit some features</a>
 while at the same time
 adding a few features of its own.  This document attempts to
@@ -141,15 +143,19 @@ and does not support.  A list of <a href="lang_keywords.html">SQL keywords</a> i
 also provided.  The SQL language syntax is described by
 <a href="syntaxdiagrams.html">syntax diagrams</a>.
 
-<p>The following syntax documentation topics are available:</p>
+<p>下面这些语法文档都是有效的。
+<br />The following syntax documentation topics are available:</p>
 
 <table width="100%" cellpadding="5" border="0">
 <tr><td valign="top"><ul>
 
-<li><a href="lang_aggfunc.html">aggregate functions</a></li><li><a href="lang_altertable.html">ALTER TABLE</a></li><li><a href="lang_analyze.html">ANALYZE</a></li><li><a href="lang_attach.html">ATTACH DATABASE</a></li><li><a href="lang_transaction.html">BEGIN TRANSACTION</a></li><li><a href="lang_comment.html">comment</a></li><li><a href="lang_transaction.html">COMMIT TRANSACTION</a></li><li><a href="lang_corefunc.html">core functions</a></li><li><a href="lang_createindex.html">CREATE INDEX</a></li><li><a href="lang_createtable.html">CREATE TABLE</a></li><li><a href="lang_createtrigger.html">CREATE TRIGGER</a></li><li><a href="lang_createview.html">CREATE VIEW</a></li><li><a href="lang_createvtab.html">CREATE VIRTUAL TABLE</a></li></ul></td><td valign="top"><ul><li><a href="lang_datefunc.html">date and time functions</a></li><li><a href="lang_delete.html">DELETE</a></li><li><a href="lang_detach.html">DETACH DATABASE</a></li><li><a href="lang_dropindex.html">DROP INDEX</a></li><li><a href="lang_droptable.html">DROP TABLE</a></li><li><a href="lang_droptrigger.html">DROP TRIGGER</a></li><li><a href="lang_dropview.html">DROP VIEW</a></li><li><a href="lang_transaction.html">END TRANSACTION</a></li><li><a href="lang_explain.html">EXPLAIN</a></li><li><a href="lang_expr.html">expression</a></li><li><a href="lang_indexedby.html">INDEXED BY</a></li><li><a href="lang_insert.html">INSERT</a></li><li><a href="lang_keywords.html">keywords</a></li></ul></td><td valign="top"><ul><li><a href="lang_conflict.html">ON CONFLICT clause</a></li><li><a href="pragma.html#syntax">PRAGMA</a></li><li><a href="lang_reindex.html">REINDEX</a></li><li><a href="lang_savepoint.html">RELEASE SAVEPOINT</a></li><li><a href="lang_replace.html">REPLACE</a></li><li><a href="lang_transaction.html">ROLLBACK TRANSACTION</a></li><li><a href="lang_savepoint.html">SAVEPOINT</a></li><li><a href="lang_select.html">SELECT</a></li><li><a href="lang_update.html">UPDATE</a></li><li><a href="lang_vacuum.html">VACUUM</a></li><li><a href="lang_with.html">WITH clause</a></li>
+<li><a href="lang_aggfunc.html">聚合函数（aggregate functions）</a></li><li><a href="lang_altertable.html">ALTER TABLE</a></li><li><a href="lang_analyze.html">ANALYZE</a></li><li><a href="lang_attach.html">ATTACH DATABASE</a></li><li><a href="lang_transaction.html">BEGIN TRANSACTION</a></li><li><a href="lang_comment.html">备注（comment）</a></li><li><a href="lang_transaction.html">COMMIT TRANSACTION</a></li><li><a href="lang_corefunc.html">核心函数（core functions）</a></li><li><a href="lang_createindex.html">CREATE INDEX</a></li><li><a href="lang_createtable.html">CREATE TABLE</a></li><li><a href="lang_createtrigger.html">CREATE TRIGGER</a></li><li><a href="lang_createview.html">CREATE VIEW</a></li><li><a href="lang_createvtab.html">CREATE VIRTUAL TABLE</a></li></ul></td><td valign="top"><ul><li><a href="lang_datefunc.html">日期时间函数（date and time functions）</a></li><li><a href="lang_delete.html">DELETE</a></li><li><a href="lang_detach.html">DETACH DATABASE</a></li><li><a href="lang_dropindex.html">DROP INDEX</a></li><li><a href="lang_droptable.html">DROP TABLE</a></li><li><a href="lang_droptrigger.html">DROP TRIGGER</a></li><li><a href="lang_dropview.html">DROP VIEW</a></li><li><a href="lang_transaction.html">END TRANSACTION</a></li><li><a href="lang_explain.html">EXPLAIN</a></li><li><a href="lang_expr.html">表达式（expression）</a></li><li><a href="lang_indexedby.html">INDEXED BY</a></li><li><a href="lang_insert.html">INSERT</a></li><li><a href="lang_keywords.html">关键字（keywords）</a></li></ul></td><td valign="top"><ul><li><a href="lang_conflict.html">ON CONFLICT clause</a></li><li><a href="pragma.html#syntax">PRAGMA</a></li><li><a href="lang_reindex.html">REINDEX</a></li><li><a href="lang_savepoint.html">RELEASE SAVEPOINT</a></li><li><a href="lang_replace.html">REPLACE</a></li><li><a href="lang_transaction.html">ROLLBACK TRANSACTION</a></li><li><a href="lang_savepoint.html">SAVEPOINT</a></li><li><a href="lang_select.html">SELECT</a></li><li><a href="lang_update.html">UPDATE</a></li><li><a href="lang_vacuum.html">VACUUM</a></li><li><a href="lang_with.html">WITH子句（WITH clause）</a></li>
 </ul></td></tr></table>
 
-<p>The routines <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>, <a href="c3ref/prepare.html">sqlite3_prepare()</a>,
+<p>函数<a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>、 <a href="c3ref/prepare.html">sqlite3_prepare()</a>、
+<a href="c3ref/prepare.html">sqlite3_prepare16()</a>、 <a href="c3ref/prepare.html">sqlite3_prepare16_v2()</a>、
+<a href="c3ref/exec.html">sqlite3_exec()</a>,和 <a href="c3ref/free_table.html">sqlite3_get_table()</a>接受一个用分号分割的SQL表达式列表(sql-stmt-list)。
+<br />The routines <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>, <a href="c3ref/prepare.html">sqlite3_prepare()</a>,
 <a href="c3ref/prepare.html">sqlite3_prepare16()</a>, <a href="c3ref/prepare.html">sqlite3_prepare16_v2()</a>, 
 <a href="c3ref/exec.html">sqlite3_exec()</a>, and <a href="c3ref/free_table.html">sqlite3_get_table()</a> accept
 an SQL statement list (sql-stmt-list) which is a semicolon-separated
@@ -160,7 +166,8 @@ list of statements.</p>
  </blockquote>
 
 
-<p>Each SQL statement in the statement list is an instance of the
+<p>表达式列表中的每一个SQL表达式都是下面的一个实例：
+<br />Each SQL statement in the statement list is an instance of the
 following:</p>
 
 <p><b><a href="syntaxdiagrams.html#sql-stmt">sql-stmt:</a></b></p><blockquote>
