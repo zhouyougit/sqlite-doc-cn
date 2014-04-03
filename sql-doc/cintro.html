@@ -129,15 +129,17 @@ a:visited { color: #734559 }
 <div class=startsearch></div>
   
 
-<h1 align=center>An Introduction To The SQLite C/C++ Interface</h1>
+<h1 align=center>SQLite C/C++ 接口入门</h1>
 
 <p>
-  This article provides an overview to the C/C++ interface
+  本文是对SQLite的C/C++接口的综述。
+<br />This article provides an overview to the C/C++ interface
   to SQLite.
 </p>
 
 <p>
-  Early versions of SQLite were very easy to learn since they only
+  SQLite早期版本非常容易学习，因为它只有5个C/C++接口。但是随着SQLite功能的增加，许多新接口加入到了SQLite中，如今，已经有超过200个独立的API了。这能压倒一名新程序员了。不过好在大部分的C/C++接口都是非常专业的，几乎不需要关心。尽管有那么多的接口，但是核心API还是非常简单易用的。本文的目的就是提供理解SQLite工作原理的一切背景知识。
+<br />Early versions of SQLite were very easy to learn since they only
   supported 5 C/C++ interfaces.  But as SQLite has grown in capability,
   new C/C++ interfaces have been added so that now there
   are over 200 distinct APIs.  This can be overwhelming to a new programmer.
@@ -149,7 +151,8 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  A separate document, <a href="c3ref/intro.html">The SQLite C/C++ Interface</a>,
+  另一篇文档<a href="c3ref/intro.html">SQLite C/C++ 接口</a>提供了SQLite所有C/C++ API的详细说明。一旦读者理解了操作SQLite的基本原则，那么就可以使用前面那篇<a href="c3ref/intro.html">文档</a>来作为参考指南了。本文旨在介绍入门，而不是全文详细的SQLite API参考。
+<br />A separate document, <a href="c3ref/intro.html">The SQLite C/C++ Interface</a>,
   provides detailed
   specifications for all of the various C/C++ APIs for SQLite.  Once
   the reader
@@ -159,21 +162,27 @@ a:visited { color: #734559 }
   complete nor authoritative reference for the SQLite API.
 </p>
 
-<h2>1.0 Core Objects And Interfaces</h2>
+<h2>1.0 核心对象和接口
+<br />1.0 Core Objects And Interfaces</h2>
 
 <p>
-  The principal task of an SQL database engine is to evaluate statements
+  SQL数据库引擎的主要任务就是计算SQL表达式。为了达到这个目的，开发者需要了解两个对象：
+<br />The principal task of an SQL database engine is to evaluate statements
   of SQL.  In order to accomplish this purpose, the developer needs
   to know about two objects:
 </p>
 
 <p><ul>
-  <li> The <a href="c3ref/sqlite3.html">database connection</a> object: sqlite3 </li>
-  <li> The <a href="c3ref/stmt.html">prepared statement</a> object: sqlite3_stmt </li>
+  <li> <a href="c3ref/sqlite3.html">数据库连接</a>对象：sqlite3
+<br />The <a href="c3ref/sqlite3.html">database connection</a> object: sqlite3 </li>
+  <li> <a href="c3ref/stmt.html">预编译表达式</a>对象：sqlite3_stmt
+<br />The <a href="c3ref/stmt.html">prepared statement</a> object: sqlite3_stmt </li>
 </ul></p>
 
 <p>
-  Strictly speaking, the <a href="c3ref/stmt.html">prepared statement</a> object is not required since
+  严格的说，<a href="c3ref/stmt.html">预编译表达式</a>对象不需要的了解的，因为一个封装良好的接口，如<a href="c3ref/exec.html">sqlite3_exec</a> 和
+  <a href="c3ref/free_table.html">sqlite3_get_table</a>将<a href="c3ref/stmt.html">预编译表达式</a>对象封装在了接口内。虽然如此，但是理解<a href="c3ref/stmt.html">预编译表达式</a>对完整使用SQLite来说是必须的。
+<br />Strictly speaking, the <a href="c3ref/stmt.html">prepared statement</a> object is not required since
   the convenience wrapper interfaces, <a href="c3ref/exec.html">sqlite3_exec</a> or
   <a href="c3ref/free_table.html">sqlite3_get_table</a>, can be used and these convenience wrappers
   encapsulate and hide the <a href="c3ref/stmt.html">prepared statement</a> object.
@@ -182,7 +191,8 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  The <a href="c3ref/sqlite3.html">database connection</a> and <a href="c3ref/stmt.html">prepared statement</a> objects are controlled
+  <a href="c3ref/sqlite3.html">数据库连接</a>对象和<a href="c3ref/stmt.html">预编译表达式</a>对象主要被下面这少数几个C/C++接口程序使用。
+<br />The <a href="c3ref/sqlite3.html">database connection</a> and <a href="c3ref/stmt.html">prepared statement</a> objects are controlled
   by a small set of C/C++ interface routine listed below.
 </p>
 
@@ -196,13 +206,15 @@ a:visited { color: #734559 }
 </ul></p>
 
 <p>
-  The six C/C++ interface routines and two objects listed above form the core
+  这六个C/C++接口程序和上面的两个对象就是SQLite的核心函数了。对开发者来说，理解这些内容是使用SQLite的基础。
+<br />The six C/C++ interface routines and two objects listed above form the core
   functionality of SQLite.  The developer who understands them
   will have a good foundation for using SQLite.
 </p>
 
 <p>
-  Note that the list of routines above is conceptual rather than actual.
+  注意，上面这些函数只是个概念，而不是实际函数。大部分函数都有许多不同的版本。例如上面列出的<a href="c3ref/open.html">sqlite3_open()</a>函数，在实际使用中，会有三个不同的函数版本，通过不同的方式来实现相似的目的：<a href="c3ref/open.html">sqlite3_open()</a>、<a href="c3ref/open.html">sqlite3_open16()</a> 和 <a href="c3ref/open.html">sqlite3_open_v2()</a>。列表中提到的<a href="c3ref/column_blob.html">sqlite3_column()</a>函数在实际中是不存在的，在列表中列出"sqlite3_column()" 是为了代替一系列用于提取不同类型的值的函数。
+<br />Note that the list of routines above is conceptual rather than actual.
   Many of these routines come in multiple versions.
   For example, the list above shows a single routine
   named <a href="c3ref/open.html">sqlite3_open()</a> when in fact there are three separate routines
@@ -216,14 +228,16 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  Here is a summary of what the core interfaces do:
+  下面是核心接口的简介：
+<br />Here is a summary of what the core interfaces do:
 </p>
 
 <table border="0" cellspacing="15">
 
 <tr><td valign="top" align="right"><a href="c3ref/open.html">sqlite3_open()</a></td>
 <td valign="top">
-  This routine 
+  这个函数打开一个到SQLite数据库文件的连接并返回一个<a href="c3ref/sqlite3.html">数据库连接</a>对象。这通常是应用第一个调用的SQLite API，也是其他大多数SQLite API的先决条件。许多SQLite接口的第一个参数都是一个指向<a href="c3ref/sqlite3.html">数据库连接</a>对象的指针，这些函数通常可以认为是<a href="c3ref/sqlite3.html">数据库连接</a>对象的方法。这个方法就相当于<a href="c3ref/sqlite3.html">数据库连接</a>对象的构造函数。
+<br />This routine 
   opens a connection to an SQLite database file and returns a
   <a href="c3ref/sqlite3.html">database connection</a> object.  This is often the first SQLite API
   call that an application makes and is a prerequisite for most other
@@ -235,26 +249,30 @@ a:visited { color: #734559 }
 
 <tr><td valign="top" align="right"><a href="c3ref/prepare.html">sqlite3_prepare()</a></td>
 <td valign="top">
-  This routine
+  这个函数是将SQL文本转换成<a href="c3ref/stmt.html">预编译表达式</a>对象并返回一个指向该对象的指针。这个函数需要一个指向<a href="c3ref/open.html">sqlite3_open()</a>函数创建的<a href="c3ref/sqlite3.html">数据库连接</a>对象的指针和一个包含了需要预编译的SQL表达式的文本字符串。这个API并不实际执行查询计算，仅仅是为后续的计算预编译SQL表达式。
+<br />This routine
   converts SQL text into a <a href="c3ref/stmt.html">prepared statement</a> object and returns a pointer
   to that object.  This interface requires a <a href="c3ref/sqlite3.html">database connection</a> pointer
   created by a prior call to <a href="c3ref/open.html">sqlite3_open()</a> and a text string containing
   the SQL statement to be prepared.  This API does not actually evaluate
   the SQL statement.  It merely prepares the SQL statement for evaluation.
 
-  <p>Think of each SQL statement as a small computer program.  The purpose
+  <p>将每条SQL表达式看作为一个小程序，<a href="c3ref/prepare.html">sqlite3_prepare()</a>接口的目的就是将其编译成目标代码。<a href="c3ref/stmt.html">预编译表达式</a>对象就是目标代码，<a href="c3ref/step.html">sqlite3_step()</a>接口则负责执行目标代码以获得结果。
+<br />Think of each SQL statement as a small computer program.  The purpose
   of <a href="c3ref/prepare.html">sqlite3_prepare()</a> is to compile that program into object code.
   The <a href="c3ref/stmt.html">prepared statement</a> is the object code.  The <a href="c3ref/step.html">sqlite3_step()</a> interface
   then runs the object code to get a result.
 
-  <p>Note that the use of <a href="c3ref/prepare.html">sqlite3_prepare()</a> is not recommended for new
+  <p>注意，<a href="c3ref/prepare.html">sqlite3_prepare()</a>函数现在已经不建议在新应用中使用了，应当替换为一个新函数<a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>。
+<br />Note that the use of <a href="c3ref/prepare.html">sqlite3_prepare()</a> is not recommended for new
   applications.  A newer alternative routine <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a> should
   be used instead.</p>
 </td>
 
 <tr><td valign="top" align="right"><a href="c3ref/step.html">sqlite3_step()</a></td>
 <td valign="top">
-  This routine is used to evaluate a <a href="c3ref/stmt.html">prepared statement</a> that has been
+  这个函数用来计算由<a href="c3ref/prepare.html">sqlite3_prepare()</a>函数预编译的<a href="c3ref/stmt.html">prepared statement</a>对象。获取下下一条条记录只需要再一次调用<a href="c3ref/step.html">sqlite3_step()</a>即可，直到表达式执行完毕。不需要返回结果的调用（比如：INSERT、UPDATE、DELETE表达式）则调用一次<a href="c3ref/step.html">sqlite3_step()</a>就可以完成。
+<br />This routine is used to evaluate a <a href="c3ref/stmt.html">prepared statement</a> that has been
   previously created by the <a href="c3ref/prepare.html">sqlite3_prepare()</a> interface.  The statement
   is evaluated up to the point where the first row of results are available.
   To advance to the second row of results, invoke <a href="c3ref/step.html">sqlite3_step()</a> again.
@@ -266,7 +284,8 @@ a:visited { color: #734559 }
 
 <tr><td valign="top" align="right"><a href="c3ref/column_blob.html">sqlite3_column()</a></td>
 <td valign="top">
-  This routine returns a single column from the current row of a result
+  这个函数会从<a href="c3ref/step.html">sqlite3_step()</a>计算的<a href="c3ref/stmt.html">预编译表达式</a>的结果集的当前行中返回一列的值。每次调用<a href="c3ref/step.html">sqlite3_step()</a>都会返回一个新的数据行，这时可以多次调用这个函数来获取这一行的所有列的值。正如上面所说，SQLite API中的确没有 "sqlite3_column()"这样的函数，我们这里调用 "sqlite3_column()"是用来替代一组可以从结果集中返回各种类型数据值的函数。这一组函数中还包括可以返回结果大小的函数（如果是stirng或者BLOB类型）和返回结果集包含的列数的函数。
+<br />This routine returns a single column from the current row of a result
   set for a <a href="c3ref/stmt.html">prepared statement</a> that is being evaluated by <a href="c3ref/step.html">sqlite3_step()</a>.
   Each time <a href="c3ref/step.html">sqlite3_step()</a> stops with a new result set row, this routine
   can be called multiple times to find the values of all columns in that row.
@@ -294,14 +313,16 @@ a:visited { color: #734559 }
 
 <tr><td valign="top" align="right"><a href="c3ref/finalize.html">sqlite3_finalize()</a></td>
 <td valign="top">
-  This routine destroys a <a href="c3ref/stmt.html">prepared statement</a> created by a prior call
+  这个函数是用来销毁由<a href="c3ref/prepare.html">sqlite3_prepare()</a>创建的<a href="c3ref/stmt.html">预编译表达式</a>对象的。每个预编译表达式都需要调用这个函数来销毁以防止发生内存泄露。
+<br />This routine destroys a <a href="c3ref/stmt.html">prepared statement</a> created by a prior call
   to <a href="c3ref/prepare.html">sqlite3_prepare()</a>.  Every prepared statement must be destroyed using
   a call to this routine in order to avoid memory leaks.
 </td>
 
 <tr><td valign="top" align="right"><a href="c3ref/close.html">sqlite3_close()</a></td>
 <td valign="top">
-  This routine closes a <a href="c3ref/sqlite3.html">database connection</a> previously opened by a call
+  这个函数是用来关闭由<a href="c3ref/open.html">sqlite3_open()</a>打开的<a href="c3ref/sqlite3.html">数据库连接</a>对象的。在关闭连接之前所有的<a href="c3ref/stmt.html">预编译表达式</a>都需要调用<a href="c3ref/finalize.html">finalized</a>函数销毁。
+<br />This routine closes a <a href="c3ref/sqlite3.html">database connection</a> previously opened by a call
   to <a href="c3ref/open.html">sqlite3_open()</a>.  All <a href="c3ref/stmt.html">prepared statements</a> associated with the
   connection should be <a href="c3ref/finalize.html">finalized</a> prior to closing the
   connection.
@@ -309,10 +330,12 @@ a:visited { color: #734559 }
 
 </table>
 
-<h3>1.1 Typical Usage Of Core Routines And Objects</h3>
+<h3>1.1 核心函数和对象的典型使用
+<br />1.1 Typical Usage Of Core Routines And Objects</h3>
 
 <p>
-  An application that wants to use SQLite will typically use
+  一个应用想要使用SQLite，通常需要在初始化阶段使用<a href="c3ref/open.html">sqlite3_open()</a>创建一个唯一的<a href="c3ref/sqlite3.html">数据库连接</a>对象。注意<a href="c3ref/open.html">sqlite3_open()</a>既可以用来打开一个已有的数据库文件，也可以用来创建一个新的数据库文件。尽管很多应用都只使用唯一的一个<a href="c3ref/sqlite3.html">数据库连接</a>，但是并不限制应用在一个或多个数据库上多次调用<a href="c3ref/open.html">sqlite3_open()</a>来创建多个<a href="c3ref/sqlite3.html">数据库连接</a>。有时多线程应用会为每个线程创建一个<a href="c3ref/sqlite3.html">数据库连接</a>。注意及时访问两个以上数据库也不必分别打开多个数据库连接，在一个<a href="c3ref/sqlite3.html">数据库连接</a>上通过使用<a href="lang_attach.html">ATTACH</a>SQL命令就能一次访问两个以上的数据库。
+<br />An application that wants to use SQLite will typically use
   <a href="c3ref/open.html">sqlite3_open()</a> to create a single <a href="c3ref/sqlite3.html">database connection</a>
   during initialization.
   Note that <a href="c3ref/open.html">sqlite3_open()</a> can be used to either open existing database
@@ -329,7 +352,7 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  Many applications destroy their <a href="c3ref/sqlite3.html">database connections</a> using calls to
+  许多应用会在关闭时调用<a href="c3ref/close.html">sqlite3_close()</a>关闭<a href="c3ref/sqlite3.html">数据库连接</a>。或者，一个应用会在响应菜单 “文件->打开”事件时打开一个<a href="c3ref/sqlite3.html">数据库连接</a>，然后在响应菜单“文件->关闭”事件时关闭这个<a href="c3ref/sqlite3.html">数据库连接</a>。Many applications destroy their <a href="c3ref/sqlite3.html">database connections</a> using calls to
   <a href="c3ref/close.html">sqlite3_close()</a> at shutdown.  Or, for example, an application might
   open <a href="c3ref/sqlite3.html">database connections</a> in response to a File->Open menu action
   and then destroy the corresponding <a href="c3ref/sqlite3.html">database connection</a> in response
@@ -337,28 +360,36 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  To run an SQL statement, the application follows these steps:
+  应用依照如下步骤运行一条SQL表达式：
+<br />To run an SQL statement, the application follows these steps:
 </p>
 
 <p><ol>
-  <li> Create a <a href="c3ref/stmt.html">prepared statement</a> using <a href="c3ref/prepare.html">sqlite3_prepare()</a>. </li>
-  <li> Evaluate the <a href="c3ref/stmt.html">prepared statement</a> by calling <a href="c3ref/step.html">sqlite3_step()</a> one
+  <li> 使用<a href="c3ref/prepare.html">sqlite3_prepare()</a>创建一个<a href="c3ref/stmt.html">预编译表达式</a>。
+<br />Create a <a href="c3ref/stmt.html">prepared statement</a> using <a href="c3ref/prepare.html">sqlite3_prepare()</a>. </li>
+  <li> 一次或多次使用<a href="c3ref/step.html">sqlite3_step()</a>来计算<a href="c3ref/stmt.html">预编译表达式</a>。
+<br />Evaluate the <a href="c3ref/stmt.html">prepared statement</a> by calling <a href="c3ref/step.html">sqlite3_step()</a> one
        or more times. </li>
-  <li> For queries, extract results by calling 
+  <li> 在两次<a href="c3ref/step.html">sqlite3_step()</a>调用之间使用<a href="c3ref/column_blob.html">sqlite3_column()</a>来查询或者获取结果。
+<br />For queries, extract results by calling 
        <a href="c3ref/column_blob.html">sqlite3_column()</a> in between
        two calls to <a href="c3ref/step.html">sqlite3_step()</a>. </li>
-  <li> Destroy the <a href="c3ref/stmt.html">prepared statement</a> using <a href="c3ref/finalize.html">sqlite3_finalize()</a>. </li>
+  <li> 使用<a href="c3ref/finalize.html">sqlite3_finalize()</a>销毁使用<a href="c3ref/stmt.html">预编译表达式</a>对象。
+<br />Destroy the <a href="c3ref/stmt.html">prepared statement</a> using <a href="c3ref/finalize.html">sqlite3_finalize()</a>. </li>
 </ol></p>
 
 <p>
-  The foregoing is all one really needs to know in order to use SQLite
+  前面讲的如何使用SQLite最基础的内容。下面部分内容主要是一些修饰函数和一些细节。
+<br />The foregoing is all one really needs to know in order to use SQLite
   effectively.  All the rest is just ornamentation and detail.
 </p>
 
-<h2>2.0 Convenience Wrappers Around Core Routines</h2>
+<h2>2.0 核心函数的易用封装
+<br />2.0 Convenience Wrappers Around Core Routines</h2>
 
 <p>
-  The <a href="c3ref/exec.html">sqlite3_exec()</a> interface is a convenience wrapper that carries out
+  <a href="c3ref/exec.html">sqlite3_exec()</a>函数是一个将上述四个步骤分装到一个函数中的一个易用分装。传入<a href="c3ref/exec.html">sqlite3_exec()</a>一个回调函数用户处理数据集的每一行。<a href="c3ref/free_table.html">sqlite3_get_table()</a>函数是另一个将上述四个步骤分装到一个函数中的一个易用分装。<a href="c3ref/free_table.html">sqlite3_get_table()</a>函数与<a href="c3ref/exec.html">sqlite3_exec()</a>函数不同的是将查询结果存在堆内存中，而不是执行回调函数。
+<br />The <a href="c3ref/exec.html">sqlite3_exec()</a> interface is a convenience wrapper that carries out
   all four of the above steps with a single function call.  A callback
   function passed into <a href="c3ref/exec.html">sqlite3_exec()</a> is used to process each row of
   the result set.  The <a href="c3ref/free_table.html">sqlite3_get_table()</a> is another convenience wrapper
@@ -368,17 +399,20 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  It is important to realize that neither <a href="c3ref/exec.html">sqlite3_exec()</a> nor
+  需要着重注意的是无法使用核心函数完成的事儿，也同样无法使用<a href="c3ref/exec.html">sqlite3_exec()</a> 和
+  <a href="c3ref/free_table.html">sqlite3_get_table()</a>实现。事实上，这两个分装的实现仅仅使用了核心函数。
+<br />It is important to realize that neither <a href="c3ref/exec.html">sqlite3_exec()</a> nor
   <a href="c3ref/free_table.html">sqlite3_get_table()</a> do anything that cannot be accomplished using
-  the core routines.  In fact, these wrappers are implemented purely in
-  terms of the core routines.
+  the core routines.  In fact, these wrappers are implemented purely in terms of the core routines.
 </p>
 
 
-<h2>3.0 Binding Parameters and Reusing Prepared Statements</h2>
+<h2>3.0 绑定参数和重用预编译表达式
+<br />3.0 Binding Parameters and Reusing Prepared Statements</h2>
 
 <p>
-  In prior discussion, it was assumed that each SQL statement is prepared
+  前面的讨论都假设了每个SQL表达式预编译一次并执行，然后就销毁了。然而，SQLite是允许一个<a href="c3ref/stmt.html">预编译表达式</a>被多次执行计算的。这通过下面的函数完成：
+<br />In prior discussion, it was assumed that each SQL statement is prepared
   once, evaluated, then destroyed.  However, the SQLite allows the same
   <a href="c3ref/stmt.html">prepared statement</a> to be evaluated multiple times.  This is accomplished
   using the following routines:
@@ -390,7 +424,8 @@ a:visited { color: #734559 }
 </ul></p>
 
 <p>
-  After a <a href="c3ref/stmt.html">prepared statement</a> has been evaluated by one or more calls to
+  当一个<a href="c3ref/stmt.html">预编译表达式</a>被求值并多次调用<a href="c3ref/step.html">sqlite3_step()</a>之后，可是通过使用<a href="c3ref/reset.html">sqlite3_reset()</a>函数重置，以便再一次求值。使用<a href="c3ref/reset.html">sqlite3_reset()</a>处理一个已有的<a href="c3ref/stmt.html">预编译表达式</a>而不是创建一个新的<a href="c3ref/stmt.html">预编译表达式</a>可以避免不必要的<a href="c3ref/prepare.html">sqlite3_prepare()</a>调用。对于许多SQL表达式，执行<a href="c3ref/prepare.html">sqlite3_prepare()</a>的次数等于或超过<a href="c3ref/step.html">sqlite3_step()</a>的执行次数。所以避免调用<a href="c3ref/prepare.html">sqlite3_prepare()</a>可以有效的提升性能。
+<br />After a <a href="c3ref/stmt.html">prepared statement</a> has been evaluated by one or more calls to
   <a href="c3ref/step.html">sqlite3_step()</a>, it can be reset in order to be evaluated again by a
   call to <a href="c3ref/reset.html">sqlite3_reset()</a>.
   Using <a href="c3ref/reset.html">sqlite3_reset()</a> on an existing <a href="c3ref/stmt.html">prepared statement</a> rather than
@@ -403,7 +438,8 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  Usually, though, it is not useful to evaluate exactly the same SQL
+  不过通常多次执行一条完全相同的SQL表达式是没有意义的。更常见的情况是，执行多条相似的表达式。例如，你想要多次执行INSERT表达式来插入不同的值，为了能灵活的适应这种场景，SQLite允许SQL表达式包含<a href="lang_expr.html#varparam">参数</a>，等到需要求值时才将参数赋予实际值。这个值是可以修改的，并且一个<a href="c3ref/stmt.html">预编译表达式</a>可以在下一次求值时使用不同的值。
+<br />Usually, though, it is not useful to evaluate exactly the same SQL
   statement more than once.  More often, one wants to evaluate similar
   statements.  For example, you might want to evaluate an INSERT statement
   multiple times though with different values to insert.  To accommodate
@@ -415,7 +451,8 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  In SQLite, wherever it is valid to include a string literal, one can use
+  在SQLite中，无论是否允许包含字符串的位置都可以使用下列形式的<a href="lang_expr.html#varparam">参数</a>：
+<br />In SQLite, wherever it is valid to include a string literal, one can use
   a <a href="lang_expr.html#varparam">parameter</a> in one of the following forms:
 </p>
 
@@ -428,7 +465,8 @@ a:visited { color: #734559 }
 </ul></p>
 
 <p>
-  In the examples above, <i>NNN</i> is an integer value and
+  上面的例子中，<i>NNN</i>是一个整数值，<i>AAA</i>是一个标示符。参数的初始值是NULL。在第一次调用<a href="c3ref/step.html">sqlite3_step()</a>或刚执行完<a href="c3ref/reset.html">sqlite3_reset()</a>时，应用可以调用一个<a href="c3ref/bind_blob.html">sqlite3_bind()</a>接口为参数指定值。在同一个参数上每次调用<a href="c3ref/bind_blob.html">sqlite3_bind()</a>都会覆盖之前绑定的值。
+<br />In the examples above, <i>NNN</i> is an integer value and
   <i>AAA</i> is an identifier.
   A parameter initially has a value of NULL.
   Prior to calling <a href="c3ref/step.html">sqlite3_step()</a> for the first time or immediately
@@ -439,42 +477,53 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  An application is allowed to prepare multiple SQL statements in advance
+  应用可以预先编译好许多SQL表达式，等到需要的时候再执行，对于未执行的<a href="c3ref/stmt.html">预编译表达式</a>数量没有硬性规定。
+<br />An application is allowed to prepare multiple SQL statements in advance
   and evaluate them as needed.
   There is no arbitrary limit to the number of outstanding
   <a href="c3ref/stmt.html">prepared statements</a>.
 </p>
 
-<h2>4.0 Configuring SQLite</h2>
+<h2>4.0 配置SQLite
+<br />4.0 Configuring SQLite</h2>
 
 <p>
-  The default configuration for SQLite works great for most applications.
+  对于大多数应用来说SQLite的默认配置就能很好的工作了，但是有时开发希望能通过定制安装来多提高一点儿性能或者使用一些隐藏的特性。
+<br />The default configuration for SQLite works great for most applications.
   But sometimes developers want to tweak the setup to try to squeeze out
   a little more performance, or take advantage of some obscure feature.
 <p>
-  The <a href="c3ref/config.html">sqlite3_config()</a> interface is used to make global, process-wide
+ <a href="c3ref/config.html">sqlite3_config()</a>接口就用来在进程内的全局范围内修改SQLite的配置。 <a href="c3ref/config.html">sqlite3_config()</a>接口必须在创建<a href="c3ref/sqlite3.html">数据库连接</a>之前调用。<a href="c3ref/config.html">sqlite3_config()</a>接口允许程序员做类似下面这些事儿：
+<br />The <a href="c3ref/config.html">sqlite3_config()</a> interface is used to make global, process-wide
   configuration changes for SQLite.  The <a href="c3ref/config.html">sqlite3_config()</a> interface must
   be called before any <a href="c3ref/sqlite3.html">database connections</a> are created.  The
   <a href="c3ref/config.html">sqlite3_config()</a> interface allows the programmer to do things like:
 <ul>
-<li>Adjust how SQLite does <a href="malloc.html">memory allocation</a>, including setting up
+<li>调整SQLite<a href="malloc.html">分配内存</a>的方式，包括为重要的实时嵌入式系统选择合适的内存分配器或者自定义的内存分配系统。
+<br />Adjust how SQLite does <a href="malloc.html">memory allocation</a>, including setting up
     alternative memory allocators appropriate for safety-critical
     real-time embedded systems and application-defined memory allocators.
-<li>Set up a process-wide <a href="errlog.html">error log</a>.
-<li>Specify an application-defined page cache.
-<li>Adjust the use of mutexes so that they are appropriate for various
+<li>设置一个进程范围内的<a href="errlog.html">错误日志</a>。
+<br />Set up a process-wide <a href="errlog.html">error log</a>.
+<li>指定一个应用自定义的页缓存。
+<br />Specify an application-defined page cache.
+<li>修改使用的互斥体，以适应不同的<a href="threadsafe.html">线程模型</a>，或者替换为应用自己定义的互斥体系统。
+<br />Adjust the use of mutexes so that they are appropriate for various
     <a href="threadsafe.html">threading models</a>, or substitute an 
     application-defined mutex system.
 </ul> 
 <p>
-  After process-wide configuration is complete and <a href="c3ref/sqlite3.html">database connections</a>
+  当完成进程全局设置后，对于已经创建出来的个别<a href="c3ref/sqlite3.html">数据库连接</a>还可以使用<a href="c3ref/limit.html">sqlite3_limit()</a> 和 <a href="c3ref/db_config.html">sqlite3_db_config()</a>来进行配置。
+<br />After process-wide configuration is complete and <a href="c3ref/sqlite3.html">database connections</a>
   have been created, individual database connections can be configured using
   calls to <a href="c3ref/limit.html">sqlite3_limit()</a> and <a href="c3ref/db_config.html">sqlite3_db_config()</a>.
 
-<h2>5.0 Extending SQLite</h2>
+<h2>5.0 SQLite扩展
+<br />5.0 Extending SQLite</h2>
 
 <p>
-  SQLite includes interfaces that can be used to extend its functionality.
+  SQLite提供了用户扩展功能函数的接口，包括如下这些函数：
+<br />SQLite includes interfaces that can be used to extend its functionality.
   Such routines include:
 </p>
 
@@ -486,7 +535,8 @@ a:visited { color: #734559 }
 </ul></p>
 
 <p>
-  The <a href="c3ref/create_collation.html">sqlite3_create_collation()</a> interface is used to create new
+  <a href="c3ref/create_collation.html">sqlite3_create_collation()</a>接口用来创建负责文本排序的<a href="datatype3.html#collation">排序器</a>。<a href="c3ref/create_module.html">sqlite3_create_module()</a>接口负责注册一个新的<a href="vtab.html">虚表</a>实现。<a href="c3ref/vfs_find.html">sqlite3_vfs_register()</a>接口用户创建新的<a href="vfs.html">VFSes</a>。
+<br />The <a href="c3ref/create_collation.html">sqlite3_create_collation()</a> interface is used to create new
   <a href="datatype3.html#collation">collating sequences</a> for sorting text.
   The <a href="c3ref/create_module.html">sqlite3_create_module()</a> interface is used to register new
   <a href="vtab.html">virtual table</a> implementations.
@@ -494,7 +544,8 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  The <a href="c3ref/create_function.html">sqlite3_create_function()</a> interface creates new SQL functions - 
+  <a href="c3ref/create_function.html">sqlite3_create_function()</a>接口可以创建一个新的SQL函数——包括标量和统计函数。实现一个新函数通常需要用到下面这些附加接口：
+<br />The <a href="c3ref/create_function.html">sqlite3_create_function()</a> interface creates new SQL functions - 
   either scalar or aggregate.  The new function implementation typically
   makes use of the following additional interfaces:
 </p>
@@ -507,7 +558,9 @@ a:visited { color: #734559 }
 </ul></p>
 
 <p>
-  All of the built-in SQL functions of SQLite are created using exactly
+  SQLite中所有内置的SQL函数也都完全是用这些同样的接口实现的，可以参考SQLite的源码，特别是<a href="http://www.sqlite.org/src/doc/trunk/src/date.c">date.c</a> 和
+  <a href="http://www.sqlite.org/src/doc/trunk/src/func.c">func.c</a>这两个源文件。
+<br />All of the built-in SQL functions of SQLite are created using exactly
   these same interfaces.  Refer to the SQLite source code, and in particular
   the 
   <a href="http://www.sqlite.org/src/doc/trunk/src/date.c">date.c</a> and
@@ -516,12 +569,15 @@ a:visited { color: #734559 }
 </p>
 
 <p>
-  Shared libraries or DLLs can be used as <a href="loadext.html">loadable extensions</a> to SQLite.
+  SQLite可以通过<a href="loadext.html">可加载的扩展模块</a>的方式来使用共享库或者DLL。
+<br />Shared libraries or DLLs can be used as <a href="loadext.html">loadable extensions</a> to SQLite.
 
-<h2>6.0 Other Interfaces</h2>
+<h2>6.0 其他接口
+<br />6.0 Other Interfaces</h2>
 
 <p>
-  This article only mentions the foundational SQLite interfaces.
+  本文只提及了SQLite中的基础接口。SQLite库中还包含了很多可以实现强大特性的API，这里并没有提及。在<a href="c3ref/intro.html">C/C++ 接口说明</a>中包含了一份SQLite的 <a href="c3ref/funclist.html">完整函数列表</a>。想了解有关SQLite接口最完整权威的信息，请参考这篇文档。
+<br />This article only mentions the foundational SQLite interfaces.
   The SQLite library includes many other APIs implementing useful
   features that are not described here.  
   A <a href="c3ref/funclist.html">complete list of functions</a> that form the SQLite
