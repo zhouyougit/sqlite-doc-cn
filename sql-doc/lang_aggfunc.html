@@ -128,16 +128,20 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<h1 align="center">SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>Aggregate Functions</h2>
+<h1 align="center">SQLite里的SQL
+<br />SQL As Understood By SQLite</h1><p><a href="lang.html">[上层][Top]</a></p><h2>聚合函数
+<br />Aggregate Functions</h2>
 
 <p>
-The aggregate functions shown below are available by default.  Additional
+下面所列的聚合函数默认都是可用的，用C些的附加聚合函数可以使用<a href="c3ref/create_function.html">sqlite3_create_function()</a>API添加进来。
+<br />The aggregate functions shown below are available by default.  Additional
 aggregate functions written in C may be added using the 
-<a href="c3ref/create_function.html">sqlite3_create_function()</a></a>
+<a href="c3ref/create_function.html">sqlite3_create_function()</a>
 API.</p>
 
 <p>
-In any aggregate function that takes a single argument, that argument
+每一个聚合函数都只有一个参数，这个参数可以加一个关键词DISTINCT前缀，这样，重复的元素就会在传入聚合函数之前被过滤掉。例如，函数"count(distinct X)" 会返回X列中不同的元素的数量，而不是X列中的非NULL元素的总数。
+<br />In any aggregate function that takes a single argument, that argument
 can be preceded by the keyword DISTINCT.  In such cases, duplicate
 elements are filtered before being passed into the aggregate function.
 For example, the function "count(distinct X)" will return the number
@@ -148,7 +152,8 @@ values in column X.
 <table border=0 cellpadding=10>
 <tr><td valign="top" align="right" width="120"><a name="avg"></a>
 avg(<i>X</i>)</td><td valign="top">
-  The avg() function
+ avg()函数返回一组非NULL的<i>X</i>的平均值。Sting和BLOB这两个不是数字的值会当做0处理。 只要输入包含至少一个非NULL的值，avg()返回的结果都会是一个浮点（float）数值。如果输入值全为NULL值，那么avg()会返回一个NULL。
+<br />The avg() function
   returns the average value of all non-NULL <i>X</i> within a
   group.  String and BLOB values that do not look like numbers are
   interpreted as 0.
@@ -158,13 +163,15 @@ avg(<i>X</i>)</td><td valign="top">
   there are no non-NULL inputs.  
 </td></tr><tr><td valign="top" align="right" width="120"><a name="count"></a>
 count(<i>X</i>)<br />count(*)</td><td valign="top">
-  The count(X) function returns
+  count(X)函数返回一组<i>X</i>中非NULL的值的个数。count(*)函数（不传入参数）返回一组结果的行数。
+<br />The count(X) function returns
   a count of the number of times
   that <i>X</i> is not NULL in a group.  The count(*) function
   (with no arguments) returns the total number of rows in the group.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="groupconcat"></a>
 group_concat(<i>X</i>)<br />group_concat(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The group_concat() function returns
+  group_concat()函数返回一个所有非NULL<i>X</i>连接在一起组成的字符串。如果传入了参数<i>Y</i>，那么会在字符串中使用<i>Y</i>参数分隔每一个<i>X</i>元素。如果忽略参数<i>Y</i>，那么会使用逗号(",")作为分隔符。连接的元素顺序是任意的。
+<br />The group_concat() function returns
   a string which is the concatenation of
   all non-NULL values of <i>X</i>.  If parameter <i>Y</i> is present then
   it is used as the separator
@@ -173,14 +180,16 @@ group_concat(<i>X</i>)<br />group_concat(<i>X</i>,<i>Y</i>)</td><td valign="top"
   arbitrary.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="maxggunc"></a>
 max(<i>X</i>)</td><td valign="top">
-  The max() aggregate function
+  max()聚合函数会返回一组值中的最大值。最大值是指在这一列中坐ORDER BY后最末尾的值。如果传入数据没有非NULL的值，则会返回一个NULL。
+<br />The max() aggregate function
   returns the maximum value of all values in the group.
   The maximum value is the value that would be returned last in an
   ORDER BY on the same column.  Aggregate max() returns NULL 
   if and only if there are no non-NULL values in the group.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="minggunc"></a>
 min(<i>X</i>)</td><td valign="top">
-  The min() aggregate function
+  min()聚合函数会返回一组值中的最小的非NULL值。最小值是指在这一列中坐ORDER BY后第一个非NULL的值。如果传入数据没有非NULL的值，则会返回一个NULL。
+<br />The min() aggregate function
   returns the minimum non-NULL value of all values in the group.
   The minimum value is the first non-NULL value that would appear
   in an ORDER BY of the column.
@@ -188,7 +197,8 @@ min(<i>X</i>)</td><td valign="top">
   values in the group.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="sumunc"></a>
 sum(<i>X</i>)<br />total(<i>X</i>)</td><td valign="top">
-  The sum() and total() aggregate functions
+  sum()和total()聚合函数返回一组数据中所有非NULL元素的和值。如果输入全是NULL数据，那么sun()会返回NULL，而total()会返回0.0。通常没有输入数据时sum返回NULL是无益的，但是因为SQL标准是这么要求的，并且大部分其它的SQL数据库引擎也是这么实现的，所以SQLite为了兼容性也这么实现了。则针对这个SQL语言的设计问题，提供了一个非标准的函数total()以供使用。
+<br />The sum() and total() aggregate functions
   return sum of all non-NULL values in the group.
   If there are no non-NULL input rows then sum() returns
   NULL but total() returns 0.0.
@@ -199,13 +209,15 @@ sum(<i>X</i>)<br />total(<i>X</i>)</td><td valign="top">
   is provided as a convenient way to work around this design problem
   in the SQL language.</p>
 
-  <p>The result of total() is always a floating point value.
+  <p>total()的总会返回一个浮点数（float）结果。而只要输入的非NULL数据都是整数（integer）的话，sum()会返回一个整数（integer）。如果输入数据含有浮点数，那么sum()会返回一个接近和值的浮点数。
+<br />The result of total() is always a floating point value.
   The result of sum() is an integer value if all non-NULL inputs are integers.
   If any input to sum() is neither an integer or a NULL
   then sum() returns a floating point value
   which might be an approximation to the true sum.</p>
 
-  <p>Sum() will throw an "integer overflow" exception if all inputs
+  <p>如果输入内容只包含整数和NULL，并且在计算过程中发生了整数溢出，那么sum()会返回一个 "integer overflow" 异常。total()则从来不会返回 "integer overflow" 。
+<br />Sum() will throw an "integer overflow" exception if all inputs
   are integers or NULL
   and an integer overflow occurs at any point during the computation.
   Total() never throws an integer overflow.
