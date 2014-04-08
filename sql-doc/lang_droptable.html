@@ -108,10 +108,10 @@ a:visited { color: #734559 }
     var b = document.getElementById(btn);
     if( x.style.display!='none' ){
       x.style.display = 'none';
-      b.innerHTML='show';
+      b.innerHTML='显示';
     }else{
       x.style.display = '';
-      b.innerHTML='hide';
+      b.innerHTML='隐藏';
     }
     return false;
   }
@@ -129,23 +129,26 @@ a:visited { color: #734559 }
 <div class=startsearch></div>
   
 <h1 align="center">SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>DROP TABLE</h2><p><b><a href="syntaxdiagrams.html#drop-table-stmt">drop-table-stmt:</a></b>
-<button id='x1065' onclick='hideorshow("x1065","x1066")'>hide</button></p>
+<button id='x1065' onclick='hideorshow("x1065","x1066")'>隐藏</button></p>
  <blockquote id='x1066'>
  <img alt="syntax diagram drop-table-stmt" src="images/syntax/drop-table-stmt.gif" />
 </blockquote>
 
 
-<p>The DROP TABLE statement removes a table added with the
+<p>DROP TABLE语句移除一个由<a href="lang_createtable.html">CREATE TABLE</a>语句创建的表。需要指定表名。被卸下的表会完全从数据库和磁盘上删除，无法恢复。该表相关的索引和触发器也都会被删除。
+<br />The DROP TABLE statement removes a table added with the
 <a href="lang_createtable.html">CREATE TABLE</a> statement.  The name specified is the
 table name.  The dropped table is completely removed from the database 
 schema and the disk file.  The table can not be recovered.  
 All indices and triggers
 associated with the table are also deleted.</p>
 
-<p>The optional IF EXISTS clause suppresses the error that would normally
+<p>选项IF EXISTS 子句防止当表不存在时引发错误。
+<br />The optional IF EXISTS clause suppresses the error that would normally
 result if the table does not exist.</p>
 
-<p>If <a href="foreignkeys.html">foreign key constraints</a> are enabled, a DROP TABLE command performs an
+<p>如果设置了<a href="foreignkeys.html">外键约束</a>，DROP TABLE命令在从数据库上移除表之前，会隐式执行<a href="lang_delete.html">DELETE FROM &lt;tbl&gt;</a>命令。在隐式执行DELETE FROM &lt;tbl&gt;之前会删除所有附加的触发器，所以不会触发任何触发器。相比之下，隐式DELETE FROM &lt;tbl&gt;会触发所有配置的<a href="foreignkeys.html#fk_actions">外键动作</a>。如果隐式DELETE FROM &lt;tbl&gt; 作为DROP TABLE命令的一部分执行违反了任何直接的外键冲突，将会返回一个错误并且表不会被删除。如果隐式DELETE FROM &lt;tbl&gt; 违反任何延迟的外键约束，并且在事务提交时违规依然存在，那么在提交事务的时候会返回一个错误。
+<br />If <a href="foreignkeys.html">foreign key constraints</a> are enabled, a DROP TABLE command performs an
 implicit <a href="lang_delete.html">DELETE FROM &lt;tbl&gt;</a> command before removing the
 table from the database schema. Any triggers attached to the table are
 dropped from the database schema before the implicit DELETE FROM &lt;tbl&gt; 
