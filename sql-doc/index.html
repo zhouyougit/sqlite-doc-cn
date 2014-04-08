@@ -88,7 +88,7 @@ a:visited { color: #734559 }
     <a href="support.html">支持</a>
   </div>
 <script>
-  gMsg = "Search SQLite Docs..."
+  gMsg = "搜索SQLite文档..."
   function entersearch() {
     var q = document.getElementById("q");
     if( q.value == gMsg ) { q.value = "" }
@@ -108,10 +108,10 @@ a:visited { color: #734559 }
     var b = document.getElementById(btn);
     if( x.style.display!='none' ){
       x.style.display = 'none';
-      b.innerHTML='show';
+      b.innerHTML='显示';
     }else{
       x.style.display = '';
-      b.innerHTML='hide';
+      b.innerHTML='隐藏';
     }
     return false;
   }
@@ -120,7 +120,7 @@ a:visited { color: #734559 }
     <div style="padding:0 1em 0px 0;white-space:nowrap">
     <form name=f method="GET" action="http://www.sqlite.org/search">
       <input id=q name=q type=text
-       onfocus="entersearch()" onblur="leavesearch()" style="width:24ex;padding:1px 1ex; border:solid white 1px; font-size:0.9em ; font-style:italic;color:#044a64;" value="Search SQLite Docs...">
+       onfocus="entersearch()" onblur="leavesearch()" style="width:24ex;padding:1px 1ex; border:solid white 1px; font-size:0.9em ; font-style:italic;color:#044a64;" value="搜索SQLite文档...">
       <input type=submit value="Go" style="border:solid white 1px;background-color:#044a64;color:white;font-size:0.9em;padding:0 1ex">
     </form>
     </div>
