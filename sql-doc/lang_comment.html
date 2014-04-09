@@ -135,23 +135,27 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>Comments are not SQL commands, but can occur within the text of
+<p>注释不是SQL命令，但是会跟随SQL查询文本一起传递到<a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>等相关接口中。注释会被解析器当做空白处理，注释可以添加在任何的空白处，包括跨行的表达式中间。
+<br />Comments are not SQL commands, but can occur within the text of
 SQL queries passed to <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a> and related interfaces.
 Comments are treated as whitespace by the parser.
 Comments can begin anywhere whitespace 
 can be found, including inside expressions that span multiple lines.
 </p>
 
-<p>SQL comments begin with two consecutive "-" characters (ASCII 0x2d)
+<p>SQL注释SQL 以两个连续的"-" 字符(ASCII 0x2d)开始，一直延续到下一个换行符 (ASCII 0x0a)（包括换行符）或者到输入结束，以二者先出现的为准。
+<br />comments begin with two consecutive "-" characters (ASCII 0x2d)
 and extend up to and including the next newline character (ASCII 0x0a)
 or until the end of input, whichever comes first.</p>
 
-<p>C-style comments begin
+<p>C风格的注释以"/*"开始，一直延续到下一个 "*/" （包含 "*/" ）或者到输入结束，以二者先出现的为准。C风格注释可以跨越多行。
+<br />C-style comments begin
 with "/*" and extend up to and including the next "*/" character pair
 or until the end of input, whichever comes first.  C-style comments
 can span multiple lines. </p>
 
-<p>Comments can appear anywhere whitespace can occur,
+<p>注释可以添加在任何空白的地方，包括表达式中间和其他SQL注释中间。注释是不支持嵌套的。
+<br />Comments can appear anywhere whitespace can occur,
 including inside expressions and in the middle of other SQL statements.
 Comments do not nest.
 </p>

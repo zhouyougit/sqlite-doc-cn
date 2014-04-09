@@ -215,9 +215,11 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>The INSERT statement comes in three basic forms.  
+<p>INSERT语句有三种基本结构。
+<br />The INSERT statement comes in three basic forms.  
 <ul>
-<li><p>The first form (with the "VALUES" keyword) creates one or more
+<li><p>第一种结构（使用“VALUES”关键词）是在一个已有的表上创建一行或多行数据。如果不指定列列表，那么每行需要插入的值的个数必须和表中列的数量相同。这种情况下，最终VALUES节点中最左边的值会插入到每一个新行的最左边列中，后续的每个子句都同理。如果指定了列列表，那么VALUES节点中字段的个数应当与指定的列数相同。每个指定名字的列都会填入VALUES语句中相对应的值，没有出现在列列表中的列会被填入默认值（CREATE TABLE语句中指定的），如果没有指定默认值则填入NULL。
+<br />The first form (with the "VALUES" keyword) creates one or more
 new rows in
 an existing table. If no column-list is specified then the number
 of values inserted into each row
@@ -233,7 +235,8 @@ columns that do not appear in the column list are populated with the default
 column value (specified as part of the CREATE TABLE statement), or with NULL if
 no default value is specified.
 
-<li><p>The second form of the INSERT statement contains a SELECT statement
+<li><p>第二种INSERT语句结构中使用SELECT语句替代了VALUES子句。SELECT语句计算返回的每一行数据都作为一个新行插入到表中。如果制定了列列表，那么SELECT返回的的结果集的列数必须与列表中的列数相同。否则，如果没有指定列列表，SELECT返回的结果集的列数必须与表中的列数相同。在INSERT语句中可以使用任何类型的SELECT语句，包括<a href="lang_select.html#compound">复合SELECT</a>和包含了<a href="lang_select.html#orderby">ORDER BY</a> 与 <a href="lang_select.html#limitoffset">LIMIT</a>子句的SELECT语句。
+<br />The second form of the INSERT statement contains a SELECT statement
 instead of a VALUES clause. A new entry is inserted into the table for each
 row of data returned by executing the SELECT statement. If a column-list is
 specified, the number of columns in the result of the SELECT must be the same
@@ -243,14 +246,15 @@ as the number of columns in the table. Any SELECT statement, including
 <a href="lang_select.html#compound">compound SELECTs</a> and SELECT statements with <a href="lang_select.html#orderby">ORDER BY</a> and/or <a href="lang_select.html#limitoffset">LIMIT</a> clauses, 
 may be used in an INSERT statement of this form.
 
-<li><p>The third form of an INSERT statement is with DEFAULT VALUES.
+<li><p>第三种INSERT语句结构是使用DEFAULT VALUES结构。INSERT ... DEFAULT VALUES语句会插入一行记录到指定的表中。新行中的每一列都填入默认值，如果没有CREATE TABLE语句中的列定义没有指定默认值则填入NULL。
+<br />The third form of an INSERT statement is with DEFAULT VALUES.
 The INSERT ... DEFAULT VALUES statement inserts a single new row into the
 named table. Each column of the new row is populated with its default value,
 or with a NULL if no default value is specified as part of the column
 definition in the CREATE TABLE statement.
 
 </ul>
-
+冲突选项可以从给定的标准约束冲突解决算法中选择一个在INSERT命令中使用。详细信息参见<a href="lang_conflict.html">ON CONFLICT</a>。为了兼容MySQL，解析器允许使用一个单独的关键字<a href="lang_replace.html">REPLACE</a> 作为"INSERT OR REPLACE"的别名。
 <p>The optional conflict-clause allows the specification of an alternative
 constraint conflict resolution algorithm to use during this one INSERT command.
 See the section titled
@@ -259,7 +263,8 @@ For compatibility with MySQL, the parser allows the use of the
 single keyword <a href="lang_replace.html">REPLACE</a> as an 
 alias for "INSERT OR REPLACE".
 
-<p>The optional "<i>database-name</i><b>.</b>" prefix on the <i>table-name</i>
+<p>可选的"<i>database-name</i><b>.</b>" 前缀只有顶级的INSERT语句支持。这个表名在<a href="lang_createtrigger.html">CREATE TRIGGER</a>语句中的INSERT语句中是不合规的。同样的， "DEFAULT VALUES"结构也只在顶级INSERT语句中支持，触发器中的INSERT语句是不支持的。
+<br />The optional "<i>database-name</i><b>.</b>" prefix on the <i>table-name</i>
 is support for top-level INSERT statements only.  The table name must be
 unqualified for INSERT statements that occur within <a href="lang_createtrigger.html">CREATE TRIGGER</a> statements.
 Similarly, the "DEFAULT VALUES" form of the INSERT statement is supported for
