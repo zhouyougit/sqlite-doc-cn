@@ -128,35 +128,42 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<h1 align="center">SQLite里的SQL<br/>SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>SQLite Keywords</h2></DIV>
+<h1 align="center">SQLite里的SQL<br/>SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>SQLite关键词
+<br />SQLite Keywords</h2></DIV>
 
-<p>The SQL standard specifies a huge number of keywords which may not
+<p>SQL标准规范中规定了大量的关键词，这些关键词是不能用于表、索引、列、数据库、自定义函数、排序器、虚表以及其它命名对象的名字的。这个关键词列表非常长，以至于很少有人能全部记住。在多数SQL代码中，最安全的方式就是在自定义对象名字中不要使用任何英语单词。
+<br />The SQL standard specifies a huge number of keywords which may not
 be used as the names of tables, indices, columns, databases, user-defined
 functions, collations, virtual table modules, or any other named object.
 The list of keywords is so long that few people can remember them all.
 For most SQL code, your safest bet is to never use any English language
 word as the name of a user-defined object.</p>
 
-<p>If you want to use a keyword as a name, you need to quote it.  There
+<p>如果你想在名字中使用关键词，需要使用引用方式。在SQLite中有四种引用关键词的方式：
+<br />If you want to use a keyword as a name, you need to quote it.  There
 are four ways of quoting keywords in SQLite:</p>
 
 <p>
 <blockquote>
 <table>
 <tr>	<td valign="top"><b>'keyword'</b></td><td width="20"></td>
-	<td>A keyword in single quotes is a string literal.</td></tr>
+	<td>用单引号引用表示这一个字符串。
+<br />A keyword in single quotes is a string literal.</td></tr>
 
 <tr>	<td valign="top"><b>"keyword"</b></td><td></td>
-	<td>A keyword in double-quotes is an identifier.</td></tr>
+	<td>用双引号引用表示这是一个标示符。
+<br />A keyword in double-quotes is an identifier.</td></tr>
 
 <tr>	<td valign="top"><b>&#91;keyword&#93;</b></td><td></td>
-	<td>A keyword enclosed in square brackets is 
+	<td>用方括号引用表示这是一个标示符。这不是SQL标准规范，这种引用方式使用于MS Access和SQL Server，SQLite为了兼容性支持这种方式。
+<br />A keyword enclosed in square brackets is 
         an identifier.  This is not standard SQL.  This quoting mechanism
         is used by MS Access and SQL Server and is included in SQLite for
         compatibility.</td></tr>
 
 <tr>	<td valign="top"><b>&#96;keyword&#96;</b></td><td></td>
-	<td>A keyword enclosed in grave accents (ASCII code 96) is 
+	<td>用重音符 (ASCII 码 96)引用表示这是一个标示符。这不是SQL标准规范，这种引用方式使用于MySQL，SQLite为了兼容性支持这种方式。
+<br />A keyword enclosed in grave accents (ASCII code 96) is 
         an identifier.  This is not standard SQL.  This quoting mechanism
         is used by MySQL and is included in SQLite for
         compatibility.</td></tr>
@@ -164,38 +171,44 @@ are four ways of quoting keywords in SQLite:</p>
 </blockquote>
 </p>
 
-<p>For resilience when confronted with historical SQL statements, SQLite
+<p>为了保证面对历史SQL语句的适应性，SQLite通常倾向于下面的引用规则：
+<br />For resilience when confronted with historical SQL statements, SQLite
 will sometimes bend the quoting rules above:</p>
 
 <ul>
-<li><p>If a keyword in single
+<li><p>如果单引号引用的关键词（例如：<b>'key'</b> 或 <b>'glob'</b>）用在了只接受标示符而不接受字符串的上下文环境时，会被当做一个标示符，而不是字符串。
+<br />If a keyword in single
 quotes (ex: <b>'key'</b> or <b>'glob'</b>) is used in a context where
 an identifier is allowed but where a string literal is not allowed, then
 the token is understood to be an identifier instead of a string literal.
 </p></li>
 
-<li><p>If a keyword in double
+<li><p>如果双引号引用的关键词（例如：<b>"key"</b> 或 <b>"glob"</b>）用在了只接受字符串而不接受标示符的上下文环境时，会被当做一个字符串，而不是标示符。
+<br />If a keyword in double
 quotes (ex: <b>"key"</b> or <b>"glob"</b>) is used in a context where
 it cannot be resolved to an identifier but where a string literal
 is allowed, then the token is understood to be a string literal instead
 of an identifier.</p></li>
 </ul>
 
-<p>Programmers are cautioned not to use the two exceptions described in
+<p>程序员们应当尽量避免使用上面介绍的两个特例。提及这两个特例仅仅是为了能正确的运行过时的和不规范的SQL语句。未来的SQLite版本可能会在执行包含上面特例在内的一些畸形的语句时抛出错误，而不再执行。
+<br />Programmers are cautioned not to use the two exceptions described in
 the previous bullets.  We emphasize that they exist only so that old
 and ill-formed SQL statements will run correctly.  Future versions of
 SQLite might raise errors instead of accepting the malformed
 statements covered by the exceptions above.</p>
 
 <p>
-SQLite adds new keywords from time to time when it takes on new features.
+SQLite会时不时的因增加新特性而添加新的关键词，所以为了保证你的代码不会被未来的增强特性破坏，你应当习惯性的对英语单词构成的标示符使用引用方式，即使目前不是必须的。
+<br />SQLite adds new keywords from time to time when it takes on new features.
 So to prevent your code from being broken by future enhancements, you should
 normally quote any identifier that is an English language word, even if
 you do not have to.
 </p>
 
 <p>
-The list below shows all possible keywords used by any build of
+下面的列表罗列了SQLite在各种<a href="compile.html">编译期参数</a>构建下的所有可能的关键词。大多数的配置都会用到下面多数甚至全部的关键词，不过当一些SQL语言特性被禁用时一些关键词会被忽略。在SQLite中，无论什么编译选项下，标示符只要不是下面罗列的124个词之一，就不会被SQL解析器当做关键词。
+<br />The list below shows all possible keywords used by any build of
 SQLite regardless of <a href="compile.html">compile-time options</a>.  
 Most reasonable configurations use most or all of these keywords,
 but some keywords may be omitted when SQL language features are
