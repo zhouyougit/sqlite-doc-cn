@@ -128,7 +128,8 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<h1 align="center">SQLite里的SQL<br/>SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>UPDATE</h2><p><b><a href="syntaxdiagrams.html#update-stmt">update-stmt:</a></b>
+<h1 align="center">SQLite里的SQL<br/>SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>更新
+<br />UPDATE</h2><p><b><a href="syntaxdiagrams.html#update-stmt">update-stmt:</a></b>
 <button id='x1377' onclick='hideorshow("x1377","x1378")'>隐藏</button></p>
  <blockquote id='x1378'>
  <img alt="syntax diagram update-stmt" src="images/syntax/update-stmt.gif" />
@@ -265,18 +266,21 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>An UPDATE statement is used to modify a subset of the values stored in 
+<p>UPDATE语句是用来修改<i>qualified-table-name</i>指定的数据库表中若干行中存储的一组数据子集的。
+<br />An UPDATE statement is used to modify a subset of the values stored in 
 zero or more rows of the database table identified by the 
 <i>qualified-table-name</i> specified as part of the UPDATE statement.
 
-<p>If the UPDATE statement does not have a WHERE clause, all rows in the
+<p>如果UPDATE语句不带WHERE子句，那么表中的所有行都会被这条UPDATE修改。否则，UPDATE只有WHERE子句表达式计算结果返回<a href="lang_expr.html#booleanexpr">布尔型true</a>的行才会受到影响。如果表中的所有行经过WHERE子句计算返回的都不是true，那么这就意味着UPDATE影响了零行。
+<br />If the UPDATE statement does not have a WHERE clause, all rows in the
 table are modified by the UPDATE. Otherwise, the UPDATE affects only those
 rows for which the result of evaluating the WHERE clause expression as a 
 <a href="lang_expr.html#booleanexpr">boolean expression is true</a>. It is not an error if the
 WHERE clause does not evaluate to true for any row in the table - this just
 means that the UPDATE statement affects zero rows.
 
-<p>The modifications made to each row affected by an UPDATE statement are
+<p>UPDATE对每行做什么修改是由跟在SET关键词后面的赋值描述列表决定的。赋值描述中等号左边是需要修改的列的名字，右边是一个表达式。在每个受影响的行中，指定的列被赋值为对应的表达式的计算结果。如果一个列名在赋值描述列表中出现了多次，那么除了最右边的以外都会被忽略。没有出现在赋值描述列表中的列不会被修改。赋值表达式中可能会引用这一行记录中其它要被修改的列，这种情况下，所有的复制表达式会在进行赋值之前全部计算完。
+<br />The modifications made to each row affected by an UPDATE statement are
 determined by the list of assignments following the SET keyword. Each
 assignment specifies a column name to the left of the equals sign and a
 scalar expression to the right. For each affected row, the named columns
@@ -287,17 +291,21 @@ that do not appear in the list of assignments are left unmodified. The scalar
 expressions may refer to columns of the row being updated. In this case all
 scalar expressions are evaluated before any assignments are made.
 
-<p>The optional conflict-clause allows the user to nominate a specific
+<p>冲突选项允许用户为本条UPDATE命令指定一个特殊的约束冲突解决算法。详细信息参见<a href="lang_conflict.html">ON CONFLICT</a>。
+<br />The optional conflict-clause allows the user to nominate a specific
 constraint conflict resolution algorithm to use during this one UPDATE command.
 Refer to the section entitled <a href="lang_conflict.html">ON CONFLICT</a> for additional information.
 
-<h3>Restrictions on UPDATE Statements Within CREATE TRIGGER</h3>
+<h3>CREATE TRIGGER中UPDATE语句的限制
+<br />Restrictions on UPDATE Statements Within CREATE TRIGGER</h3>
 
-<p>The following additional syntax restrictions apply to UPDATE statements that
+<p>在<a href="lang_createtrigger.html">CREATE TRIGGER</a>语句内使用UPDATE会有下面这些附加的语法限制：
+The following additional syntax restrictions apply to UPDATE statements that
 occur within the body of a <a href="lang_createtrigger.html">CREATE TRIGGER</a> statement.  
 
 <ul>
-  <li><p>The <i>table-name</i> specified as part of an UPDATE statement within
+  <li><p>在一个触发器内的UPDATE语句是不允许限定<i>table-name</i>的。换句话说，触发器中的UPDATE不允许使用<i>database-name</i><b>.</b>表名前缀。触发器程序只允许更新同一个库上的表，除非触发器是在一个TEMP数据库上。触发器依附的表位于TEMP数据库里，那么搜索未加限定的表名逻辑与顶级UPDATE语句一致（首先搜索TEMP数据库，然后是主数据库，最后是其它的附加数据库）。
+<br />The <i>table-name</i> specified as part of an UPDATE statement within
       a trigger body must be unqualified. In other words, the
       <i>database-name</i><b>.</b> prefix on the table name of the UPDATE is
       not allowed within triggers. Unless the table to which the trigger
@@ -309,16 +317,20 @@ occur within the body of a <a href="lang_createtrigger.html">CREATE TRIGGER</a> 
       then the main database, then any other databases in the order they were
       attached).
 
-  <li><p>The INDEXED BY and NOT INDEXED clauses are not allowed on UPDATE
+  <li><p>在触发器程序中的UPDATE语句不能使用INDEXED BY 和 NOT INDEXED。
+<br />The INDEXED BY and NOT INDEXED clauses are not allowed on UPDATE
       statements within triggers.</p>
 
-  <li><p>The LIMIT and ORDER BY clauses for UPDATE are unsupported within
+  <li><p>无论使用什么编译器参数，触发器程序中的UPDATE语句都是不支持LIMIT 和 ORDER BY子句的。
+<br />The LIMIT and ORDER BY clauses for UPDATE are unsupported within
       triggers, regardless of the compilation options used to build SQLite.
 </ul>
 
-<h3>Optional LIMIT and ORDER BY Clauses</h3>
+<h3>LIMIT 和 ORDER BY 子句选项
+<br />Optional LIMIT and ORDER BY Clauses</h3>
 
-<p>If SQLite is built with the <a href="compile.html#enable_update_delete_limit">SQLITE_ENABLE_UPDATE_DELETE_LIMIT</a>
+<p>如果在编译SQLite时添加了<a href="compile.html#enable_update_delete_limit">SQLITE_ENABLE_UPDATE_DELETE_LIMIT</a>选项，那么UPDATE语句就可以支持如下的ORDER BY和LIMIT子句扩展选项。
+<br />If SQLite is built with the <a href="compile.html#enable_update_delete_limit">SQLITE_ENABLE_UPDATE_DELETE_LIMIT</a>
 compile-time option then the syntax of the UPDATE statement is extended
 with optional ORDER BY and LIMIT clauses as follows:</p>
 
@@ -327,11 +339,13 @@ with optional ORDER BY and LIMIT clauses as follows:</p>
  </blockquote>
 
 
-<p>If an UPDATE statement has a LIMIT clause, the maximum number of rows that
+<p>如果UPDATE语句包含一个LIMIT子句，那么更新的最大行数会被限定为跟在LIMIT后的表达式的计算结果，表达式的结果会被转换为整数。如果结果为负值，那么就认为是“没有限制”。
+<br />If an UPDATE statement has a LIMIT clause, the maximum number of rows that
 will be updated is found by evaluating the accompanying expression and casting
 it to an integer value. A negative value is interpreted as "no limit".
 
-<p>If the LIMIT expression evaluates to non-negative value <i>N</i> and the
+<p>如果LIMIT表达式的计算结果为非负数<i>N</i>，并且UPDATE语句包含了ORDER BY 子句，那么会首先将所有满足更新条件的行（不包含LIMIT限制）按照ORDER BY子句进行排序，然后更新前<i>N</i>行记录。如果UPDATE语句还包含OFFSET子句，那么跟随其后的表达式会同样被计算并转换为整数值，如果OFFSET表达式计算结果为非负数<i>M</i>，那么更新时最前面的<i>M</i>条记录会被忽略，然后更新其后的<i>N</i>行记录。
+<br />If the LIMIT expression evaluates to non-negative value <i>N</i> and the
 UPDATE statement has an ORDER BY clause, then all rows that would be updated in
 the absence of the LIMIT clause are sorted according to the ORDER BY and the
 first <i>N</i> updated. If the UPDATE statement also has an OFFSET clause,
@@ -339,12 +353,14 @@ then it is similarly evaluated and cast to an integer value. If the OFFSET
 expression evaluates to a non-negative value <i>M</i>, then the first <i>M</i>
 rows are skipped and the following <i>N</i> rows updated instead.
 
-<p>If the UPDATE statement has no ORDER BY clause, then all rows that
+<p>如果UPDATE语句中没有ORDER BY子句，那么所有满足更新条件的行（不包含LIMIT限制）会按照随机顺序排列到一起，然后依照LIMIT和OFFSET子句来决定实际更新哪些记录。
+<br />If the UPDATE statement has no ORDER BY clause, then all rows that
 would be updated in the absence of the LIMIT clause are assembled in an
 arbitrary order before applying the LIMIT and OFFSET clauses to determine 
 which are actually updated.
 
-<p>The ORDER BY clause on an UPDATE statement is used only to determine which
+<p>UPDATE中的ORDER BY子句只是用来决定哪些行记录符合LIMIT，而满足条件的行的实际更新顺序则不受ORDER BY的影响，而是随机顺序完成更新。
+<br />The ORDER BY clause on an UPDATE statement is used only to determine which
 rows fall within the LIMIT. The order in which rows are modified is arbitrary
 and is not influenced by the ORDER BY clause.
 
