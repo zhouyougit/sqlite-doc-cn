@@ -128,9 +128,12 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<h1 align="center">SQLite里的SQL<br/>SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>Core Functions</h2>
+<h1 align="center">SQLite里的SQL<br/>SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>核心函数
+<br />Core Functions</h2>
 
-<p>The core functions shown below are available by default. 
+<p>下面罗列的核心函数默认都是可用的。<a href="lang_datefunc.html">日期&时间函数</a> 和
+<a href="lang_aggfunc.html">聚合函数</a>被分开介绍了。一个应用可以使用<a href="c3ref/create_function.html">sqlite3_create_function()</a>API添加一个C实现的自定义扩展函数到数据库引擎中。
+<br />The core functions shown below are available by default. 
 <a href="lang_datefunc.html">Date &amp; Time functions</a> and
 <a href="lang_aggfunc.html">aggregate functions</a> are documented separately.  An
 application may define additional
@@ -140,7 +143,8 @@ the <a href="c3ref/create_function.html">sqlite3_create_function()</a> API.</p>
 <table border=0 cellpadding=10>
 <tr><td valign="top" align="right" width="120"><a name="abs"></a>
 abs(<i>X</i>)</td><td valign="top">
-  The abs(X) function returns the absolute value of the numeric
+  abs(X)函数返回数字参数X的绝对值。如果X是NULL则Abs(X)返回NULL。如果X是一个字符串或者BLOB，并且无法被转换为数字值则Abs(X)返回0.0。如果X是整数-9223372036854775808，由于没有对等的64位正整数，所以abs(X)会抛出一个整数溢出错误。
+<br />The abs(X) function returns the absolute value of the numeric
   argument X.  Abs(X) returns NULL if X is NULL. 
   Abs(X) return 0.0 if X is a string or blob
   that cannot be converted to a numeric value.  If X is the 
@@ -148,23 +152,27 @@ abs(<i>X</i>)</td><td valign="top">
   error since there is no equivalent positive 64-bit two complement value.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="changes"></a>
 changes()</td><td valign="top">
-  The changes() function returns the number of database rows that were changed
+  changes()函数返回最近一次INSERT、DELETE或UPDATE语句修改或删除的数据库记录行数，不包含低等触发器中的语句。changes() SQL函数是对<a href="c3ref/changes.html">sqlite3_changes()</a> C/C++函数的封装，因此计算修改的规则与其一样。
+<br />The changes() function returns the number of database rows that were changed
   or inserted or deleted by the most recently completed INSERT, DELETE,
   or UPDATE statement, exclusive of statements in lower-level triggers.
   The changes() SQL function is a wrapper around the <a href="c3ref/changes.html">sqlite3_changes()</a>
   C/C++ function and hence follows the same rules for counting changes.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="char"></a>
 char(<i>X1</i>,<i>X2</i>,...,<i>XN</i>)</td><td valign="top">
-  The char(X1,X2,...,XN) function returns a string composed of characters having the
+  char(X1,X2,...,XN)函数返回X1到XN的unicode码所对应的字符。
+<br />The char(X1,X2,...,XN) function returns a string composed of characters having the
    unicode code point values of integers X1 through XN, respectively.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="coalesce"></a>
 coalesce(<i>X</i>,<i>Y</i>,...)</td><td valign="top">
-  The coalesce() function returns a copy of its first non-NULL argument, or
+  coalesce()返回参数中第一个非NULL参数的拷贝。如果所有参数都是NULL则返回NULL。coalesce()函数必须传入至少两个参数。
+<br />The coalesce() function returns a copy of its first non-NULL argument, or
   NULL if all arguments are NULL.  Coalesce() must have at least 
   2 arguments.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="glob"></a>
 glob(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The glob(X,Y) function is equivalent to the
+  glob(X,Y)函数等同于"<b>Y GLOB X</b>"表达式，注意，参数X和Y在glob()函数中与使用<a href="lang_expr.html#glob">GLOB</a>操作符顺序是相反的。如果使用<a href="c3ref/create_function.html">sqlite3_create_function()</a>接口重载了glob(X,Y) 函数的实现，那么<a href="lang_expr.html#glob">GLOB</a>操作符也会执行新的实现。
+<br />The glob(X,Y) function is equivalent to the
   expression "<b>Y GLOB X</b>".
   Note that the X and Y arguments are reversed in the glob() function
   relative to the infix <a href="lang_expr.html#glob">GLOB</a> operator.
@@ -173,12 +181,14 @@ glob(<i>X</i>,<i>Y</i>)</td><td valign="top">
   the <a href="lang_expr.html#glob">GLOB</a> operator will invoke the alternative implementation.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="ifnull"></a>
 ifnull(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The ifnull() function returns a copy of its first non-NULL argument, or
+  ifnull()返回参数中第一个非NULL的参数拷贝，如果参数都是NULL，则返回NULL。ifnull()函数必须有两个参数。ifnull()函数等价于两个参数的<a href="lang_corefunc.html#coalesce">coalesce()</a>函数。
+<br />The ifnull() function returns a copy of its first non-NULL argument, or
   NULL if both arguments are NULL.  Ifnull() must have exactly 2 arguments.
   The ifnull() function is equivalent to <a href="lang_corefunc.html#coalesce">coalesce()</a> with two arguments.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="instr"></a>
 instr(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The instr(X,Y) function finds the first occurrence of string Y within 
+  instr(X,Y)函数会在字符串X中寻找第一次出现的字符串Y，并且返回Y字符串之前的字符数量加1，否则，如果X不包含Y则返回0.如果X和Y都是BLOB，instr(X,Y)返回X中第一次出现的Y之前的字节数加1，否则，如果X中不包含Y则返回0.传入的参数X和Y制药不是BLOB和NULL就会被当做字符串。如果instr(X,Y)中X或Y是NULL则返回NULL。
+<br />The instr(X,Y) function finds the first occurrence of string Y within 
   string X and returns the number of prior characters plus 1, or 0 if
   Y is nowhere found within X.
   Or, if X and Y are both BLOBs, then instr(X,Y) returns one
@@ -189,19 +199,22 @@ instr(<i>X</i>,<i>Y</i>)</td><td valign="top">
   If either X or Y are NULL in instr(X,Y) then the result is NULL.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="hex"></a>
 hex(<i>X</i>)</td><td valign="top">
-  The hex() function interprets its argument as a BLOB and returns
+  hex()函数会将参数转换为BLOB并且将这个BLOB的内容渲染为大写的十六进制字符串返回。
+<br />The hex() function interprets its argument as a BLOB and returns
   a string which is the upper-case hexadecimal rendering of the content of
   that blob.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="last_insert_rowid"></a>
 last_insert_rowid()</td><td valign="top">
-  The last_insert_rowid() function returns the <a href="lang_createtable.html#rowid">ROWID</a>
+  last_insert_rowid()函数返回执行last_insert_rowid()的数据库连接上最后一次插入的行的<a href="lang_createtable.html#rowid">ROWID</a>。last_insert_rowid() SQL函数是<a href="c3ref/last_insert_rowid.html">sqlite3_last_insert_rowid()</a>C/C++函数的封装。
+<br />The last_insert_rowid() function returns the <a href="lang_createtable.html#rowid">ROWID</a>
   of the last row insert from the database connection which invoked the
   function.
   The last_insert_rowid() SQL function is a wrapper around the
   <a href="c3ref/last_insert_rowid.html">sqlite3_last_insert_rowid()</a> C/C++ interface function.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="length"></a>
 length(<i>X</i>)</td><td valign="top">
-  For a string value X, the length(X) function returns the number of 
+  对于一个字符串参数X， length(X)函数返回X中NUL字符之前的字符（不是字节）数量。由于SQLite字符串中通常不包含NUL字符，所以 length(X)函数通常返回X字符串中字符的总数。如果参数X是一个BLOB值， length(X)返回这个BLOB中的字节数量。如果X是NULL则 length(X)返回NULL。如果X是一个数字那么 length(X)返回X表示为字符串的长度。
+<br />For a string value X, the length(X) function returns the number of 
   characters (not bytes) in X prior to the first NUL character.
   Since SQLite strings do not normally contain NUL characters, the length(X)
   function will usually return the total number of characters in the string X.
@@ -211,7 +224,8 @@ length(<i>X</i>)</td><td valign="top">
   representation of X.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="like"></a>
 like(<i>X</i>,<i>Y</i>)<br />like(<i>X</i>,<i>Y</i>,<i>Z</i>)</td><td valign="top">
-  The like() function is used to implement the
+  like()函数用于实现"<b>Y LIKE X &#91;ESCAPE Z&#93;</b>"表达式。如果使用了可选的ESCAPE子句，那么like()函数则需要三个参数，否则只需要两个参数。注意，参数X和Y在like()函数中和<a href="lang_expr.html#like">LIKE</a>操作中的顺序是相反的。可以使用 <a href="c3ref/create_function.html">sqlite3_create_function()</a>接口来重载like()函数，从而修改<a href="lang_expr.html#like">LIKE</a>操作符的实现。当重载like()函数时一定要同时重载两个参数和三个参数的like()函数版本。否则在使用<a href="lang_expr.html#like">LIKE</a>操作符时，有没有ESCAPE子句会导致调用不同的代码。
+<br />The like() function is used to implement the
   "<b>Y LIKE X &#91;ESCAPE Z&#93;</b>" expression. 
   If the optional ESCAPE clause is present, then the
   like() function is invoked with three arguments.  Otherwise, it is
@@ -226,7 +240,8 @@ like(<i>X</i>,<i>Y</i>)<br />like(<i>X</i>,<i>Y</i>,<i>Z</i>)</td><td valign="to
   specified.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="likelihood"></a>
 likelihood(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The likelihood(X,Y) function returns argument X unchanged.
+  likelihood(X,Y)返回未修改的参数X。likelihood(X,Y) 中的Y参数必须是一个0.0到1.0之间的浮点数（包含0.0和1.0）。likelihood(X,Y)函数没有任何的操作，所以代码生成优化器使其在运行时不消耗CPU周期（在调用<a href="c3ref/step.html">sqlite3_step()</a>过程中）。likelihood(X,Y)函数的目的是为查询规划器提供一个参数X为true的概率的参考值，Y表示表示X为true的可能概率。<a href="lang_corefunc.html#unlikely">unlikely(X)</a>函数等价于likelihood(X,0.0625)。
+<br /> The likelihood(X,Y) function returns argument X unchanged.
   The value Y in likelihood(X,Y) must be a floating point constant
   between 0.0 and 1.0, inclusive.
   The likelihood(X) function is a no-op that the code generator
@@ -238,13 +253,15 @@ likelihood(<i>X</i>,<i>Y</i>)</td><td valign="top">
   The <a href="lang_corefunc.html#unlikely">unlikely(X)</a> function is short-hand for likelihood(X,0.0625).
 </td></tr><tr><td valign="top" align="right" width="120"><a name="load_extension"></a>
 load_extension(<i>X</i>)<br />load_extension(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The load_extension(X,Y) function loads <a href="loadext.html">SQLite extensions</a> out of the shared
+  load_extension(X,Y)函数加载一个<a href="loadext.html">SQLite 扩展</a>，X为共享库名，Y为入口点。load_extension()总是返回一个NULL结果。如果忽略Y参数，则使用默认入口点名。如果load_extension()函数加载扩展失败或者初始化错误则会抛出一个异常。
+<br />The load_extension(X,Y) function loads <a href="loadext.html">SQLite extensions</a> out of the shared
   library file named X using the entry point Y.  The result of load_extension()
   is always a NULL.  If Y is omitted then the default entry point name is used.
   The load_extension() function raises an exception if the extension fails to
   load or initialize correctly.
 
-  <p>The load_extension() function will fail if the extension attempts to 
+  <p>当扩展模块试图修改或删除一个SQL函数或排序器时load_extension()会返回失败。扩展模块可以添加新的函数或排序器，但是不能修改或删除已有的函数和排序器，这是因为这些函数和排序器会被当前运行SQL语句以外的其它地方使用。如果想加载一个可以修改或删除函数和排序器的扩展模块，请使用<a href="c3ref/load_extension.html">sqlite3_load_extension()</a> C-语言 API。
+<br />The load_extension() function will fail if the extension attempts to 
   modify or delete an SQL function or collating sequence.  The
   extension can add new functions or collating sequences, but cannot
   modify or delete existing functions or collating sequences because
@@ -253,23 +270,27 @@ load_extension(<i>X</i>)<br />load_extension(<i>X</i>,<i>Y</i>)</td><td valign="
   changes or deletes functions or collating sequences, use the
   <a href="c3ref/load_extension.html">sqlite3_load_extension()</a> C-language API.</p>
 
-  <p>For security reasons, extension loaded is turned off by default and must
+  <p>出于安全原因，默认是关闭扩展模块加载的，必须先调用<a href="c3ref/enable_load_extension.html">sqlite3_enable_load_extension()</a>来启用该方法。
+<br />For security reasons, extension loaded is turned off by default and must
   be enabled by a prior call to <a href="c3ref/enable_load_extension.html">sqlite3_enable_load_extension()</a>.</p>
 </td></tr><tr><td valign="top" align="right" width="120"><a name="lower"></a>
 lower(<i>X</i>)</td><td valign="top">
-  The lower(X) function returns a copy of string X with all ASCII characters
+  lower(X)函数返回一个X中所有ASCII字符全转换为小写字符的字符串拷贝。默认的内置lower()函数只能对ASCII字符有效。想要对其他非ASCCI字符做转换需要加载ICU扩展模块。
+<br />The lower(X) function returns a copy of string X with all ASCII characters
   converted to lower case.  The default built-in lower() function works
   for ASCII characters only.  To do case conversions on non-ASCII
   characters, load the ICU extension.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="ltrim"></a>
 ltrim(<i>X</i>)<br />ltrim(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The ltrim(X,Y) function returns a string formed by removing any and all
+  ltrim(X,Y)函数去除参数X中最左边所有出现在Y中的字符。如果忽略Y参数，ltrim(X,Y)会去除X左边的所有空格。最后返回去除后的结果。
+<br />The ltrim(X,Y) function returns a string formed by removing any and all
   characters that appear in Y from the left side of X.
   If the Y argument is omitted, ltrim(X) removes spaces from the left side
   of X.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="maxoreunc"></a>
 max(<i>X</i>,<i>Y</i>,...)</td><td valign="top">
-  The multi-argument max() function returns the argument with the 
+  不定参数函数max()返回参数中的最大值，如果所有参数都是NULL，则返回NULL。不定参数函数max()从左往右搜索所有参数，找到第一个定义了排序器的参数，然后使用这个排序器处理所有的字符串比较。如果max()中所有参数都没有定义排序函数，那么使用BINARY排序函数。注意，当<b>max()</b>包含两个以上参数时，则是一个普通函数，如果只有一个参数，那么则是一个<a href="lang_aggfunc.html#minggunc">聚合函数</a>。
+<br />The multi-argument max() function returns the argument with the 
   maximum value, or return NULL if any argument is NULL. 
   The multi-argument max() function searches its arguments from left to right
   for an argument that defines a collating function and uses that collating
@@ -280,7 +301,8 @@ max(<i>X</i>,<i>Y</i>,...)</td><td valign="top">
   <a href="lang_aggfunc.html#minggunc">aggregate function</a> if given only a single argument.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="minoreunc"></a>
 min(<i>X</i>,<i>Y</i>,...)</td><td valign="top">
-  The multi-argument min() function returns the argument with the
+  不定参数函数min()返回参数中的最小值。不定参数函数min()从左往右搜索所有参数，找到第一个定义了排序器的参数，然后使用这个排序器处理所有的字符串比较。如果max()中所有参数都没有定义排序函数，那么使用BINARY排序函数。注意，当<b>min()</b>包含两个以上参数时，则是一个普通函数，如果只有一个参数，那么则是一个<a href="lang_aggfunc.html#minggunc">聚合函数</a>。
+<br />The multi-argument min() function returns the argument with the
   minimum value.
   The multi-argument min() function searches its arguments from left to right
   for an argument that defines a collating function and uses that collating
@@ -292,7 +314,8 @@ min(<i>X</i>,<i>Y</i>,...)</td><td valign="top">
   only a single argument.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="nullif"></a>
 nullif(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The nullif(X,Y) function returns its first argument if the arguments are
+  nullif(X,Y)函数当两个参数不同时返回第一个参数，两个参数相同时返回NULL。nullif(X,Y)函数从左往右搜索所有参数，找到第一个定义了排序器的参数，然后使用这个排序器处理所有的字符串比较。如果nullif()的两个参数都没有定义排序函数，则使用BINARY来排序。
+<br />The nullif(X,Y) function returns its first argument if the arguments are
   different and NULL if the arguments are the same.  The nullif(X,Y) function
   searches its arguments from left to right for an argument that defines a
   collating function and uses that collating function for all string
@@ -300,7 +323,8 @@ nullif(<i>X</i>,<i>Y</i>)</td><td valign="top">
   then the BINARY is used.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="printf"></a>
 printf(<i>FORMAT</i>,...)</td><td valign="top">
-  The printf(FORMAT,...) SQL function works like the <a href="c3ref/mprintf.html">sqlite3_mprintf()</a> C-language
+  printf(FORMAT,...) SQL函数与C语言函数<a href="c3ref/mprintf.html">sqlite3_mprintf()</a>和标准C库中的printf()函数一样。第一个参数是一个格式化字符串，用户指定如果使用后续的参数值来构成输出字符串。如果缺少了FORMAT参数，或者传入了NULL，那么会返回NULL。%n格式会被静默的忽略，并且不会消耗参数。%p格式是%X的别名。%z格式可以与%s互换。如果参数列表中的参数过少，缺失的参数会被用NULL代替，如果是数字格式会转换为0或0.0 ，如果是%s格式则输出一个空字符串。
+<br />The printf(FORMAT,...) SQL function works like the <a href="c3ref/mprintf.html">sqlite3_mprintf()</a> C-language
   function and the printf() function from the standard C library.
   The first argument is a format string that specifies how to construct the output
   string using values taken from subsequent arguments.  If the FORMAT argument is
@@ -311,7 +335,8 @@ printf(<i>FORMAT</i>,...)</td><td valign="top">
   0 or 0.0 for numeric formats or an empty string for %s.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="quote"></a>
 quote(<i>X</i>)</td><td valign="top">
-  The quote(X) function returns the text of an SQL literal which
+  quote(X)函数返回参数的适于插入其它SQL语句中的值。字符串会被添加单引号，在内部的引号前会加入逃逸符号。 BLOB被编码为十六进制文本。包含NUL字符的Sting无法被表示为SQL中的字符串，因此，字符串会截取第一个NUL之前的部分。
+<br />The quote(X) function returns the text of an SQL literal which
   is the value of its argument suitable for inclusion into an SQL statement.
   Strings are surrounded by single-quotes with escapes on interior quotes
   as needed.  BLOBs are encoded as hexadecimal literals.
@@ -320,14 +345,17 @@ quote(<i>X</i>)</td><td valign="top">
   to the first NUL.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="random"></a>
 random()</td><td valign="top">
-  The random() function returns a pseudo-random integer
+  random()函数返回一个-9223372036854775808 到 +9223372036854775807之间的伪随机数。
+<br />The random() function returns a pseudo-random integer
   between -9223372036854775808 and +9223372036854775807.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="randomblob"></a>
 randomblob(<i>N</i>)</td><td valign="top">
-  The randomblob(N) function return an N-byte blob containing pseudo-random
+  randomblob(N)函数返回一个伪随机生成的N字节的blob。如果N小于1，则返回一个1字节的随机blob。
+<br />The randomblob(N) function return an N-byte blob containing pseudo-random
   bytes. If N is less than 1 then a 1-byte random blob is returned.
 
-  <p>Hint:  applications can generate globally unique identifiers
+  <p>提示：应用中可以使用该函数和<a href="lang_corefunc.html#hex">hex()</a>与<a href="lang_corefunc.html#lower">lower()</a>一起来生成全球唯一的标示符。例如：
+<br />Hint:  applications can generate globally unique identifiers
   using this function together with <a href="lang_corefunc.html#hex">hex()</a> and/or
   <a href="lang_corefunc.html#lower">lower()</a> like this:</p>
 
@@ -337,25 +365,29 @@ randomblob(<i>N</i>)</td><td valign="top">
   </blockquote>
 </td></tr><tr><td valign="top" align="right" width="120"><a name="replace"></a>
 replace(<i>X</i>,<i>Y</i>,<i>Z</i>)</td><td valign="top">
-  The replace(X,Y,Z) function returns a string formed by substituting
+  replace(X,Y,Z)函数返回一个将字符串X中所有出现的字符串Y替换为字符串Z的结果。使用<a href="datatype3.html#collation">BINARY</a>排序器来进行比较操作。如果参数Y是一个空字符串，则直接返回未修改的字符串X。如果Z不是最初的字符串，则会在处理之前将其转换为UTF-8字符串。
+<br />The replace(X,Y,Z) function returns a string formed by substituting
   string Z for every occurrence of string Y in string X.  The <a href="datatype3.html#collation">BINARY</a>
   collating sequence is used for comparisons.  If Y is an empty
   string then return X unchanged.  If Z is not initially
   a string, it is cast to a UTF-8 string prior to processing.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="round"></a>
 round(<i>X</i>)<br />round(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The round(X,Y) function returns a floating-point
+  round(X,Y) 函数返回一个浮点数X依照四舍五入保留小数点右边Y位数的结果。如果忽略Y参数则将Y看做0。
+<br />The round(X,Y) function returns a floating-point
   value X rounded to Y digits to the right of the decimal point.
   If the Y argument is omitted, it is assumed to be 0.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="rtrim"></a>
 rtrim(<i>X</i>)<br />rtrim(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The rtrim(X,Y) function returns a string formed by removing any and all
+  rtrim(X,Y)函数去除参数X中最右边所有在Y中出现的字符，如果忽略Y参数，rtrim(X,Y)会去除X右边的所有空格。最后返回去除后的结果。
+<br />The rtrim(X,Y) function returns a string formed by removing any and all
   characters that appear in Y from the right side of X.
   If the Y argument is omitted, rtrim(X) removes spaces from the right
   side of X.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="soundex"></a>
 soundex(<i>X</i>)</td><td valign="top">
-  The soundex(X) function returns a string that is the soundex encoding 
+  soundex(X)函数返回参数X探测出的编码字符串。如果X是NULL或者包含非ASCII字符则返回字符串"?000"。这个函数在SQLite中默认是忽略的。只有在编译SQLite时使用<a href="compile.html#soundex">SQLITE_SOUNDEX</a>编译选项才可以使用。
+<br />The soundex(X) function returns a string that is the soundex encoding 
   of the string X.
   The string "?000" is returned if the argument is NULL or contains
   no ASCII alphabetic characters.
@@ -364,13 +396,15 @@ soundex(<i>X</i>)</td><td valign="top">
   is used when SQLite is built.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="sqlite_compileoption_get"></a>
 sqlite_compileoption_get(<i>N</i>)</td><td valign="top">
-  The sqlite_compileoption_get() SQL function is a wrapper around the
+  sqlite_compileoption_get()函数是对<a href="c3ref/compileoption_get.html">sqlite3_compileoption_get()</a> C/C++函数的封装。本函数返回SQLite编译期的第N个编译参数。如果N超过参数范围则返回NULL。参见<a href="pragma.html#pragma_compile_options">compile_options pragma</a>。
+<br />The sqlite_compileoption_get() SQL function is a wrapper around the
   <a href="c3ref/compileoption_get.html">sqlite3_compileoption_get()</a> C/C++ function.
   This routine returns the N-th compile-time option used to build SQLite
   or NULL if N is out of range.  See also the <a href="pragma.html#pragma_compile_options">compile_options pragma</a>.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="sqlite_compileoption_used"></a>
 sqlite_compileoption_used(<i>X</i>)</td><td valign="top">
-  The sqlite_compileoption_used() SQL function is a wrapper around the
+  sqlite_compileoption_used()函数是对<a href="c3ref/compileoption_get.html">sqlite3_compileoption_used()</a> C/C++接口的封装。当参数X是在编译期使用了的编译选项名字时，该函数返回true(1)，否则返回false(0)。
+<br />The sqlite_compileoption_used() SQL function is a wrapper around the
   <a href="c3ref/compileoption_get.html">sqlite3_compileoption_used()</a> C/C++ function.
   When the argument X to sqlite_compileoption_used(X) is a string which
   is the name of a compile-time option, this routine returns true (1) or
@@ -378,7 +412,8 @@ sqlite_compileoption_used(<i>X</i>)</td><td valign="top">
   build.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="sqlite_source_id"></a>
 sqlite_source_id()</td><td valign="top">
-  The sqlite_source_id() function returns a string that identifies the
+  sqlite_source_id()函数返回在编译SQLite库时源码版本号的标示符字符串。sqlite_source_id()返回的字符串以源码被检测的时间和日期开始，后面跟一个唯一标识源码树的SHA1哈希字符串。这个函数是对<a href="c3ref/libversion.html">sqlite3_sourceid()</a>C接口的封装。
+<br />The sqlite_source_id() function returns a string that identifies the
   specific version of the source code that was used to build the SQLite
   library.  The string returned by sqlite_source_id() begins with
   the date and time that the source code was checked in and is follows by
@@ -386,12 +421,14 @@ sqlite_source_id()</td><td valign="top">
   an SQL wrapper around the <a href="c3ref/libversion.html">sqlite3_sourceid()</a> C interface.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="sqlite_version"></a>
 sqlite_version()</td><td valign="top">
-  The sqlite_version() function returns the version string for the SQLite
+  sqlite_version()函数返回正在运行的SQLite库的版本号字符串。该函数是<a href="c3ref/libversion.html">sqlite3_libversion()</a>C接口的封装。
+<br />The sqlite_version() function returns the version string for the SQLite
   library that is running.  This function is an SQL
   wrapper around the <a href="c3ref/libversion.html">sqlite3_libversion()</a> C-interface.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="substr"></a>
 substr(<i>X</i>,<i>Y</i>,<i>Z</i>)<br />substr(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The substr(X,Y,Z) function returns a substring of input string X that begins
+  substr(X,Y,Z)函数返回输入字符串X中第Y个字符开始长度为Z个字符的字串。如果不提供参数Z，那么substr(X,Y)返回字符串X中从第Y个字符一直到末尾的字串。X最左边的字符序号为1。如果参数Y是一个负数那么，字串的第一个字符就从X的右边开始数，而不是左边。如果参数Z是负数，那么返回第Y个字符之前abs(Z)个字符组成的字串。如果X是一个字符串，那么字符序号是按照实际的UTF-8字符来计算的，如果X是一个BLOB，那么序号是按照字节来计算的。
+<br />The substr(X,Y,Z) function returns a substring of input string X that begins
   with the Y-th character and which is Z characters long.
   If Z is omitted then substr(X,Y) returns all characters through the end
   of the string X beginning with the Y-th.
@@ -403,23 +440,27 @@ substr(<i>X</i>,<i>Y</i>,<i>Z</i>)<br />substr(<i>X</i>,<i>Y</i>)</td><td valign
   characters.  If X is a BLOB then the indices refer to bytes.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="total_changes"></a>
 total_changes()</td><td valign="top">
-  The total_changes() function returns the number of row changes
+  total_changes()函数返回当前数据库连接从打开至今所有INSERT、UPDATE和DELETE操作修改的行数。该函数是对<a href="c3ref/total_changes.html">sqlite3_total_changes()</a>C/C++接口的封装。
+<br />The total_changes() function returns the number of row changes
   caused by INSERT, UPDATE or DELETE
   statements since the current database connection was opened.
   This function is a wrapper around the <a href="c3ref/total_changes.html">sqlite3_total_changes()</a>
   C/C++ interface.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="trim"></a>
 trim(<i>X</i>)<br />trim(<i>X</i>,<i>Y</i>)</td><td valign="top">
-  The trim(X,Y) function returns a string formed by removing any and all
+   trim(X,Y)函数会移除X两端所有在Y中出现的字符，如果没有提供参数Y，则移除X两端所有的空格，最后返回移除后的结果。
+<br />The trim(X,Y) function returns a string formed by removing any and all
   characters that appear in Y from both ends of X.
   If the Y argument is omitted, trim(X) removes spaces from both ends of X.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="typeof"></a>
 typeof(<i>X</i>)</td><td valign="top">
-  The typeof(X) function returns a string that indicates the <a href="datatype3.html">datatype</a> of
+  typeof(X) 函数返回一个表示表达式X<a href="datatype3.html">数据类型</a>的字符串："null"、 "integer"、 "real"、 "text"或 "blob"。
+<br />The typeof(X) function returns a string that indicates the <a href="datatype3.html">datatype</a> of
   the expression X: "null", "integer", "real", "text", or "blob".
 </td></tr><tr><td valign="top" align="right" width="120"><a name="unlikely"></a>
 unlikely(<i>X</i>)</td><td valign="top">
-  The unlikely(X) function returns the argument X unchanged.
+  unlikely(X)函数会原封不动的返回参数X。unlikely(X)函数没有任何操作，所以代码生成优化会使该函数在运行时不消耗CPU周期（在调用<a href="c3ref/step.html">sqlite3_step()</a>期间）。unlikely(X)函数的目的是为了给查询计划器提供一个参数X通常不是true的暗示。unlikely(X)等同于<a href="lang_corefunc.html#likelihood">likelihood</a>(X, 0.0625)。
+<br />The unlikely(X) function returns the argument X unchanged.
   The unlikely(X) function is a no-op that the code generator
   optimizes away so that it consumes no CPU cycles at
   run-time (that is, during calls to <a href="c3ref/step.html">sqlite3_step()</a>).
@@ -429,16 +470,19 @@ unlikely(<i>X</i>)</td><td valign="top">
   to <a href="lang_corefunc.html#likelihood">likelihood</a>(X, 0.0625).
 </td></tr><tr><td valign="top" align="right" width="120"><a name="unicode"></a>
 unicode(<i>X</i>)</td><td valign="top">
-  The unicode(X) function returns the numeric unicode code point corresponding to
+  unicode(X)函数返回字符串X中第一个字符对应的unicode值。如果unicode(X)的参数不是一个字符串，那么结果是未定义的。
+<br />The unicode(X) function returns the numeric unicode code point corresponding to
   the first character of the string X.  If the argument to unicode(X) is not a string
   then the result is undefined.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="upper"></a>
 upper(<i>X</i>)</td><td valign="top">
-  The upper(X) function returns a copy of input string X in which all 
+  upper(X)函数返回一个X中所有小写ASCII字符全转换为大写字符的字符串拷贝。
+<br />The upper(X) function returns a copy of input string X in which all 
   lower-case ASCII characters are converted to their upper-case equivalent.
 </td></tr><tr><td valign="top" align="right" width="120"><a name="zeroblob"></a>
 zeroblob(<i>N</i>)</td><td valign="top">
-  The zeroblob(N) function returns a BLOB consisting of N bytes of 0x00.
+  zeroblob(N)函数返回一个N字节的全是0x00的BLOB。SQLite能非常高效的管理这些zeroblob。zeroblob可以用于为一个BLOB预分配空间，以便后续使用<a href="c3ref/blob_open.html">增量 BLOB I/O</a>来写入内容。这个SQL函数是使用C/C++接口中的<a href="c3ref/result_blob.html">sqlite3_result_zeroblob()</a>来实现的。
+<br />The zeroblob(N) function returns a BLOB consisting of N bytes of 0x00.
   SQLite manages these zeroblobs very efficiently.  Zeroblobs can be used to
   reserve space for a BLOB that is later written using 
   <a href="c3ref/blob_open.html">incremental BLOB I/O</a>.

@@ -210,7 +210,8 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>The CREATE INDEX command consists of the keywords "CREATE INDEX" followed
+<p>CREATE INDEX命令是由跟在"CREATE INDEX"后面的新索引名、关键词"ON"、需要建立索引的表名（已有表）以及用括号引起的表中需要用作索引键的列名字列表组成。如果包含可选的WHERE字句，那么这个索引是一个"<a href="partialindex.html">局部索引</a>"
+<br />The CREATE INDEX command consists of the keywords "CREATE INDEX" followed
 by the name of the new index, the keyword "ON", the name of a previously
 created table that is to be indexed, and a parenthesized list of names of
 columns in the table that are used for the index key.
@@ -219,7 +220,8 @@ If the optional WHERE clause is included, then the index is a "<a href="partiali
 
 <a name="descidx"></a>
 
-<p>Each column name can be followed by one of the "ASC" or "DESC" keywords
+<p>每个列名后面都可以跟一个"ASC" 或者 "DESC"关键词用来指定排序次序。是否会忽略排序次序主要依赖于数据库文件格式，特别是<a href="fileformat2.html#schemaformat">架构格式号（schema format number）</a>。“遗留”的架构格式（1）会忽略索引排序次序。降序索引架构格式（4）则考虑到了索引排序序列。只有SQLite 3.3.0版及更新版本才能支持降序索引格式。考虑到兼容性，3.3.0版到3.7.9版之间的SQLite版本默认使用遗留的架构格式，3.7.10版及之后的SQLite版本默认使用新的架构格式。<a href="pragma.html#pragma_legacy_file_format">legacy_file_format 编译参数</a>可以用来设置任意版本SQLite的特殊行为。
+<br />Each column name can be followed by one of the "ASC" or "DESC" keywords
 to indicate sort order.  The sort order may or may not be ignored depending
 on the database file format, and in particular the <a href="fileformat2.html#schemaformat">schema format number</a>.
 The "legacy" schema format (1) ignores index
@@ -231,21 +233,24 @@ used by default in version 3.7.10 and later.
 The <a href="pragma.html#pragma_legacy_file_format">legacy_file_format pragma</a> can be used to change set the specific
 behavior for any version of SQLite.</p>
 
-<p>The COLLATE clause optionally following each column name defines a
+<p>跟在每列名字后面的可选的COLLATE子句用来定义该列文本使用的排序器。默认使用<a href="lang_createtable.html">CREATE TABLE</a>语句中定义的该列的排序器。如果没有额外定义的排序器，那么会使用内置的BINARY排序器。
+<br />The COLLATE clause optionally following each column name defines a
 collating sequence used for text entries in that column.
 The default collating
 sequence is the collating sequence defined for that column in the
 <a href="lang_createtable.html">CREATE TABLE</a> statement.  Or if no collating sequence is otherwise defined,
 the built-in BINARY collating sequence is used.</p>
 
-<p>There are no arbitrary limits on the number of indices that can be
+<p>对于一张表上附加的索引数量没有做限制。一个索引中列的个数限制由<a href="c3ref/limit.html">sqlite3_limit</a>(<a href="c3ref/c_limit_attached.html#sqlitelimitcolumn">SQLITE_LIMIT_COLUMN</a>,...)设定。
+<br />There are no arbitrary limits on the number of indices that can be
 attached to a single table.  The number of columns in an index is 
 limited to the value set by
 <a href="c3ref/limit.html">sqlite3_limit</a>(<a href="c3ref/c_limit_attached.html#sqlitelimitcolumn">SQLITE_LIMIT_COLUMN</a>,...).</p>
 
 <a name="uniqueidx"></a>
 
-<p>If the UNIQUE keyword appears between CREATE and INDEX then duplicate
+<p>如果在CREATE和INDEX之间添加了UNIQUE，那么则不允许出现重复的索引项。试图插入一个重复的项目会导致错误。在唯一索引中，所有NULL值都被认为是与其它NULL不同的值。在SQL-92中这条限制有两种可能的解释（标准中的语言是模糊不清的）。SQLite跟随了PostgreSQL、MySQL、Firebird、Oracle的解释。而Informix和Microsoft SQL Server则遵循了标准的另一个解释。
+<br />If the UNIQUE keyword appears between CREATE and INDEX then duplicate
 index entries are not allowed.  Any attempt to insert a duplicate entry
 will result in an error.  For the purposes of unique indices, all NULL values
 are considered to different from all other NULL values and are thus unique.
@@ -254,10 +259,12 @@ This is one of the two possible interpretations of the SQL-92 standard
 followed by PostgreSQL, MySQL, Firebird, and Oracle.  Informix and
 Microsoft SQL Server follow the other interpretation of the standard.</p>
 
-<p>If the optional IF NOT EXISTS clause is present and another index
+<p>如果添加了IF NOT EXISTS 选项，并且存在另外一个同名的索引，那么这条命令会被忽略。
+<br />If the optional IF NOT EXISTS clause is present and another index
 with the same name already exists, then this command becomes a no-op.</p>
 
-<p>Indexes are removed with the <a href="lang_dropindex.html">DROP INDEX</a> command.</p>
+<p>索引使用<a href="lang_dropindex.html">DROP INDEX</a>命令移除。
+<br />Indexes are removed with the <a href="lang_dropindex.html">DROP INDEX</a> command.</p>
 
 
 
