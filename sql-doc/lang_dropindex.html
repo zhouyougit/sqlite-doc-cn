@@ -135,7 +135,8 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>The DROP INDEX statement removes an index added
+<p>DROP INDEX语句移除一个由<a href="lang_createindex.html">CREATE INDEX</a>创建的索引。索引会从磁盘上彻底移除。恢复索引的唯一办法就是使用<a href="lang_createindex.html">CREATE INDEX</a>命令重新创建一个。
+<br />The DROP INDEX statement removes an index added
 with the <a href="lang_createindex.html">CREATE INDEX</a> statement.  The index is completely removed from
 the disk.  The only way to recover the index is to reenter the
 appropriate <a href="lang_createindex.html">CREATE INDEX</a> command.</p>

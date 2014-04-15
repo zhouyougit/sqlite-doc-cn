@@ -135,12 +135,14 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>The DROP TRIGGER statement removes a trigger created by the 
+<p>DROP TRIGGER语句用来删除一个由<a href="lang_createtrigger.html">CREATE TRIGGER</a>语句创建的触发器。一旦被移除，这个触发器的定义就不会再出现在sqlite_master（或sqlite_temp_master）表中了，并且不会被后续的INSERT、UPDATE或DELETE语句触发。
+<br />The DROP TRIGGER statement removes a trigger created by the 
 <a href="lang_createtrigger.html">CREATE TRIGGER</a> statement. Once removed, the trigger definition is no
 longer present in the sqlite_master (or sqlite_temp_master) table and is
 not fired by any subsequent INSERT, UPDATE or DELETE statements.
 
-<p>Note that triggers are automatically dropped when the associated table is
+<p>注意，当触发器所属的表被删除后，相应的触发器会被自动删除。
+<br />Note that triggers are automatically dropped when the associated table is
 dropped.
 
 
