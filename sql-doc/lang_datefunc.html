@@ -128,9 +128,12 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<h1 align="center">SQLite里的SQL<br/>SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>Date And Time Functions</h2>
+<h1 align="center">SQLite里的SQL<br/>SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>日期和时间函数
+<br />Date And Time Functions</h2>
 
 <p>
+SQLite支持下列5个日期和时间函数：
+<br />
 SQLite supports five date and time functions as follows:
 </p>
 
@@ -144,13 +147,22 @@ SQLite supports five date and time functions as follows:
 </ol>
 
 <p>
-All five date and time functions take a time string as an argument. 
+这五个日期和时间函数都需要一个时间字符串参数。
+时间字符串后面跟着零个或多个修改项。
+strftime()函数还需要一个格式化字符串作为第一个参数。
+<br />All five date and time functions take a time string as an argument. 
 The time string is followed by zero or more modifiers. 
 The strftime() function also takes a format string as its first argument.
 </p>
 
 <p>
-The date and time functions use a subset of
+这些日期和时间函数是<a href="http://en.wikipedia.org/wiki/ISO_8601">IS0-8601</a>日期时间格式的一个子集。
+ date()函数返回日期格式为：YYYY-MM-DD。
+ time()函数返回时间格式为：HH:MM:SS。
+ datetime()函数返回格式为："YYYY-MM-DD HH:MM:SS"。
+ julianday()函数返回<a href="http://en.wikipedia.org/wiki/Julian_day">Julian day</a>——从格林威治时间公元前4714年11月24日中午至今的天数(<a href="http://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar">Proleptic Gregorian calendar</a>)。
+ strftime()函数返回返回一个由第一个参数指定个时间日期格式字符串。格式字符串支持C标准库中<a href="http://opengroup.org/onlinepubs/007908799/xsh/strftime.html">strftime() 函数</a>的绝大部分替换符，还额外增加了两个符号：%f和%J。下面是strftime()支持的占位符的完整列表：
+<br />The date and time functions use a subset of
 <a href="http://en.wikipedia.org/wiki/ISO_8601">IS0-8601</a> date and time
 formats.
 The date() function returns the date in this format: YYYY-MM-DD. 
@@ -189,13 +201,14 @@ The following is a complete list of valid strftime() substitutions:
 </blockquote>
 
 <p>
-Notice that all other date and time functions can be expressed
+注意，其他所有的日期时间函数都可以使用strftime()函数来表示：
+<br />Notice that all other date and time functions can be expressed
 in terms of strftime():
 </p>
 
 <blockquote>
 <table border="0" cellpadding="0" cellspacing="0">
-<tr><td><b>Function</b><td width="30"><td><b>Equivalent strftime()</b>
+<tr><td><b>函数</b><td width="30"><td><b>等价的 strftime()</b>
 <tr><td>   date(...)      <td><td>  strftime('%Y-%m-%d', ...)
 <tr><td>   time(...)      <td><td>  strftime('%H:%M:%S', ...)
 <tr><td>   datetime(...)  <td><td>  strftime('%Y-%m-%d %H:%M:%S', ...)
@@ -204,13 +217,16 @@ in terms of strftime():
 </blockquote>
 
 <p>
-The only reasons for providing functions other than strftime() is
+提供strftime()以外的函数的唯一原因就是为了使用方便和提高效率。
+<br />The only reasons for providing functions other than strftime() is
 for convenience and for efficiency.
 </p>
 
-<h3>Time Strings</h3>
+<h3>时间字符串
+<br />Time Strings</h3>
 
-<p>A time string can be in any of the following formats:</p>
+<p>时间字符串可以是下列任一格式：
+<br />A time string can be in any of the following formats:</p>
 
 <ol>
 <li> <i>YYYY-MM-DD</i>
@@ -228,7 +244,8 @@ for convenience and for efficiency.
 </ol>
 
 <p>
-In formats 5 through 7, the "T" is a literal character separating 
+在格式5到7中，符号"T"是<a href="http://www.w3c.org/TR/NOTE-datetime">ISO-8601</a>中要求的用来分割日期和时间的符号。格式8到10中，只指定了时间格式，假定日期为2000-01-01。格式11中，'now'字符串会被替换为从<a href="c3ref/vfs.html">sqlite3_vfs</a>对象的xCurrentTime方法获取的当前日期和时间。多次在同一个<a href="c3ref/step.html">sqlite3_step()</a>方法中调用传入'now'参数的时间日期函数总是会返回完全相同的值。通常使用<a href="http://en.wikipedia.org/wiki/Coordinated_Universal_Time">世界标准时间(UTC)</a>。格式12中使用浮点数表示<a href="http://en.wikipedia.org/wiki/Julian_day">Julian day number</a>
+<br />In formats 5 through 7, the "T" is a literal character separating 
 the date and the time, as required by 
 <a href="http://www.w3c.org/TR/NOTE-datetime">ISO-8601</a>. 
 Formats 8 through 10 that specify only a time assume a date of 
@@ -244,7 +261,8 @@ expressed as a floating point value.
 </p>
 
 <p>
-Formats 2 through 10 may be optionally followed by a timezone indicator of the form
+格式2到10中，可以选择跟一个时区标示符："<i>&#91;+-&#93;HH:MM</i>" 或者"<i>Z</i>"。日期时间函数内部使用UTC或者"zulu"时间，因此"Z"后缀是无效的。为了计算zulu时间，任何非零的"HH:MM"后缀都会被从显示的时间日期上删去。例如下面所有的时间字符串都是等价的：
+<br />Formats 2 through 10 may be optionally followed by a timezone indicator of the form
 "<i>&#91;+-&#93;HH:MM</i>" or just "<i>Z</i>".  The date and time functions use UTC or "zulu"
 time internally, and so the "Z" suffix is a no-op.  Any non-zero "HH:MM" suffix is
 subtracted from the indicated date and time in order to compute zulu time.
@@ -259,7 +277,8 @@ For example, all of the following time strings are equivalent:
 </blockquote>
 
 <p>
-In formats 4, 7, and 10, the fractional seconds value SS.SSS can have
+在格式4、5和10中，小数部分的秒值可以在小数点后保留多位。示例中都展示三位是因为只有前三位对结果是有意义的，但是输入字符串可以多于或少于三位，并且日期和时间函数都可以正确的执行。同样的，格式12中展示了10位数字，但是日期时间函数只接受足以表示Julian天数的位数。
+<br />SS.SSSIn formats 4, 7, and 10, the fractional seconds value SS.SSS can have
 one or more digits following the decimal point.  Exactly three digits are
 shown in the examples because only the first three digits are significant
 to the result, but the input string can have fewer or more than three digits
@@ -269,9 +288,11 @@ functions will really accept as many or as few digits as are necessary to
 represent the Julian day number.
 </p>
 
-<h3>Modifiers</h3>
+<h3>修改项
+<br />Modifiers</h3>
 
-<p>The time string can be followed by zero or more modifiers that 
+<p>时间字符串可以跟零个或多个修改项用来修改时间或日期。每个修改项都是一个可以应用于其左边的时间值的转换器。修改项按照从左往右的顺序实施，所以顺序是非常重要的。下面是所有可以使用的修改项：
+<br />The time string can be followed by zero or more modifiers that 
 alter date and/or time. Each modifier
 is a transformation that is applied to the time value to its left.
 Modifiers are applied from left to right; order is important.
@@ -293,7 +314,8 @@ The available modifiers are as follows.</p>
 <li> utc 
 </ol>
 
-<p>The first six modifiers (1 through 6) 
+<p>前六个修改项（1到6）只是简单的添加一个指定的时间值到前面的时间串上。注意，在原始日期格式YYYY-MM-DD上使用"&plusmn;NNN months"就是将&plusmn;NNN值加到MM月上，然后再标准化输出。因此，例如，在日期2001-03-31上执行修改项'+1 month'会得到结果2001-04-31，但是四月只有30天，所以日期会被标准化为2001-05-01.类似是情况还有当原始日期是闰年的2月29日，当修改项为&plusmn;N years且N不是4的倍数时。
+<br />The first six modifiers (1 through 6) 
 simply add the specified amount of time to the date and time 
 specified by the preceding timestring and modifiers.
 Note that "&plusmn;NNN months" works by rendering the original date into
@@ -304,13 +326,16 @@ so the date is normalized to 2001-05-01.  A similar effect occurs when
 the original date is February 29 of a leapyear and the modifier is
 &plusmn;N years where N is not a multiple of four.</p>
 
-<p>The "start of" modifiers (7 through 9) shift the date backwards 
+<p>"start of"修改项（7到9）将当前日期回退到当前月、年、天的开始。
+<br />The "start of" modifiers (7 through 9) shift the date backwards 
 to the beginning of the current month, year or day.</p>
 
-<p>The "weekday" modifier advances the date forward to the next date 
+<p>"weekday"修改项将日期向前调整到下一个星期N。星期日是0，星期一是1 等等。
+<br />The "weekday" modifier advances the date forward to the next date 
 where the weekday number is N. Sunday is 0, Monday is 1, and so forth.</p>
 
-<p>The "unixepoch" modifier (11) only works if it immediately follows 
+<p>"unixepoch"修改项（11）只能紧跟在DDDDDDDDDD格式的时间串后使用。这个修改项会使DDDDDDDDDD不再被解释为通常的Julian天数，而是<a href="http://en.wikipedia.org/wiki/Unix_time">Unix 时间</a>——从1970年开始的秒数。如果"unixepoch"修改项没有跟在一个表示从1970年至今的秒数的DDDDDDDDDD格式的时间串后面，或者在"unixepoch"和前面的DDDDDDDDDD之间加入了其他修改项，那么返回结果是未知的。通过使用64位整数来保证时间精度，"unixepoch"修改项可以用于0000-01-01 00:00:00 到 5352-11-01 10:52:47之间的时间（unix时间-62167219200 到 10675199167）。
+<br />The "unixepoch" modifier (11) only works if it immediately follows 
 a timestring in the DDDDDDDDDD format. 
 This modifier causes the DDDDDDDDDD to be interpreted not 
 as a Julian day number as it normally would be, but as
@@ -325,7 +350,8 @@ of 64-bit integers, the "unixepoch" modifier only works for
 dates between 0000-01-01 00:00:00 and 5352-11-01 10:52:47 (unix times
 of -62167219200 through 10675199167).</p>
 
-<p>The "localtime" modifier (12) assumes the time string to its left is in
+<p>"localtime" 修改项（12）假定左边的时间串是在世界标准时间 (UTC)下，然后调整时间串到本地时间。如果"localtime"更在一个非UTC时间后面，那么结果将是未知的。"localtime"相对应的是"utc"。"utc"假定左边的时间串是在本地时区下，然后调整时间串到UTC下。如果左边的字符串不是本地时间，那么"utc"的结果将是未知的。
+<br />The "localtime" modifier (12) assumes the time string to its left is in
 Universal Coordinated Time (UTC) and adjusts the time
 string so that it displays localtime.  If "localtime"
 follows a time that is not UTC, then the behavior is undefined.
@@ -334,51 +360,60 @@ to its left is in the local timezone and adjusts that string to be in UTC.
 If the prior string is not in localtime, then the result of "utc" is
 undefined.</p>
 
-<h3>Examples</h3>
+<h3>示例
+<br />Examples</h3>
 
-<p>Compute the current date.<p>
+<p>计算当前日期。
+<br />Compute the current date.<p>
 
 <blockquote>SELECT date('now');</blockquote>
 
-<p>Compute the last day of the current month.</p>
+<p>计算当前月的最后一天。
+<br />Compute the last day of the current month.</p>
 
 <blockquote>SELECT date('now','start of month','+1 month','-1 day');
 </blockquote>
 
-<p>Compute the date and time given a unix timestamp 1092941466.</p>
+<p>计算给定的unix时间戳1092941466的日期和时间。
+<br />Compute the date and time given a unix timestamp 1092941466.</p>
 
 <blockquote>
     SELECT datetime(1092941466, 'unixepoch');
 </blockquote>
 
-<p>Compute the date and time given a unix timestamp 1092941466, and 
+<p>给定一个unix时间戳1092941466，计算当前时区下的日期和时间。
+<br />Compute the date and time given a unix timestamp 1092941466, and 
 compensate for your local timezone.</p>
 
 <blockquote>
   SELECT datetime(1092941466, 'unixepoch', 'localtime');
 </blockquote>
 
-<p>Compute the current unix timestamp.</p>
+<p>当前unix时间戳。
+<br />Compute the current unix timestamp.</p>
 
 <blockquote>
   SELECT strftime('%s','now');
 </blockquote>
 
-<p>Compute the number of days since the signing of the US Declaration
+<p>计算美国宣布独立以来的天数。
+<br />Compute the number of days since the signing of the US Declaration
 of Independence.</p>
 
 <blockquote>
   SELECT julianday('now') - julianday('1776-07-04');
 </blockquote>
 
-<p>Compute the number of seconds since a particular moment in 2004:</p>
+<p>计算2004年指定的时刻至今的秒数。
+<br />Compute the number of seconds since a particular moment in 2004:</p>
 
 <blockquote>
   SELECT strftime('%s','now') - strftime('%s','2004-01-01 02:34:56');
 </blockquote>
 
 <p>
-Compute the date of the first Tuesday in October
+计算今年十月的第一个周二的日期。
+<br />Compute the date of the first Tuesday in October
 for the current year.
 </p>
 
@@ -386,16 +421,19 @@ for the current year.
   SELECT date('now','start of year','+9 months','weekday 2');
 </blockquote>
 
-<p>Compute the time since the unix epoch in seconds 
+<p>计算unix纪元至今的秒数（类似strftime('%s','now')但是要包含小数部分）。
+<br />Compute the time since the unix epoch in seconds 
 (like strftime('%s','now') except includes fractional part):</p>
 
 <blockquote>
   SELECT (julianday('now') - 2440587.5)*86400.0;
 </blockquote>
 
-<h3>Caveats And Bugs</h3>
+<h3>警告和漏洞
+<br />Caveats And Bugs</h3>
 
-<p>The computation of local time depends heavily on the whim 
+<p>本地时间的计算完全依赖于政治家的幻想，很难在每个时区都获取到正确的时间。在当前实现中使用了C标准库中的localtime_r()函数来帮助计算本地时间。localtime_r()函数通常只能使用在1970年到2037年之间。为了处理这个范围之外的日期，SQLite尝试将范围外的年映射到与之等价的范围内的年上，然后进行计算，最后在映射回原来的年份。
+<br />The computation of local time depends heavily on the whim 
 of politicians and is thus difficult to get correct for 
 all locales. In this implementation, the standard C library 
 function localtime_r() is used to assist in the calculation of 
@@ -406,12 +444,15 @@ attempts to map the year into an equivalent year within
 this range, do the calculation, then map the year back.</p>
 
 
-<p>These functions only work for dates between 0000-01-01 00:00:00
+<p>这些函数使用使用在日期0000-01-01 00:00:00
+到 9999-12-31 23:59:59之间（julidan 天数1721059.5 到 5373484.5）。计算这个日期范围之外的日期的结果是未知的。
+<br /> These functions only work for dates between 0000-01-01 00:00:00
 and 9999-12-31 23:59:59 (julidan day numbers 1721059.5 through 5373484.5).
 For dates outside that range, the results of these
 functions are undefined.</p>
 
-<p>Non-Vista Windows platforms only support one set of DST rules. 
+<p>非Windows Vista 平台只能支持一套夏令时（DST）规则。只有Vista可以支持两套。因此在这个平台上遗留的DST计算将会是错误的。例如，在美国，2007年DST规则发生修改。非Windows Vista平台对以前的年份全都适用于新的2007年DST规则。而Vista做的稍微好一点儿当回到1986年当规则发生变化时还能获取正确的结果。
+<br />Non-Vista Windows platforms only support one set of DST rules. 
 Vista only supports two. Therefore, on these platforms, 
 historical DST calculations will be incorrect. 
 For example, in the US, in 2007 the DST rules changed. 
@@ -419,7 +460,8 @@ Non-Vista Windows platforms apply the new 2007 DST rules
 to all previous years as well. Vista does somewhat better
 getting results correct back to 1986, when the rules were also changed.</p>
 
-<p>All internal computations assume the 
+<p>所有的内部计算都假定使用<a href="http://en.wikipedia.org/wiki/Gregorian_calendar">阳历（Gregorian calendar）</a>系统。并且假定每天都是精确的86400秒。
+<br />All internal computations assume the 
 <a href="http://en.wikipedia.org/wiki/Gregorian_calendar">Gregorian calendar</a>
 system.  It is also assumed that every
 day is exactly 86400 seconds in duration.</p>
