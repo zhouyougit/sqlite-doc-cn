@@ -205,7 +205,8 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p> The ATTACH DATABASE statement adds another database 
+<p>  ATTACH DATABASE语句可以将其他的数据库文件添加到当前的<a href="c3ref/sqlite3.html">数据库连接</a>上。AS关键词前的表达式指定了附加库的文件名。数据库文件名的语意与<a href="c3ref/open.html">sqlite3_open()</a> 和 <a href="c3ref/open.html">sqlite3_open_v2()</a>的参数一样。特殊名"<a href="inmemorydb.html">:memory:</a>" 会附加一个<a href="inmemorydb.html">内存数据库</a>，空字符串名会附加一个临时库。如果在数据库连接上启用了URI文件名处理，那么文件名参数可以是一个<a href="uri.html">URI 文件名</a>。URI文件名默认是禁用的。不过在未来的SQLite版本上可能会改变，所以建议应用程序开发者去了解相关内容。
+<br />The ATTACH DATABASE statement adds another database 
 file to the current <a href="c3ref/sqlite3.html">database connection</a>. 
 The filename for the database to be attached is the value of
 the expression that occurs before the AS keyword.
@@ -218,14 +219,16 @@ is enable on the database connection.  The default behavior is for
 URI filenames to be disabled, however that might change in a future release
 of SQLite, so application developers are advised to plan accordingly.
 
-<p>The name that occurs after the AS keyword is the name of the database
+<p>AS关键词后面的名字是附加数据库在SQLite内部使用的数据库名。数据库名'main'和'temp'分别引用了主数据库和临时表适用的数据库。主库和临时库是不能被附加和分离的。
+<br />The name that occurs after the AS keyword is the name of the database
 used internally by SQLite.
 The database-names 'main' and 
 'temp' refer to the main database and the database used for 
 temporary tables.  The main and temp databases cannot be attached or
 detached.</p>
 
-<p> Tables in an attached database can be referred to using the syntax 
+<p> 附加库上的表可以使用<i>database-name.table-name</i>语法来引用。如果表名在所有附加库和主库中都是唯一的，那么<i>database-name</i>就不是必须的了。如果不同的库上出现了两个以上同名的表，并且没有使用<i>database-name</i>前缀引用表，那么就会选择最新附加库上的表。
+<br />Tables in an attached database can be referred to using the syntax 
 <i>database-name.table-name</i>.  If the name of the table is unique
 across all attached databases and the main and temp databases, then the
 <i>database-name</i> prefix is not required.  If two or more tables in
@@ -234,7 +237,8 @@ different databases have the same name and the
 table chosen is the one in the database that was least recently attached.</p>
 
 <p>
-Transactions involving multiple attached databases are atomic,
+如果主数据库不是"<a href="inmemorydb.html">内存数据库</a>"并且<a href="pragma.html#pragma_journal_mode">journal_mode</a>不是<a href="wal.html">WAL</a>，则在多个附加库上执行事务是原子操作。如果主数据库是"内存数据库"或者journal_mode是WAL，那么事务在每个独立的数据库文件上是原子操作。但是如果在两个以上数据库文件上执行<a href="lang_transaction.html">COMMIT</a>的过程中主机宕机了，那么会出现一些文件已经修改了而另一些文件没有修改的情况。
+<br />Transactions involving multiple attached databases are atomic,
 assuming that the main database is not "<a href="inmemorydb.html">:memory:</a>" and the 
 <a href="pragma.html#pragma_journal_mode">journal_mode</a> is not <a href="wal.html">WAL</a>.  If the main
 database is ":memory:" or if the journal_mode is WAL, then 
@@ -245,7 +249,8 @@ some of those files might get the changes where others
 might not.
 </p>
 
-<p> There is a limit, set using <a href="c3ref/limit.html">sqlite3_limit()</a> and 
+<p>使用<a href="c3ref/limit.html">sqlite3_limit()</a>设置<a href="c3ref/c_limit_attached.html#sqlitelimitattached">SQLITE_LIMIT_ATTACHED</a>可以限制同时附加到一个数据库连接上的数据库的数量。
+<br /> There is a limit, set using <a href="c3ref/limit.html">sqlite3_limit()</a> and 
 <a href="c3ref/c_limit_attached.html#sqlitelimitattached">SQLITE_LIMIT_ATTACHED</a>, to the number of databases that can be
 simultaneously attached to a single database connection.</p>
 

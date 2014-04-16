@@ -135,7 +135,8 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p> The ANALYZE command gathers statistics about tables and
+<p> ANALYZE命令用于获取数据库中表和索引的统计信息，然后将收集到的信息存储在数据库的<a href="fileformat2.html#intschema">内部表</a>中，查询优化器可以通过访问这些数据来做出更优的查询计划。如果没有指定参数，那么会分析所有的附加库。如果参数中给定一个数据库名，那么会分析该数据库中所有的表和索引。如果参数是一个表名，那么只会分析指定的表和该表上的索引。如果参数是一个索引，那么只会分析这一个索引。
+<br />The ANALYZE command gathers statistics about tables and
 indices and stores the collected information
 in <a href="fileformat2.html#intschema">internal tables</a> of the database where the query optimizer can
 access the information and use it to help make better query planning choices.
@@ -146,7 +147,8 @@ If the argument is a table name, then only that table and the
 indices associated with that table are analyzed.  If the argument
 is an index name, then only that one index is analyzed.</p>
 
-<p> The default implementation stores all statistics in a single
+<p> 默认实现中会将所有的统计信息都储存在一个名为"<a href="fileformat2.html#stat1tab">sqlite_stat1</a>"的表中。如果SQLite编译时使用了<a href="compile.html#enable_stat3">SQLITE_ENABLE_STAT3</a>选项并且没有使用<a href="compile.html#enable_stat4">SQLITE_ENABLE_STAT4</a>选项，那么额外的直方图数据会收集并存储在<a href="fileformat2.html#stat3tab">sqlite_stat3</a>表中。如果SQLite编译时加入了<a href="compile.html#enable_stat4">SQLITE_ENABLE_STAT4</a>选项，那么额外的直方图数据会收集并存储在<a href="fileformat2.html#stat4tab">sqlite_stat4</a>表中。老版本的SQLite如果编译时添加了<a href="compile.html#enable_stat2">SQLITE_ENABLE_STAT2</a>选项，则会使用<a href="fileformat2.html#stat2tab">sqlite_stat2</a>表，但是所有近期的SQLite版本都会忽略sqlite_stat2表。未来的优化可能会使用类似的命名格式来创建新的<a href="fileformat2.html#intschema">内部表</a>，只不过表编号会大于"4"。所有的这些表都被称为“统计表”。
+<br />The default implementation stores all statistics in a single
 table named "<a href="fileformat2.html#stat1tab">sqlite_stat1</a>".  If SQLite is compiled with the
 <a href="compile.html#enable_stat3">SQLITE_ENABLE_STAT3</a> option and without the <a href="compile.html#enable_stat4">SQLITE_ENABLE_STAT4</a>
 option, then additional histogram data is
@@ -163,7 +165,8 @@ final digit larger than "4".
 All of these tables are collectively referred to as "statistics tables".
 </p>
 
-<p> The content of the statistics tables can be queried using <a href="lang_select.html">SELECT</a>
+<p> 统计表中的数据可以使用<a href="lang_select.html">SELECT</a>来查询，或者使用<a href="lang_delete.html">DELETE</a>、<a href="lang_insert.html">INSERT</a>和 <a href="lang_update.html">UPDATE</a>命令来修改。从SQLite3.7.9开始可以对统计表使用<a href="lang_droptable.html">DROP TABLE</a>。不能在统计表上使用<a href="lang_altertable.html">ALTER TABLE</a>。当修改统计表数据时需要特别小心，因为错误的内容会导致SQLite选择低效的查询计划。通常来说，除了使用ANALYZE命令，其它任何途径都不应当修改统计表的内容。更多详细信息参见"<a href="optoverview.html#manctrl">使用SQLITE_STAT表来人工控制查询计划</a>" 。
+<br />The content of the statistics tables can be queried using <a href="lang_select.html">SELECT</a>
 and can be changed using the <a href="lang_delete.html">DELETE</a>, <a href="lang_insert.html">INSERT</a>, and <a href="lang_update.html">UPDATE</a> commands.
 The <a href="lang_droptable.html">DROP TABLE</a> command works on statistics tables
 as of SQLite version 3.7.9.
@@ -176,12 +179,14 @@ ANALYZE command.
 See "<a href="optoverview.html#manctrl">Manual Control Of Query Plans Using SQLITE_STAT Tables</a>" for
 further information.</p>
 
-<p> Statistics gathered by ANALYZE are not automatically updated as
+<p> 当数据库中的内容发生变化时ANALYZE生成的统计信息不会自动更新。如果数据库中的数据发生了较大的变动，或者数据库表结构发生了变动，那么就需要考虑重新执行ANALYZE命令来更新统计信息。
+<br />Statistics gathered by ANALYZE are not automatically updated as
 the content of the database changes.  If the content of the database
 changes significantly, or if the database schema changes, then one should
 consider rerunning the ANALYZE command in order to update the statistics.</p>
 
-<p> The query planner loads the content of the statistics tables
+<p> 当数据库结构被读取时查询计划器就会将统计表中的所有内容都加载到内存中。因此，如果应用直接修改统计表，SQLite是不会立即发现改动的。应用程序可以通过运行<b>ANALYZE sqlite_master</b>来强制查询计划器重读统计表。
+<br />The query planner loads the content of the statistics tables
 into memory when the schema is read.  Hence, when an application
 changes the statistics tables directly, SQLite will not immediately
 notice the changes. An application
