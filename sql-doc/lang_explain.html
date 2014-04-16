@@ -133,25 +133,29 @@ a:visited { color: #734559 }
  </blockquote>
 
 
-<p>An SQL statement can be preceded by the keyword "EXPLAIN" or
+<p>SQL语句都可以前缀一个"EXPLAIN"关键词或者"EXPLAIN QUERY PLAN"短语。这个修改会使SQL语句返回不包含前缀时该语句如果执行的信息。
+<br />An SQL statement can be preceded by the keyword "EXPLAIN" or
 by the phrase "EXPLAIN QUERY PLAN".  Either modification causes the
 SQL statement to behave as a query and to return information about
 how the SQL statement would have operated if the EXPLAIN keyword or
 phrase had been omitted.</p>
 
-<p>The output from EXPLAIN and EXPLAIN QUERY PLAN is intended for
+<p>EXPLAIN 和 EXPLAIN QUERY PLAN的输出结果只是为了交互分析和解决故障用的。每个SQLite发行版都会对输出的具体格式做出一定改动。当准确行为可能发生变化或者只有部分文档时应用不应当使用EXPLAIN 或 EXPLAIN QUERY PLAN。
+<br />The output from EXPLAIN and EXPLAIN QUERY PLAN is intended for
 interactive analysis and troubleshooting only.  The details of the 
 output format are subject to change from one release of SQLite to the next.
 Applications should not use EXPLAIN or EXPLAIN QUERY PLAN since
 their exact behavior is variable and only partially documented.</p>
 
-<p>When the EXPLAIN keyword appears by itself it causes the statement
+<p>当只使用EXPLAIN关键词时，该语句返回的是执行不包含EXPLAIN的SQL命令的<a href="opcode.html">虚拟机指令</a>列表。如果使用EXPLAIN QUERY PLAN短语，则返回的是该查询将要使用的查询计划的高层信息表述。
+<br />When the EXPLAIN keyword appears by itself it causes the statement
 to behave as a query that returns the sequence of 
 <a href="opcode.html">virtual machine instructions</a> it would have used to execute the command had
 the EXPLAIN keyword not been present. When the EXPLAIN QUERY PLAN phrase
 appears, the statement returns high-level information regarding the query
 plan that would have been used.
 
+EXPLAIN QUERY PLAN命令更详细的信息参见<a href="eqp.html">这里</a>。
 The EXPLAIN QUERY PLAN command is described in 
 <a href="eqp.html">more detail here</a>.
 
