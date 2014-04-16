@@ -265,20 +265,25 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>The DELETE command removes records from the table identified by the
+<p>DELETE命令用于删除<i>qualified-table-name</i>标识的表中的记录。
+<br />The DELETE command removes records from the table identified by the
    <i>qualified-table-name</i>. 
 
-<p>If the WHERE clause is not present, all records in the table are deleted.
+<p>如果没有提供WHERE子句，表中的所有记录都会被删除。如果提供了WHERE子句，那么只有能使WHERE子句计算返回<a href="lang_expr.html#booleanexpr">布尔表达式true</a>的记录会被删除。
+<br />If the WHERE clause is not present, all records in the table are deleted.
    If a WHERE clause is supplied, then only those rows for which the
    result of evaluating the WHERE clause as a <a href="lang_expr.html#booleanexpr">boolean expression is true</a> are deleted.
 
-<h3>Restrictions on DELETE Statements Within CREATE TRIGGER</h3>
+<h3>在CREATE TRIGGER中DELETE语句的限制
+<br />Restrictions on DELETE Statements Within CREATE TRIGGER</h3>
 
-<p>The following restrictions apply to DELETE statements that occur within the
+<p>在<a href="lang_createtrigger.html">CREATE TRIGGER</a>语句内使用DELETE语句需要遵循下列限制。
+<br />The following restrictions apply to DELETE statements that occur within the
    body of a <a href="lang_createtrigger.html">CREATE TRIGGER</a> statement:
 
 <ul>
-  <li><p>The <i>table-name</i> specified as part of a DELETE statement within
+  <li><p>在触发器中的DELETE语句内的<i>table-name</i>必须是不加限定的。换句话说，在触发器中不允许在表名前使用<i>database-name</i><b>.</b>前缀。如果触发器所属的表不是在临时库中，那么触发器中的DELETE语句只能操作同一个库中的表。如果触发器所属的表在临时库中，那么需要执行删除操作的未加限定的表名的寻找规则与顶级的DELETE语句一样（先搜索临时库，然后是主库，最后是其它附加库）。
+<br />The <i>table-name</i> specified as part of a DELETE statement within
     a trigger body must be unqualified.  In other words, the
     <i>database-name</i><b>.</b> prefix on the table name is not allowed 
     within triggers. If the table to which the trigger is attached is
@@ -290,16 +295,20 @@ a:visited { color: #734559 }
     the main database, then any other databases in the order they were
     attached).
     
-  <li><p>The INDEXED BY and NOT INDEXED clauses are not allowed on DELETE
+  <li><p>触发器中的DELETE不允许使用 INDEXED BY 和 NOT INDEXED子句。
+<br />The INDEXED BY and NOT INDEXED clauses are not allowed on DELETE
     statements within triggers.</p>
 
-  <li><p>The LIMIT and ORDER BY clauses (described below) are unsupported for
+  <li><p>触发器中的DELETE不支持LIMIT和ORDER BY（下面介绍的）。
+<br />The LIMIT and ORDER BY clauses (described below) are unsupported for
     DELETE statements within triggers.</p>
 </ul>
 
-<h3>Optional LIMIT and ORDER BY clauses</h3>
+<h3>可选的LIMIT 和 ORDER BY子句。
+<br />Optional LIMIT and ORDER BY clauses</h3>
 
-<p>If SQLite is compiled with the <a href="compile.html#enable_update_delete_limit">SQLITE_ENABLE_UPDATE_DELETE_LIMIT</a>
+<p>如果SQLite使用<a href="compile.html#enable_update_delete_limit">SQLITE_ENABLE_UPDATE_DELETE_LIMIT</a>编译选项编译而成，那么DELETE语句的语法额外增加了可选的ORDER BY和LIMIT子句：
+<br />If SQLite is compiled with the <a href="compile.html#enable_update_delete_limit">SQLITE_ENABLE_UPDATE_DELETE_LIMIT</a>
 compile-time option, then the syntax of the DELETE statement is
 extended by the addition of optional ORDER BY and LIMIT clauses:</p>
 
@@ -308,7 +317,8 @@ extended by the addition of optional ORDER BY and LIMIT clauses:</p>
  </blockquote>
 
 
-<p>If a DELETE statement has a LIMIT clause, the maximum number of rows that
+<p>如果一个DELETE语句中包含LIMIT子句，最多删除的行数是由LIMIT后面的表达式计算后转换成整数的值来指定的。如果LIMIT子句的计算结果无法无损的转换为整数，则会发生错误。LIMIT值为负数会被看做“无限制”。如果DELETE语句还有一个OFFSET子句，那么也会同样计算并转换为一个整数。类似的，如果返回的值无法无损的转换为整数，则会发生错误。如果没有OFFSET子句，或者计算结果为负数，则表示OFFSET的值是0。
+<br />If a DELETE statement has a LIMIT clause, the maximum number of rows that
 will be deleted is found by evaluating the accompanying expression and casting
 it to an integer value. If the result of the evaluating the LIMIT clause
 cannot be losslessly converted to an integer value, it is an error. A 
@@ -318,7 +328,9 @@ integer value. Again, it is an error if the value cannot be losslessly
 converted to an integer. If there is no OFFSET clause, or the calculated
 integer value is negative, the effective OFFSET value is zero.
 
-<p>If the DELETE statement has an ORDER BY clause, then all rows that would 
+<p>如果DELETE语句有一个ORDER BY子句，那么所有在没有LIMIT限制时将会被删除的行都会依照ORDER BY排序。
+前 <i>M</i>行数据会被跳过，后续的<i>N</i>行数据会被删除， <i>M</i>是OFFSET子句表达式的计算结果，<i>N</i>是LIMIT表达式的计算结果。如果库中，在跳过了OFFSET指定的行数之后剩余的行数不足<i>N</i>行，或者LIMIT子句结果为负数，那么所有剩下的记录行都会被删除。
+<br />If the DELETE statement has an ORDER BY clause, then all rows that would 
 be deleted in the absence of the LIMIT clause are sorted according to the 
 ORDER BY. The first <i>M</i> rows, where <i>M</i> is the value found by
 evaluating the OFFSET clause expression, are skipped, and the following 
@@ -327,20 +339,25 @@ If there are less than <i>N</i> rows remaining after taking the OFFSET clause
 into account, or if the LIMIT clause evaluated to a negative value, then all
 remaining rows are deleted.
 
-<p>If the DELETE statement has no ORDER BY clause, then all rows that
+<p>如果DELETE语句没有ORDER BY子句，那么在没有LIMIT限制时所有需要被删除的行是按照随机顺序排列的，所以LIMIT和OFFSET子句决定出的需要被实际删除的子集也是随机的。
+<br />If the DELETE statement has no ORDER BY clause, then all rows that
 would be deleted in the absence of the LIMIT clause are assembled in an
 arbitrary order before applying the LIMIT and OFFSET clauses to determine 
 the subset that are actually deleted.
 
-<p>The ORDER BY clause on a DELETE statement is used only to determine which
+<p>DELETE语句中的ORDER BY子句仅仅用于决定LIMIT中那些行会被删除。而实际删除行的顺序依然是随机的，不受ORDER BY子句的影响。
+<br />The ORDER BY clause on a DELETE statement is used only to determine which
 rows fall within the LIMIT. The order in which rows are deleted is arbitrary
 and is not influenced by the ORDER BY clause.
 
 <a name="truncateopt"></a>
 
-<h3>The Truncate Optimization</h3>
+<h3>truncate 优化
+<br />The Truncate Optimization</h3>
 
-<p>When the WHERE is omitted from a DELETE statement and the table
+<p>当DELETE子句中没有WHERE子句，并且被删除的表上没有触发器，SQLite会优化为直接删除整个表的内容，而不用单独访问每条数据行。"truncate"优化项会使删除运行的更加快速。SQLite<a href="releaselog/3_6_5.html">3.6.5</a>之前的版本同时也意味着，<a href="c3ref/changes.html">sqlite3_changes()</a> 和
+<a href="c3ref/total_changes.html">sqlite3_total_changes()</a> 接口 <a href="pragma.html#pragma_count_changes">count_changes 指令</a>都将无法返回实际删除的行数。这个问题在<a href="releaselog/3_6_5.html">3.6.5</a>版之后得以修复了。
+<br />When the WHERE is omitted from a DELETE statement and the table
 being deleted has no triggers,
 SQLite uses an optimization to erase the entire table content
 without having to visit each row of the table individually.
@@ -352,11 +369,14 @@ and the <a href="pragma.html#pragma_count_changes">count_changes pragma</a>
 will not actually return the number of deleted rows.  
 That problem has been fixed as of <a href="releaselog/3_6_5.html">version 3.6.5</a>.
 
-<p>The truncate optimization can be permanently disabled for all queries
+<p>truncate优化项可以通过使用<a href="compile.html#omit_truncate_optimization">SQLITE_OMIT_TRUNCATE_OPTIMIZATION</a>编译开关重新编译SQLite来禁止所有的查询使用。
+<br />The truncate optimization can be permanently disabled for all queries
 by recompiling
 SQLite with the <a href="compile.html#omit_truncate_optimization">SQLITE_OMIT_TRUNCATE_OPTIMIZATION</a> compile-time switch.</p>
 
-<p>The truncate optimization can also be disabled at runtime using
+<p>truncate优化项同样可以在运行时使用<a href="c3ref/set_authorizer.html">sqlite3_set_authorizer()</a>接口来禁用。
+对于一个<a href="c3ref/c_alter_table.html">SQLITE_DELETE</a>操作码，如果认证回调返回<a href="c3ref/c_deny.html">SQLITE_IGNORE</a>，那么DELETE操作将会执行，但是truncate优化项会被忽略，只能一行一行的删除数据。
+<br />The truncate optimization can also be disabled at runtime using
 the <a href="c3ref/set_authorizer.html">sqlite3_set_authorizer()</a> interface.  If an authorizer callback
 returns <a href="c3ref/c_deny.html">SQLITE_IGNORE</a> for an <a href="c3ref/c_alter_table.html">SQLITE_DELETE</a> action code, then
 the DELETE operation will proceed but the truncate optimization will
