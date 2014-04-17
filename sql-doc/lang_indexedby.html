@@ -129,7 +129,8 @@ a:visited { color: #734559 }
 <div class=startsearch></div>
   
 <h1 align="center">SQLite里的SQL<br/>SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>INDEXED BY</h2>
-<p>The INDEXED BY phrase forces the <a href="optoverview.html">SQLite query planner</a> to use a
+<p>INDEXED BY短语会强制<a href="optoverview.html">SQLite 查询规划器</a>在<a href="lang_delete.html">DELETE</a>、 <a href="lang_select.html">SELECT</a>和 <a href="lang_update.html">UPDATE</a>命令操作中使用指定的索引。INDEXED BY子句是SQLite特有的，并不适用于其它的SQL数据库引擎。INDEXED BY按下面语法图使用：
+<br />The INDEXED BY phrase forces the <a href="optoverview.html">SQLite query planner</a> to use a
 particular named index on a <a href="lang_delete.html">DELETE</a>, <a href="lang_select.html">SELECT</a>, or <a href="lang_update.html">UPDATE</a> statement.
 The INDEXED BY phrase is an extension that is particular to SQLite and
 is not portable to other SQL database engines.
@@ -143,7 +144,8 @@ diagrams:</p>
 </blockquote>
 
 
-<p>The "INDEXED BY index-name" phrase specifies that the named index
+<p> "INDEXED BY index-name"短语指定了在前面的表中搜索数据必须使用的索引名。如果这个索引不存在或者无法用户当前查询，那么在SQL语句的准备期就会失败。 "NOT INDEXED"子句表示在访问前面的表时不允许使用索引，包括使用UNIQUE和PRIMARY KEY约束创建的索引。不过即使指定了"NOT INDEXED"，还是会使用 INTEGER PRIMARY KEY来搜索数据的。
+<br />The "INDEXED BY index-name" phrase specifies that the named index
 must be used in order to look up values on the preceding table.
 If index-name does not exist or cannot be used for the query, then
 the preparation of the SQL statement fails.
@@ -152,7 +154,8 @@ accessing the preceding table, including implied indices create by
 UNIQUE and PRIMARY KEY constraints.  However, the INTEGER PRIMARY KEY
 can still be used to look up entries even when "NOT INDEXED" is specified.</p>
 
-<p>Some SQL database engines provide non-standard "hint" mechanisms which
+<p>一些SQL数据库引擎提供了一个非标准的"hint"机制来指定处理特定语句时建议查询优化器使用某个索引。SQLite中的INDEX BY子句<em>不是</em>一个暗示机制，所以不应当这样使用。INDEXED BY子句不是给优化器一个使用某个索引的建议，而是要求优化器必须使用某个索引。
+<br />Some SQL database engines provide non-standard "hint" mechanisms which
 can be used to give the query optimizer clues about what indices it should
 use for a particular statement.  The INDEX BY clause of SQLite is 
 <em>not</em> a hinting mechanism and it should not be used as such.
@@ -161,7 +164,8 @@ to use; it gives the optimizer a requirement of which index to use.
 If the query optimizer is unable to use the index specified by the
 INDEX BY clause, then the query will fail with an error.</p>
 
-<p>The INDEXED BY clause is <em>not</em> intended for use in tuning
+<p>INDEXED BY子句<em>不是</em>为调整查询性能而设计的。INDEXED BY子句的目的是为了当库结构发生变化时抛出一个运行时错误。例如删除或创建一个index，会引起一个时间敏感的查询发生变化。INDEXED BY子句是设计用来在回归测试中发现不良的查询规划变动。开发者应该尽量避免在应用的设计、实现、测试、优化等阶段使用INDEXED BY。如果必须要使用INDEXED BY，那么应当在设计已经"锁定"后尽可能晚的加入进来。
+<br />The INDEXED BY clause is <em>not</em> intended for use in tuning
 the performance of a query.  The intent of the INDEXED BY clause is
 to raise a run-time error if a schema change, such as dropping or
 creating an index, causes the query plan for a time-sensitive query
@@ -172,22 +176,26 @@ application design, implementation, testing, and tuning.  If
 INDEXED BY is to be used at all, it should be inserted at the very
 end of the development process when "locking down" a design.</p>
 
-<h3>See Also:</h3>
+<h3>参见：
+<br />See Also:</h3>
 
 <ol>
-<li><p>The <a href="queryplanner-ng.html#howtofix">query planner checklist</a> describes steps that application
+<li><p><a href="queryplanner-ng.html#howtofix">查询计划清单</a>告诉了开发者解决查询规划问题的几个步奏。注意，使用INDEXED BY是最后的手段，只有当其它所有机制都没有办法解决的时候才可以使用。
+<br />The <a href="queryplanner-ng.html#howtofix">query planner checklist</a> describes steps that application
 developers should following to help resolve query planner problems.
 Notice the that the use of INDEXED BY is a last resort, to be used only
 when all other measures fail.</p>
 
-<li><p><a href="optoverview.html#uplus">The unary "+" operator</a>
+<li><p><a href="optoverview.html#uplus">一元操作符 "+"</a>可以用来取消WHERE中的片段使用索引。适当地使用一元符+ 通常可以帮助预防查询规划器自由的使用不好的索引，改为使用指定的索引。适当地放置一元符+是一个比较好的控制查询中索引使用的方法。
+<br /><a href="optoverview.html#uplus">The unary "+" operator</a>
 can be used to disqualify terms in the WHERE clause from use by indices.
 Careful use of unary + can sometimes help prevent the query planner from
 choosing a poor index without restricting it to using one specific index.
 Careful placement of unary + operators is a better method for controlling 
 which indices are used by a query.</p>
 
-<li><p>The <a href="c3ref/stmt_status.html">sqlite3_stmt_status()</a> C/C++ interface together with the
+<li><p>使用<a href="c3ref/stmt_status.html">sqlite3_stmt_status()</a>C/C++接口和<a href="c3ref/c_stmtstatus_counter.html#sqlitestmtstatusfullscanstep">SQLITE_STMTSTATUS_FULLSCAN_STEP</a> 与 <a href="c3ref/c_stmtstatus_counter.html#sqlitestmtstatussort">SQLITE_STMTSTATUS_SORT</a>参数可以用来在运行时发现一个没有有效使用索引的SQL语句。许多应用更喜欢使用<a href="c3ref/stmt_status.html">sqlite3_stmt_status()</a>接口来发现滥用的索引，而不是本文介绍的INDEXED BY短语。
+<br />The <a href="c3ref/stmt_status.html">sqlite3_stmt_status()</a> C/C++ interface together with the
 <a href="c3ref/c_stmtstatus_counter.html#sqlitestmtstatusfullscanstep">SQLITE_STMTSTATUS_FULLSCAN_STEP</a> and <a href="c3ref/c_stmtstatus_counter.html#sqlitestmtstatussort">SQLITE_STMTSTATUS_SORT</a> verbs
 can be used to detect at run-time when an SQL statement is not
 making effective use of indices.  Many applications may prefer to

@@ -135,22 +135,27 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>The REINDEX command is used to delete and recreate indices from scratch.
+<p>REINDEX命令用对混乱的索引进行删除重建。当排序器的定义发生变动时这个命令是非常有用的。
+<br />The REINDEX command is used to delete and recreate indices from scratch.
 This is useful when the definition of a collation sequence has changed.
 </p>
 
-<p>If the REINDEX keyword is not followed by a collation-sequence or database 
+<p>如果REINDEX关键词没有后面没有指定排序器或者数据库对象标识，那么所有附加库上的所有索引都会被重建。
+<br />If the REINDEX keyword is not followed by a collation-sequence or database 
 object identifier, then all indices in all attached databases are rebuilt.
 
-<p>If the REINDEX keyword is followed by a collation-sequence name, then
+<p>如果REINDEX指定了一个排序器名，那么所有库上的所有使用了这个排序器的索引都会被重建。
+<br />If the REINDEX keyword is followed by a collation-sequence name, then
 all indices in all attached databases that use the named collation sequences
 are recreated. 
 
-<p>Or, if the argument attached to the REINDEX identifies a specific 
+<p>或者，如果REINDEX指定了一个数据库表，那么所有附属于这个表的索引都会被重建。如果指定的是一个数据库索引，那么只有这个索引会被重建。
+<br />Or, if the argument attached to the REINDEX identifies a specific 
 database table, then all indices attached to the database table are rebuilt. 
 If it identifies a specific database index, then just that index is recreated.
 
-<p>If no <i>database-name</i> is specified and there exists both a table or
+<p>如果没有指定<i>database-name</i>并且存在同名的排序器和表或索引，那么SQLite会认为这是要重建所有使用该名字排序器的索引。当需要更新指定的表或索引是，这个模糊的情况可以通过总是指定<i>database-name</i>来避免。
+<br />If no <i>database-name</i> is specified and there exists both a table or
 index and a collation sequence of the specified name, SQLite interprets
 this as a request to rebuild the indices that use the named collation sequence.
 This ambiguity in the syntax may be avoided by always specifying a

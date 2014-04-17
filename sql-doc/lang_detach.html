@@ -135,7 +135,8 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>This statement detaches an additional database connection previously 
+<p>这个命令用于删除之前用<a href="lang_attach.html">ATTACH</a>命令附加到数据库连接上的附加数据库。如果没有使用<a href="sharedcache.html">共享缓存模式</a>，那么可能会出现多次使用不同名字来附加同一个数据库，那么卸载一个连接名会保持其他的连接名不动。在<a href="sharedcache.html">共享缓存模式</a>下，多次附加同一个数据库会导致错误。如果在一个事物中使用该命令会失败。
+<br />This statement detaches an additional database connection previously 
 attached using the <a href="lang_attach.html">ATTACH</a> statement.  
 When not in <a href="sharedcache.html">shared cache mode</a>, 
 it is possible to have the same database file attached multiple times using 
