@@ -146,7 +146,8 @@ a:visited { color: #734559 }
 
 
 <p>
-No changes can be made to the database except within a transaction.
+对数据库的任何修改都必须在一个事务中。任何会修改数据库的命令（简单来说，除了<a href="lang_select.html">SELECT</a>以外的所有SQL命令）都会在没有生效的事务时自动开始一个事务。自动开始的事务在最后一个语句结束时会自动提交。
+<br />No changes can be made to the database except within a transaction.
 Any command that changes the database (basically, any SQL command
 other than <a href="lang_select.html">SELECT</a>) will automatically start a transaction if
 one is not already in effect.  Automatically started transactions
@@ -154,7 +155,8 @@ are committed when the last query finishes.
 </p>
 
 <p>
-Transactions can be started manually using the BEGIN
+可以使用BEGIN命令手动开始一个事务。这种事务通常会一直持续到下一个COMMIT或者ROLLBACK命令。不过如果数据库关闭或者发生错误，事务同样会被ROLLBACK，并且会指定ROLLBACK冲突解决算法。更多关于ROLLBACK冲突解决算法的内容请参见<a href="lang_conflict.html">ON CONFLICT</a>文档。
+<br />Transactions can be started manually using the BEGIN
 command.  Such transactions usually persist until the next
 COMMIT or ROLLBACK command.  But a transaction will also 
 ROLLBACK if the database is closed or if an error occurs
@@ -165,10 +167,12 @@ conflict resolution algorithm.
 </p>
 
 <p>
-END TRANSACTION is an alias for COMMIT.
+END TRANSACTION 是COMMIT的别称。
+<br />END TRANSACTION is an alias for COMMIT.
 </p>
 
-<p> Transactions created using BEGIN...COMMIT do not nest.
+<p> 使用BEGIN...COMMIT创建的事务是不支持嵌套的。需要嵌套事务，请使用<a href="lang_savepoint.html">SAVEPOINT</a> 和 <a href="lang_savepoint.html">RELEASE</a>命令。上面语法图中ROLLBACK命令中的"TO SAVEPOINT <i>name</i>"子句只适用于<a href="lang_savepoint.html">SAVEPOINT</a>事务。在一个事务中执行BEGIN命令会失败并产生一个错误，不管这个事务是由<a href="lang_savepoint.html">SAVEPOINT</a>开始的还是前一个BEGIN开始的。不包含TO子句的COMMIT命令和ROLLBACK命令可以像使用在BEGIN开始的事务中一样使用在<a href="lang_savepoint.html">SAVEPOINT</a>事务中。
+<br />Transactions created using BEGIN...COMMIT do not nest.
 For nested transactions, use the <a href="lang_savepoint.html">SAVEPOINT</a> and <a href="lang_savepoint.html">RELEASE</a> commands.
 The "TO SAVEPOINT <i>name</i>" clause of the ROLLBACK command shown
 in the syntax diagram above is only applicable to <a href="lang_savepoint.html">SAVEPOINT</a>
@@ -182,7 +186,8 @@ started by BEGIN.</p>
 <a name="immediate"></a>
 
 <p>
-Transactions can be deferred, immediate, or exclusive.  
+事务可以是延时的、立即的和排外的。默认的事务是延时的。延时意味着在数据库第一次存取之前，都是不需要锁的。因此，在一个延时事务中，BEGIN语句本身不会对文件系统做任何事情。在第一次读写操作之前都是不需要锁的。第一次读取会使数据库创建一个<a href="lockingv3.html#shared_lock">SHARED</a>锁，第一次写入操作会创建一个<a href="lockingv3.html#reserved_lock">RESERVED</a>锁。由于获取锁被延时到了真正需要的地方，因此有可能另一个线程或进程可能会在当前线程已经在数据库上执行了BEGIN命令之后创建另外一个事务并写入数据库。如果是一个立即事务，那么一旦执行BEGIN命令就会在所有数据库上获取<a href="lockingv3.html#reserved_lock">RESERVED</a>锁，而不必等到真正使用数据库。在开始一个BEGIN IMMEDIATE之后其他任何<a href="c3ref/sqlite3.html">数据库连接</a>都不能写数据库或者执行BEGIN IMMEDIATE 和 BEGIN EXCLUSIVE命令。不过其它进程依然可以继续读取数据库。一个排外事务会在所有数据库上获取一个<a href="lockingv3.html#excl_lock">EXCLUSIVE</a>锁。在BEGIN EXCLUSIVE之后，除了<a href="pragma.html#pragma_read_uncommitted">read_uncommitted</a>连接之外的所有<a href="c3ref/sqlite3.html">数据库连接</a>都不能读取数据库，并且无一例外的所有其他连接都不能在事务提交之前写数据库。
+<br />Transactions can be deferred, immediate, or exclusive.  
 The default transaction behavior is deferred.
 Deferred means that no locks are acquired
 on the database until the database is first accessed.  Thus with a
@@ -209,7 +214,8 @@ complete.
 </p>
 
 <p>
-An implicit transaction (a transaction that is started automatically,
+一个隐式事务（自动开始的事务，不是使用BEGIN开始的事务）在最后一个有效的语句完成后会自动提交。一个语句的完成是以语句的预编译表达式<a href="c3ref/reset.html">重置</a>或者<a href="c3ref/finalize.html">销毁</a>为准。一个用于增加BLOB I/O计数的打开的<a href="c3ref/blob.html">sqlite3_blob</a>会被认为是未完成的语句，只有当其被<a href="c3ref/blob_close.html">关闭</a>，这个<a href="c3ref/blob.html">sqlite3_blob</a>才被认为是完成的。
+<br />An implicit transaction (a transaction that is started automatically,
 not a transaction started by BEGIN) is committed automatically when
 the last active statement finishes.  A statement finishes when its
 prepared statement is <a href="c3ref/reset.html">reset</a> or
@@ -219,14 +225,16 @@ finishes when it is <a href="c3ref/blob_close.html">closed</a>.
 </p>
 
 <p>
-The explicit COMMIT command runs immediately, even if there are
+一个明确的COMMIT命令会立即执行，即使有正在等待<a href="lang_select.html">SELECT</a>的语句。不过，如果是有正在等待写入的操作，COMMIT命令会失败并返回一个<a href="c3ref/c_abort.html">SQLITE_BUSY</a>错误码。
+<br />The explicit COMMIT command runs immediately, even if there are
 pending <a href="lang_select.html">SELECT</a> statements.  However, if there are pending
 write operations, the COMMIT command
 will fail with an error code <a href="c3ref/c_abort.html">SQLITE_BUSY</a>.
 </p>
 
 <p>
-An attempt to execute COMMIT might also result in an <a href="c3ref/c_abort.html">SQLITE_BUSY</a> return code
+在其他线程或进程在当前数据库上持有一个<a href="lockingv3.html#shared_lock">共享锁</a>以防止数据库被更改的时候，如果试图在当前线程上执行COMMIT命令同样会导致<a href="c3ref/c_abort.html">SQLITE_BUSY</a>返回码。如果是在这种情况下COMMIT的失败，事务会继续保持有效，并且可以再稍后有机会再一次尝试COMMIT。
+<br />An attempt to execute COMMIT might also result in an <a href="c3ref/c_abort.html">SQLITE_BUSY</a> return code
 if an another thread or process has a <a href="lockingv3.html#shared_lock">shared lock</a> on the database
 that prevented the database from being updated.  When COMMIT fails in this
 way, the transaction remains active and the COMMIT can be retried later
@@ -234,7 +242,8 @@ after the reader has had a chance to clear.
 </p>
 
 <p>
-The ROLLBACK will fail with an error code <a href="c3ref/c_abort.html">SQLITE_BUSY</a> if there
+如果有任何等待中的查询，ROLLBACK都会失败并返回<a href="c3ref/c_abort.html">SQLITE_BUSY</a>错误码。只读查询和读写查询都会导致ROLLBACK失败，如果有等待读取的曹组，那么ROLLBACK必然会失败（而不像COMMIT可以成功），这是因为，如果数据库的内存镜像相比活跃查询下内容发生了变动，这样就会导致问题。
+<br />The ROLLBACK will fail with an error code <a href="c3ref/c_abort.html">SQLITE_BUSY</a> if there
 are any pending queries.  Both read-only and read/write queries will
 cause a ROLLBACK to fail.  A ROLLBACK must fail if there are pending
 read operations (unlike COMMIT which can succeed) because bad things
@@ -243,42 +252,47 @@ an active query.
 </p>
 
 <p>
-If <a href="pragma.html#pragma_journal_mode">PRAGMA journal_mode</a> is set to OFF (thus disabling the rollback journal
+如果<a href="pragma.html#pragma_journal_mode">PRAGMA journal_mode</a>被设置为OFF（禁用了回滚日志文件）那么ROLLBACK命令的行为是未知的。
+<br />If <a href="pragma.html#pragma_journal_mode">PRAGMA journal_mode</a> is set to OFF (thus disabling the rollback journal
 file) then the behavior of the ROLLBACK command is undefined.
 </p>
 
-<h3>Response To Errors Within A Transaction</h3>
+<h3>在事务中响应错误
+<br />Response To Errors Within A Transaction</h3>
 
-<p> If certain kinds of errors occur within a transaction, the
+<p> 当事务中发生了确定类型的错误，那么这个事务有可能会自动回滚。会引起回滚的错误包括：
+<br />If certain kinds of errors occur within a transaction, the
 transaction may or may not be rolled back automatically.  The
 errors that can cause an automatic rollback include:</p>
 
 <ul>
-<li> <a href="c3ref/c_abort.html">SQLITE_FULL</a>: database or disk full
-<li> <a href="c3ref/c_abort.html">SQLITE_IOERR</a>: disk I/O error
-<li> <a href="c3ref/c_abort.html">SQLITE_BUSY</a>: database in use by another process
-<li> <a href="c3ref/c_abort.html">SQLITE_NOMEM</a>: out or memory
-<li> <a href="c3ref/c_abort.html">SQLITE_INTERRUPT</a>: processing <a href="c3ref/interrupt.html">interrupted</a>
+<li> <a href="c3ref/c_abort.html">SQLITE_FULL</a>: 数据库或磁盘已满。database or disk full
+<li> <a href="c3ref/c_abort.html">SQLITE_IOERR</a>: 磁盘I/O错误。disk I/O error
+<li> <a href="c3ref/c_abort.html">SQLITE_BUSY</a>: 数据库被其它进程使用。database in use by another process
+<li> <a href="c3ref/c_abort.html">SQLITE_NOMEM</a>: 内存溢出。 out or memory
+<li> <a href="c3ref/c_abort.html">SQLITE_INTERRUPT</a>: 应用请求处理<a href="c3ref/interrupt.html">中断</a>。 processing <a href="c3ref/interrupt.html">interrupted</a>
      by application request
 </ul>
 
 <p>
+对于这些错误，SQLite只是试图撤销正在执行的一条语句，而同一个事务中之前执行的语句产生的修改会原分不动的保留下来，并继续执行事务。可是，已经执行的语句和发生错误的点对SQLite的回滚和取消整个事务都是必须的。应用可以通过<a href="c3ref/get_autocommit.html">sqlite3_get_autocommit()</a>C语言接口来告诉SQLite采用什么样的方针。（这段话应该有点儿问题。TODO）
 For all of these errors, SQLite attempts to undo just the one statement
 it was working on and leave changes from prior statements within the
 same transaction intact and continue with the transaction.  However, 
 depending on the statement being evaluated and the point at which the
 error occurs, it might be necessary for SQLite to rollback and
-cancel the entire transaction.  An application can tell which
-course of action SQLite took by using the
+cancel the entire transaction.  An application can tell which course of action SQLite took by using the
 <a href="c3ref/get_autocommit.html">sqlite3_get_autocommit()</a> C-language interface.</p>
 
-<p>It is recommended that applications respond to the errors
+<p>推荐应用通过明确声明一个ROLLBACK命令来响应上面罗列的错误。如果一个事务已经因为错误响应而自动回滚了，那么执行ROLLBACK命令将会失败并返回一个错误，不过这不会导致什么危害。
+<br />It is recommended that applications respond to the errors
 listed above by explicitly issuing a ROLLBACK command.  If the 
 transaction has already been rolled back automatically
 by the error response, then the ROLLBACK command will fail with an
 error, but no harm is caused by this.</p>
 
-<p>Future versions of SQLite may extend the list of errors which
+<p>未来的SQLite版本可能会增加可以引发自动回滚的错误列表。未来的SQLite版本可能会改变错误响应，特别的，我们可以在未来的SQLite版本中通过引发上述错误强制无条件回滚来简化这个接口
+<br />Future versions of SQLite may extend the list of errors which
 might cause automatic transaction rollback.  Future versions of
 SQLite might change the error response.  In particular, we may
 choose to simplify the interface in future versions of SQLite by
