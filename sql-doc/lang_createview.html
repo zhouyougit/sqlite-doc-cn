@@ -205,24 +205,28 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>The CREATE VIEW command assigns a name to a pre-packaged 
+<p>CREATE VIEW命令为预先包装好的<a href="lang_select.html">SELECT</a>语句分配了一个名字。一旦这个视图创建好，就可以在其他的<a href="lang_select.html">SELECT</a>语句的FROM字句中代替表名使用。
+<br />The CREATE VIEW command assigns a name to a pre-packaged 
 <a href="lang_select.html">SELECT</a> statement. 
 Once the view is created, it can be used in the FROM clause
 of another <a href="lang_select.html">SELECT</a> in place of a table name.
 </p>
 
-<p>If the "TEMP" or "TEMPORARY" keyword occurs in between "CREATE"
+<p>如果在"CREATE" 和 "VIEW"之间加入了"TEMP" 或 "TEMPORARY"关键词，那么这个视图只会对当前打开数据库的进程可见，并且会在数据库关闭时自动删除。
+<br />If the "TEMP" or "TEMPORARY" keyword occurs in between "CREATE"
 and "VIEW" then the view that is created is only visible to the
 process that opened the database and is automatically deleted when
 the database is closed.</p>
 
-<p> If a &lt;database-name&gt; is specified, then the view is created in 
+<p> 如果指定了&lt;database-name&gt;，那么视图会创建在指定的数据库上。在一个VIEW上同时指定&lt;database-name&gt;和TEMP关键词会引发一个错误，除非&lt;database-name&gt;是"temp"。如果没有指定数据库名，也没有使用TEMP关键词，那么VIEW会创建在主数据库上。
+<br />If a &lt;database-name&gt; is specified, then the view is created in 
 the named database. It is an error to specify both a &lt;database-name&gt;
 and the TEMP keyword on a VIEW, unless the &lt;database-name&gt; is "temp".
 If no database name is specified, and the TEMP keyword is not present,
 the VIEW is created in the main database.</p>
 
-<p>You cannot <a href="lang_delete.html">DELETE</a>, <a href="lang_insert.html">INSERT</a>, or <a href="lang_update.html">UPDATE</a> a view.  Views are read-only 
+<p>你不能在一个视图上<a href="lang_delete.html">DELETE</a>、 <a href="lang_insert.html">INSERT</a> 或 <a href="lang_update.html">UPDATE</a>。在SQLite中视图是只读的。不过，多数情况下你可以通过在视图上使用<a href="lang_createtrigger.html#instead_of_trigger">INSTEAD OF 触发器</a> 来达到相同的目的。视图使用<a href="lang_dropview.html">DROP VIEW</a>命令移除。
+<br />You cannot <a href="lang_delete.html">DELETE</a>, <a href="lang_insert.html">INSERT</a>, or <a href="lang_update.html">UPDATE</a> a view.  Views are read-only 
 in SQLite.  However, in many cases you can use an
 <a href="lang_createtrigger.html#instead_of_trigger">INSTEAD OF trigger</a> on the view to accomplish 
 the same thing.  Views are removed 
