@@ -249,7 +249,7 @@ fails with an error.</p>
 <br />The <a href="lang_transaction.html">COMMIT</a> command commits all outstanding transactions and leaves
 the transaction stack empty.</p>
 
-<p>RELEASE命令释放了指定名字savepoint-name的保存点后，会立即释放事务栈中在该保存点之后的所有保存点。
+<p>RELEASE命令释放了指定名字savepoint-name的保存点后，会立即释放事务栈中在该保存点之后的所有保存点。（翻的不准，TODO）
 如果RELEASE命令导致事务栈为空了（当RELEASE命令从栈上释放了最外层的事务），那么事务将会被提交。
 <br />The RELEASE command starts with the most recent addition to the
 transaction stack and releases savepoints backwards 
