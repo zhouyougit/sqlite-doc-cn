@@ -135,16 +135,19 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>A <a href="vtab.html">virtual table</a> is an interface to an external storage or computation
+<p><a href="vtab.html">虚表</a>是一个外部扩展存储接口或计算引擎，使其看起来像是一个表，但是在数据库文件中实际存储信息。
+<br />A <a href="vtab.html">virtual table</a> is an interface to an external storage or computation
 engine that appears to be a table but does not actually store information
 in the database file.</p>
 
-<p>In general, you can do anything with a <a href="vtab.html">virtual table</a> that can be done
+<p>通常来说，我们可以在<a href="vtab.html">虚表</a>上做任何可以在普通表上进行的操作，不过不能在虚表上创建索引和触发器。一些虚表的实现还可能会增加一些额外的限制。例如，许多虚表都是只读的。
+<br />In general, you can do anything with a <a href="vtab.html">virtual table</a> that can be done
 with an ordinary table, except that you cannot create indices or triggers on a
 virtual table.  Some virtual table implementations might impose additional
 restrictions.  For example, many virtual tables are read-only.</p>
 
-<p>The &lt;module-name&gt; is the name of an object that implements
+<p>&lt;module-name&gt; 是一个实现虚表的对象名。&lt;module-name&gt; 必须在使用CREATE VIRTUAL TABLE语句之前使用<a href="c3ref/create_module.html">sqlite3_create_module()</a> 或 <a href="c3ref/create_module.html">sqlite3_create_module_v2()</a>接口注册到SQLite数据库链接上。模块可能会需要若干个逗号分隔的参数。参数只要保证小括号匹配，可以是任何文本。参数的语法十分普通，参数可以被看做为传统的<a href="lang_createtable.html">CREATE TABLE</a>语句中的<a href="lang_createtable.html#tablecoldef">列定义</a> 。SQLite不经过任何处理就直接将参数传递给模块实现的<a href="vtab.html#xcreate">xCreate</a> 和 <a href="vtab.html#xconnect">xConnect</a>函数。模块的实现负责自己的参数的解析和解释。
+<br />The &lt;module-name&gt; is the name of an object that implements
 the virtual table.  The &lt;module-name&gt; must be registered with
 the SQLite database connection using
 <a href="c3ref/create_module.html">sqlite3_create_module()</a> or <a href="c3ref/create_module.html">sqlite3_create_module_v2()</a>
@@ -159,7 +162,8 @@ to the <a href="vtab.html#xcreate">xCreate</a> and <a href="vtab.html#xconnect">
 without any interpretation.  It is the responsibility
 of the module implementation to parse and interpret its own arguments.</p>
 
-<p>A virtual table is destroyed using the ordinary
+<p>虚表使用普通的<a href="lang_droptable.html">DROP TABLE</a>命令来删除，没有DROP VIRTUAL TABLE命令。
+<br />A virtual table is destroyed using the ordinary
 <a href="lang_droptable.html">DROP TABLE</a> statement.  There is no
 DROP VIRTUAL TABLE statement.</p>
 
