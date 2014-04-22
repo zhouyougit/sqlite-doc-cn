@@ -200,15 +200,18 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>This section is different from the others.  Most other sections of
+<p>这一章和其它的章节不太一样，其它大多数章节通常是介绍某个SQL命令。这一章不是介绍某个单独的命令，而是其它大多数命令中的组成部分——"表达式"。
+<br />This section is different from the others.  Most other sections of
 this document talks about a particular SQL command.  This section does
 not talk about a standalone command but about "expressions" which are 
 subcomponents of most other commands.</p>
 
 <a name="binaryops"></a>
 
-<h3>Operators</h3>
-<p>SQLite understands the following binary operators, in order from
+<h3>操作符
+<br />Operators</h3>
+<p>SQLite支持下列的二元操作符，按优先级从高到低排序：
+<br />SQLite understands the following binary operators, in order from
 highest to lowest precedence:</p>
 
 <blockquote><pre>
@@ -222,7 +225,8 @@ AND
 OR</font>
 </pre></blockquote>
 
-<p>Supported unary prefix operators are these:</p>
+<p>支持的一元前缀操作符如下：
+<br />Supported unary prefix operators are these:</p>
 
 <blockquote><pre>
 <font color="#2c2cf0"><big>-    +    ~    NOT</big></font>
@@ -230,7 +234,8 @@ OR</font>
 
 <a name="collateop"></a>
 
-<p>The COLLATE operator is a unary postfix
+<p>COLLATE操作符是一个一元后缀操作符，用来为一个表达式指定一个<a href="datatype3.html#collation">排序器</a>。COLLATE操作符的优先级（约束更紧）比除"~"以外的所有二元和一元前缀操作符都高。（COLLATE和"~"是相关联的，所以他们的绑定顺序无需关注。）使用COLLATE操作符指定的排序器会覆盖由表的<a href="lang_createtable.html#tablecoldef">列定义</a>中COLLATE子句决定的排序器。更多内容参见<a href="datatype3.html">SQLite3数据类型</a>文档中的<a href="datatype3.html#collation">排序器</a>章节。
+<br />The COLLATE operator is a unary postfix
 operator that assigns a <a href="datatype3.html#collation">collating sequence</a> to an expression.
 The COLLATE operator has a higher precedence (binds more tightly) than any
 binary operator and any unary prefix operator except "~".
@@ -243,13 +248,16 @@ in the <a href="datatype3.html">Datatype In SQLite3</a> document for additional 
 </p>
 
 
-<p>The unary operator <font color="#2c2cf0"><big>+</big></font> is a no-op.  It can be applied
+<p><font color="#2c2cf0"><big>+</big></font>一元操作符没有直接的操作的。可以在字符串、数字、BLOB、NULL值上使用它，返回值通常与操作值一样。
+<br />The unary operator <font color="#2c2cf0"><big>+</big></font> is a no-op.  It can be applied
 to strings, numbers, blobs or NULL and it always returns a result
 with the same value as the operand.</p>
 
-<p>Note that there are two variations of the equals and not equals
+<p>注意相等和不等操作符有两个变种。<font color="#2c2cf0"><big>=</big></font> 和 <font color="#2c2cf0"><big>==</big></font>都可以判断相等。<font color="#2c2cf0"><big>!=</big></font> 和 <font color="#2c2cf0"><big>&lt;&gt;</big></font>都可以判断不等。
+<font color="#2c2cf0"><big>||</big></font>操作符是"连接符"——将操操作值的两个字符串连接到一起。
+<font color="#2c2cf0"><big>%</big></font>输出左边操作值按右边值取模的结果值。
+<br />Note that there are two variations of the equals and not equals
 operators.  Equals can be either
-
 <font color="#2c2cf0"><big>=</big></font> or <font color="#2c2cf0"><big>==</big></font>.
 The non-equals operator can be either
 <font color="#2c2cf0"><big>!=</big></font> or <font color="#2c2cf0"><big>&lt;&gt;</big></font>.
@@ -258,10 +266,14 @@ the two strings of its operands.
 The operator <font color="#2c2cf0"><big>%</big></font> outputs the value of its left 
 operand modulo its right operand.</p>
 
-<p>The result of any binary operator is either a numeric value or 
+<p>除了<font color="#2c2cf0"><big>||</big></font>连接符的计算结果为NULL或一个文本外，其他的所有二元操作符的计算结果都是数字值或者NULL。
+
+<br />The result of any binary operator is either a numeric value or 
 NULL, except for the <font color="#2c2cf0"><big>||</big></font> concatenation operator which always 
 evaluates to either NULL or a text value.</p><a name="isisnot"></a>
-<p>The <font color="#2c2cf0"><big>IS</big></font> and <font color="#2c2cf0"><big>IS NOT</big></font> operators work
+
+<p><font color="#2c2cf0"><big>IS</big></font> 和 <font color="#2c2cf0"><big>IS NOT</big></font>操作符的功能与<font color="#2c2cf0"><big>=</big></font> 和 <font color="#2c2cf0"><big>!=</big></font>类似，不过如果其中一个或两个操作数是NULL，那么它们则不相同。在这种情况下，如果两个操作数都是NULL，那么IS操作符返回1（true）并且IS NOT操作符返回0（false）。如果一个操作数是NULL，另一个不是NULL，那么IS操作符返回0（false），IS NOT操作符返回1（true）。IS和IS NOT表达式不会出现计算返回NULL的情况。操作符<font color="#2c2cf0"><big>IS</big></font> 和 <font color="#2c2cf0"><big>IS NOT</big></font>的优先级与<font color="#2c2cf0"><big>=</big></font>一样。
+<br />The <font color="#2c2cf0"><big>IS</big></font> and <font color="#2c2cf0"><big>IS NOT</big></font> operators work
 like <font color="#2c2cf0"><big>=</big></font> and <font color="#2c2cf0"><big>!=</big></font> except when one or both of the
 operands are NULL. In this case, if both operands are NULL, then the
 IS operator evaluates to 1 (true) and the IS NOT operator evaluates
@@ -271,13 +283,16 @@ It is not possible for an IS or IS NOT expression to evaluate to NULL.
 Operators <font color="#2c2cf0"><big>IS</big></font> and <font color="#2c2cf0"><big>IS NOT</big></font> have the same 
 precedence as <font color="#2c2cf0"><big>=</big></font>.<a name="litvalue"></a>
 
-<h3>Literal Values</h3>
+<h3>字面值
+<br />Literal Values</h3>
 <p>
-A literal value is a constant of some kind.
+字面值是一些类型的常量。字面值可以是整数、浮点数、字符串、BLOB或者NULL。
+<br />A literal value is a constant of some kind.
 Literal values may be integers, floating point numbers, strings,
 BLOBs, or NULLs.</p>
 
-<p>The syntax for integer and floating point literals (collectively
+<p>整数和浮点数字面值（全部"数字字符值"）的语法如下图所示：
+<br />The syntax for integer and floating point literals (collectively
 "numeric literals") is shown by the following diagram:</p>
 
 <p><b><a href="syntaxdiagrams.html#numeric-literal">numeric-literal:</a></b></p><blockquote>
@@ -286,7 +301,8 @@ BLOBs, or NULLs.</p>
 
 
 <p>
-If a numeric literal has a decimal point or an exponentiation
+如果数字字面量有一个小数点或者一个幂子句，那么这是一个浮点字面量，否则就是一个证书字面量。浮点字面量中幂子句前面的字符"E"大小写都可以。"."字符总是用来作为小数点，即使本地设置中指定使用","来当小数点——使用","作为小数点会导致语句模糊不清。
+<br />If a numeric literal has a decimal point or an exponentiation
 clause, then it is a floating point literal.  Otherwise is it is an 
 integer literal.  The "E" character that begins the exponentiation
 clause of a floating point literal can be either upper or lower case.
@@ -295,7 +311,8 @@ as the decimal point even if the locale setting specifies "," for
 this role - the use of "," for the decimal point would result in
 syntactic ambiguity.</p>
 
-<p> A string constant is formed by enclosing the
+<p> 字符串常量是由包在单引号(')中的字符串构成。字符串里的单引号可以使用两个连续的单引号来转义——类似Pascal。这里不支持C风格中使用反斜杠的转义，因为这不是标准SQL。BLOB字面量是一个包含十六进制值的字符串字面量，并且在前面加一个"x"或"X"。例如：
+<br />A string constant is formed by enclosing the
 string in single quotes (').  A single quote within the string can
 be encoded by putting two single quotes in a row - as in Pascal.
 C-style escapes using the backslash character are not supported because
@@ -308,14 +325,17 @@ X'53514C697465'
 </pre></blockquote>
 
 <p>
-A literal value can also be the token "NULL".
+字面量还可以是"NULL"。
+<br />A literal value can also be the token "NULL".
 </p>
 
 <a name="varparam"></a>
 
-<h3>Parameters</h3>
+<h3>参数
+<br />Parameters</h3>
 <p>
-A "variable" or "parameter" token
+一个"variable" 或 "parameter"标志可以在表达式中指定一个占位符，可以在运行时使用C/C++接口中的<a href="c3ref/bind_blob.html">sqlite3_bind()</a>类接口来填入具体值。参数可以有如下这些格式：
+<br />A "variable" or "parameter" token
 specifies a placeholder in the expression for a 
 value that is filled in at runtime using the
 <a href="c3ref/bind_blob.html">sqlite3_bind()</a> family of C/C++ interfaces.
@@ -326,13 +346,15 @@ Parameters can take several forms:
 <table>
 <tr>
 <td align="right" valign="top"><b>?</b><i>NNN</i></td><td width="20"></td>
-<td>A question mark followed by a number <i>NNN</i> holds a spot for the
+<td>一个问号加一个数字<i>NNN</i>表示这个位置的值是第NNN个参数。NNN必须在1到<a href="limits.html#max_variable_number">SQLITE_MAX_VARIABLE_NUMBER</a>之间。
+<br />A question mark followed by a number <i>NNN</i> holds a spot for the
 NNN-th parameter.  NNN must be between 1 and <a href="limits.html#max_variable_number">SQLITE_MAX_VARIABLE_NUMBER</a>.
 </td>
 </tr>
 <tr>
 <td align="right" valign="top"><b>?</b></td><td width="20"></td>
-<td>A question mark that is not followed by a number creates a parameter
+<td>一个没有跟随数字的问号表示这个位置是第N+1个参数，其中N是前面已经指定了的最大的参数序号。如果N+1大于<a href="limits.html#max_variable_number">SQLITE_MAX_VARIABLE_NUMBER</a>，那么会产生一个错误。
+<br />A question mark that is not followed by a number creates a parameter
 with a number one greater than the largest parameter number already assigned.
 If this means the parameter number is greater than
 <a href="limits.html#max_variable_number">SQLITE_MAX_VARIABLE_NUMBER</a>, it is an error.
@@ -340,7 +362,8 @@ If this means the parameter number is greater than
 </tr>
 <tr>
 <td align="right" valign="top"><b>:</b><i>AAAA</i></td><td width="20"></td>
-<td>A colon followed by an identifier name holds a spot for a 
+<td>冒号加一个标识符表示这个位置的值是一个名为:AAAA的<a href="c3ref/bind_parameter_name.html">命名参数</a>。命名参数也同样是有编号的，为其分配的编号是比前面已经分配的最大编号参数的编号加1。如果这个编号大于<a href="limits.html#max_variable_number">SQLITE_MAX_VARIABLE_NUMBER</a>，那么会产生一个错误。为了避免产生混淆，最好避免同时使用命名参数和编号参数。
+<br />A colon followed by an identifier name holds a spot for a 
 <a href="c3ref/bind_parameter_name.html">named parameter</a> with the name :AAAA.  
 Named parameters are also numbered. The number assigned is one greater than
 the largest parameter number already assigned. If this means the parameter
@@ -350,12 +373,14 @@ parameters.</td>
 </tr>
 <tr>
 <td align="right" valign="top"><b>@</b><i>AAAA</i></td><td width="20"></td>
-<td>An "at" sign works exactly like a colon, except that the name of
+<td>@符的作用和冒号类似，只不过参数的名字是@AAAA。
+<br />An "at" sign works exactly like a colon, except that the name of
 the parameter created is @AAAA.</td>
 </tr>
 <tr>
 <td align="right" valign="top"><b>$</b><i>AAAA</i></td><td width="20"></td>
-<td>A dollar-sign followed by an identifier name also holds a spot for a named
+<td>美元符加一个标识符表示这个位置的值是一个名为$AAAA的命名参数。在这种情况下，标识符名字里可以包含一个或多个"::"以及包含任何文本的"(...)"后缀。这是<a href="http://www.tcl.tk/">Tcl 编程语言</a>中变量名的格式。之所以提供这种语法是因为SQLite实际上是一个<a href="tclsqlite.html">Tcl 扩展</a>。
+<br />A dollar-sign followed by an identifier name also holds a spot for a named
 parameter with the name $AAAA.  The identifier name in this case can include
 one or more occurrences of "::" and a suffix enclosed in "(...)" containing
 any text at all.  This syntax is the form of a variable name in the
@@ -366,11 +391,13 @@ of this syntax results from the fact that SQLite is really a
 </table>
 </blockquote>
 
-<p>Parameters that are not assigned values using
+<p>没有使用<a href="c3ref/bind_blob.html">sqlite3_bind()</a>指定值的参数会被视为NULL。
+<br />Parameters that are not assigned values using
 <a href="c3ref/bind_blob.html">sqlite3_bind()</a> are treated
 as NULL.</p>
 
-<p>The maximum parameter number is set at compile-time by
+<p>参数的最大数量是在编译器使用<a href="limits.html#max_variable_number">SQLITE_MAX_VARIABLE_NUMBER</a>指令设定的。每个<a href="c3ref/sqlite3.html">数据库连接</a>可以使用<a href="c3ref/limit.html">sqlite3_limit</a>(D, <a href="c3ref/c_limit_attached.html#sqlitelimitvariablenumber">SQLITE_LIMIT_VARIABLE_NUMBER</a>,...) 接口将最大参数数调到编译器指定的最大值以下。
+<br />The maximum parameter number is set at compile-time by
 the <a href="limits.html#max_variable_number">SQLITE_MAX_VARIABLE_NUMBER</a> macro.  An individual <a href="c3ref/sqlite3.html">database connections</a>
 D can reduce its maximum parameter number below the compile-time maximum
 using the <a href="c3ref/limit.html">sqlite3_limit</a>(D, <a href="c3ref/c_limit_attached.html#sqlitelimitvariablenumber">SQLITE_LIMIT_VARIABLE_NUMBER</a>,...) interface.
@@ -378,8 +405,12 @@ using the <a href="c3ref/limit.html">sqlite3_limit</a>(D, <a href="c3ref/c_limit
 
 <a name="like"></a>
 
-<h3>The LIKE and GLOB operators</h3>
-<p>The LIKE operator does a pattern matching comparison. The operand
+<h3>LIKE和GLOB运算符。
+<br />The LIKE and GLOB operators</h3>
+<p>LIKE操作符是用来做模式匹配比较的。LIKE操作符右边的操作数是进行匹配的模式，左边是需要进行匹配的字符串。
+
+LIKE模式中的百分号（"%"）匹配字符串中任意零个或多个字符的序列。LIKE模式中的下划线（"_"）匹配字符串中的一个字符。其他所有的字符用于匹配字符自身或者对应的大/小写字符（也就是不区分大小写）。（一个bug：SQLite默认只支持ASCII字符的不区分大小写匹配。对于超过ASCII范围的unicode字符LIKE操作符默认是大小写敏感的。例如，表达式<b>'a'&nbsp;LIKE&nbsp;'A'</b>是TRUE，而<b>'&aelig;'&nbsp;LIKE&nbsp;'&AElig;'</b>则是FALSE。）
+<br />The LIKE operator does a pattern matching comparison. The operand
 to the right of the LIKE operator contains the pattern and the left hand
 operand contains the string to match against the pattern.
 
@@ -394,7 +425,8 @@ beyond the ASCII range.  For example,
 the expression <b>'a'&nbsp;LIKE&nbsp;'A'</b>
 is TRUE but <b>'&aelig;'&nbsp;LIKE&nbsp;'&AElig;'</b> is FALSE.)<p>
 
-<p>If the optional ESCAPE clause is present, then the expression
+<p>如果使用了可选的ESCAPE子句，那么ESCAPE关键词后面的表达式结果必须是一个只有一个字符的字符串。这个逃逸字符可以使用在LIKE模式中，包括百分号和下划线字符。在逃逸字符后跟百分号(%)、下划线(_)或逃逸字符本身，用于匹配一个百分号、下划线或者单个逃逸字符。
+<br />If the optional ESCAPE clause is present, then the expression
 following the ESCAPE keyword must evaluate to a string consisting of
 a single character. This character may be used in the LIKE pattern
 to include literal percent or underscore characters. The escape
@@ -403,16 +435,20 @@ instance of the escape character itself matches a
 literal percent symbol, underscore, or a single escape character,
 respectively.
 
-<p>The infix LIKE operator is implemented by calling the
+<p>LIKE表达式是通过调用应用定义的SQL函数<a href="lang_corefunc.html#like">like(<i>Y</i>,<i>X</i>)</a> 或
+<a href="lang_corefunc.html#like">like(<i>Y</i>,<i>X</i>,<i>Z</i>)</a></a>来实现的。
+<br />The infix LIKE operator is implemented by calling the
 application-defined SQL functions <a href="lang_corefunc.html#like">like(<i>Y</i>,<i>X</i>)</a> or
 <a href="lang_corefunc.html#like">like(<i>Y</i>,<i>X</i>,<i>Z</i>)</a></a>.</p>
 
-<p>The LIKE operator can be made case sensitive using the
+<p>LIKE操作符可以使用<a href="pragma.html#pragma_case_sensitive_like">case_sensitive_like 指令</a>来改为大小写敏感。
+<br />The LIKE operator can be made case sensitive using the
 <a href="pragma.html#pragma_case_sensitive_like">case_sensitive_like pragma</a>.</p>
 
 <a name="glob"></a>
 
-<p>The GLOB operator is similar to LIKE but uses the Unix
+<p>GLOB操作符类似LIKE，但是通配符使用的是Unix文件通配符语法。并且，GLOB是大小写敏感的，而不像LIKE。GLOB和LIKE都可以通过前缀NOT关键词来反转表意。GLOB操作符通过调用<a href="lang_corefunc.html#glob">glob(<i>Y</i>,<i>X</i>)</a>函数实现的，并且可以通过重写该函数来修改。
+<br />The GLOB operator is similar to LIKE but uses the Unix
 file globbing syntax for its wildcards.  Also, GLOB is case
 sensitive, unlike LIKE.  Both GLOB and LIKE may be preceded by
 the NOT keyword to invert the sense of the test.  The infix GLOB 
@@ -422,7 +458,8 @@ that function.</p>
 
 <a name="regexp"></a>
 
-<p>The REGEXP operator is a special syntax for the regexp()
+<p>REGEXP操作符是regexp()用户函数的语法。默认情况下没有定义regexp()函数，所以使用REGEXP操作符通常会返回一个错误信息。如果运行时加入了一个名为"regexp"的<a href="c3ref/create_function.html">应用定义SQL函数</a>，那么"<i>X</i> REGEXP <i>Y</i>"操作会通过调用"regexp(<i>Y</i>,<i>X</i>)"实现。
+<br />The REGEXP operator is a special syntax for the regexp()
 user function.  No regexp() user function is defined by default
 and so use of the REGEXP operator will normally result in an
 error message.  If an <a href="c3ref/create_function.html">application-defined SQL function</a> named "regexp"
@@ -431,7 +468,8 @@ be implemented as a call to "regexp(<i>Y</i>,<i>X</i>)".</p>
 
 <a name="match"></a>
 
-<p>The MATCH operator is a special syntax for the match()
+<p>MATCH操作符是用来调用应用定义函数match()的语法。默认的match()函数实现是抛出一个异常，一般来说这是没有意义的。但是扩展可以覆盖这个函数来增加有用的逻辑。
+<br />The MATCH operator is a special syntax for the match()
 application-defined function.  The default match() function implementation
 raises an exception and is not really useful for anything.
 But extensions can override the match() function with more
@@ -439,8 +477,10 @@ helpful logic.</p>
 
 <a name="between"></a>
 
-<h3>The BETWEEN operator</h3>
-<p>The BETWEEN operator is logically equivalent to a pair of comparisons.
+<h3>BETWEEN操作符
+<br />The BETWEEN operator</h3>
+<p>BETWEEN操作符在逻辑上等价于一对比较。"<i>x</i> <b>BETWEEN</b> <i>y</i> <b>AND</b> <i>z</i>" 等价于"<i>x</i><b>&gt;=</b><i>y</i> <b>AND</b> <i>x</i><b>&lt;=</b><i>z</i>"，只不过在BETWEEN中，<i>x</i>表达式只会计算一次。BETWEEN操作符的优先级与<b>==</b>、 <b>!=</b> 和 <b>LIKE</b>操作符一样，并且是从左向右结合。
+<br />The BETWEEN operator is logically equivalent to a pair of comparisons.
 "<i>x</i> <b>BETWEEN</b> <i>y</i> <b>AND</b> <i>z</i>" is 
 equivalent to 
 "<i>x</i><b>&gt;=</b><i>y</i> <b>AND</b> <i>x</i><b>&lt;=</b><i>z</i>" except
@@ -450,15 +490,19 @@ as operators <b>==</b> and <b>!=</b> and <b>LIKE</b> and groups left to right.
 
 <a name="case"></a>
 
-<h3>The CASE expression</h3>
-<p>A CASE expression serves a role similar to IF-THEN-ELSE in other
+<h3>CASE表达式
+<br />The CASE expression</h3>
+<p>CASE表达式的角色类似于其他编程语言中的IF-THEN-ELSE。
+A CASE expression serves a role similar to IF-THEN-ELSE in other
 programming languages.  
 
-<p>The optional expression that occurs in between the CASE keyword and the
+<p>在CASE关键词和第一个WHEN关键词之间的可选表达式叫做"base"表达式。CASE表达式有两个基本形式：使用base表达式和不使用base表达式。
+<br />The optional expression that occurs in between the CASE keyword and the
 first WHEN keyword is called the "base" expression. There are two basic forms
 of the CASE expression: those with a base expression and those without.
 
-<p>In a CASE without a base expression, each WHEN expression is evaluated
+<p>在不包含base表达式的CASE中，会从最左边依次向右，将每个WHEN表达式计算，并把结果视为布尔值。CASE表达式的结果是计算第一个返回true的WHEN表达式对应的THEN表达式的计算结果。否则，如果没有WHEN表达式返回true，那么则返回ELSE表达式的计算结果。如果没有ELSE表达式，并且没有WHEN表达式返回true，那么最终结果为NULL。
+<br />In a CASE without a base expression, each WHEN expression is evaluated
 and the result treated as a boolean, starting with the leftmost and continuing
 to the right. The result of the CASE expression is the evaluation of the THEN
 expression that corresponds to the first WHEN expression that evaluates to
@@ -466,9 +510,11 @@ true. Or, if none of the WHEN expressions evaluate to true, the result of
 evaluating the ELSE expression, if any. If there is no ELSE expression and
 none of the WHEN expressions are true, then the overall result is NULL.
 
-<p>A NULL result is considered untrue when evaluating WHEN terms.
+<p>在计算WHEN语句时返回NULL被认为是false。
+<br />A NULL result is considered untrue when evaluating WHEN terms.
 
-<p>In a CASE with a base expression, the base expression is evaluated just
+<p>在使用base表达式的CASE中。base表达式只会计算一次并且会从左到右依次和每个WHEN表达式的结果进行比较。CASE表达式的结果是第一个比较返回true的WHEN对应的THEN表达式的计算结果。如果没有WHEN表达式与base表达的比较结果为true，那么会返回ELSE表达式的计算结果。如果没有ELSE表达式并且没有WHEN表达式与base表达式相等，那么最终结果为NULL。
+<br />In a CASE with a base expression, the base expression is evaluated just
 once and the result is compared against the evaluation of each WHEN 
 expression from left to right. The result of the CASE expression is the 
 evaluation of the THEN expression that corresponds to the first WHEN
@@ -478,17 +524,23 @@ of evaluating the ELSE expression, if any. If there is no ELSE expression and
 none of the WHEN expressions produce a result equal to the base expression,
 the overall result is NULL.
 
-<p>When comparing a base expression against a WHEN expression, the same
+<p>当比较base表达式和WHEN表达式时，排序器、亲和力以及NULL处理规则都和在base表达式与WHEN表达式之间使用<big><b>=</b></big>操作符是一样的。
+<br />When comparing a base expression against a WHEN expression, the same
 collating sequence, affinity, and NULL-handling rules apply as if the
 base expression and WHEN expression are respectively the left- and
-right-hand operands of an <big><b>=</b></big> operator.</p> If the base 
+right-hand operands of an <big><b>=</b></big> operator.</p>
+
+如果base表达式是NULL，那么CASE的结果如果有ELSE表达式，则总是ELSE表达式结果，否则然会NULL。
+ If the base 
 expression is NULL then the result of the CASE is always the result 
 of evaluating the ELSE expression if it exists, or NULL if it does not.
 
-<p>Both forms of the CASE expression use lazy, or short-circuit, 
+<p>两种形式的CASE表达式都是使用懒式/短路的计算方式。
+<br />Both forms of the CASE expression use lazy, or short-circuit, 
 evaluation.
 
-<p>The only difference between the following two CASE expressions is that 
+<p>下面两种CASE表达式唯一的不同是<i>x</i>表达式在第一个例子中只计算一次，而在第二个例子中会计算多次。
+<br />The only difference between the following two CASE expressions is that 
 the <i>x</i> expression is evaluated exactly once in the first example but 
 might be evaluated multiple times in the second:
 
@@ -500,8 +552,10 @@ might be evaluated multiple times in the second:
 
 <a name="in_op"></a>
 
-<h3>The IN and NOT IN operators</h3>
-<p>The IN and NOT IN operators take a single scalar operand on the
+<h3>IN和NOT IN操作符
+<br />The IN and NOT IN operators</h3>
+<p>IN和NOT IN操作符左边是一个标量操作值，右边是一个由包含在圆括号中的零或多个指定的标量组成的集合或者是一个子查询。当IN和NOT IN的右操作值是一个子查询时，这个子查询必须只能有一列结果。当右边操作值是一个空集合时，不管左边操作值是什么值甚至是NULL，IN的返回值都为false，NOT IN的返回值都为true。IN和NOT IN操作符的结果是按照下面表格来决定的：
+<br />The IN and NOT IN operators take a single scalar operand on the
 left and a vector operand on the right
 formed by an explicit list of zero or more scalars or by a 
 single subquery.
@@ -516,12 +570,18 @@ matrix:
 <center>
 <table border=1>
 <tr>
-<th>Left operand <br>is NULL
-<th>Right operand <br>contains NULL
-<th>Right operand <br>is an empty set
-<th>Left operand found <br>within right operand
-<th>Result of <br>IN operator
-<th>Result of <br>NOT IN operator
+<th>左值是NULL
+<br />Left operand <br>is NULL
+<th>右值包含NULL
+<br />Right operand <br>contains NULL
+<th>右值是空集合
+<br />Right operand <br>is an empty set
+<th>右值中包含左值
+<br />Left operand found <br>within right operand
+<th>IN操作符的结果
+<br />Result of <br>IN operator
+<th>NOT IN操作符的结果
+<br />Result of <br>NOT IN operator
 <tr>
 <td align="center">no
 <td align="center">no
@@ -560,29 +620,35 @@ matrix:
 </table>
 </center>
 
-<p>Note that SQLite allows the parenthesized list of scalar values on
+<p>注意，IN和NOT IN操作符允许右手边的标量列表为空，但是其它大多数SQL数据库引擎和SQL92标准都要求列表必须至少包含一个元素。
+<br />Note that SQLite allows the parenthesized list of scalar values on
 the right-hand side of an IN or NOT IN operator to be an empty list but
 most other SQL database database engines and the SQL92 standard require
 the list to contain at least one element.</p>
 
 <a name="in_op"></a>
 
-<h3>The EXISTS operator</h3>
+<h3>EXISTS操作符
+<br />The EXISTS operator</h3>
 
-<p>The EXISTS operator always evaluates to one of the integer values 0 
+<p>EXISTS操作符的返回结果总是0或1.如果EXISTS操作符的右边操作值是一个SELECT语句，那么当这个SELECT语句返回一行或多行记录时，EXISTS操作符返回1，如果这个SELECT返回零行记录，那么EXISTS操作符返回0。
+<br />The EXISTS operator always evaluates to one of the integer values 0 
 and 1. If executing the SELECT statement specified as the right-hand 
 operand of the EXISTS operator would return one or more rows, then the
 EXISTS operator evaluates to 1. If executing the SELECT would return
 no rows at all, then the EXISTS operator evaluates to 0. 
 
-<p>The number of columns in each row returned by the SELECT statement
+<p>SELECT语句返回的列数和其中的值都不影响EXISTS操作符的结果。尤其是当行里是否包含NULL值对处理都没有任何的影响。
+<br />The number of columns in each row returned by the SELECT statement
 (if any) and the specific values returned have no effect on the results
 of the EXISTS operator. In particular, rows containing NULL values are
 not handled any differently from rows without NULL values.
 
-<h3>Scalar Subqueries</h3>
+<h3>标量子查询
+<br />Scalar Subqueries</h3>
 
-<p>A <a href="lang_select.html">SELECT</a> statement enclosed in parentheses may appear as a scalar
+<p>一个包括在小括号中的<a href="lang_select.html">SELECT</a>语句可以被看作为一个标量数值。标量数值中使用的<a href="lang_select.html">SELECT</a>语句的返回结果必须只能有一列。这个表达式的结果是SELECT语句返回的仅有的那一列数据中第一行数据的值。如果SELECT语句返回数据多于一行，那么第一行之后的所有数据都会被忽略。如果SELECT语句没有返回数据，那么表达式的结果是NULL。也就是标量子查询的LIMIT总为1。给这个SQL语句指定任何其他的LIMIT值都会被忽略。
+<br />A <a href="lang_select.html">SELECT</a> statement enclosed in parentheses may appear as a scalar
 quantity. A <a href="lang_select.html">SELECT</a> used as a scalar quantity must return a result set
 with a single column. The result of the expression is the value of the
 only column in the first row returned by the SELECT statement. If the SELECT 
@@ -591,13 +657,16 @@ the SELECT yields no rows, then the value of the expression is NULL.
 The LIMIT of a scalar subquery is always 1.
 Any other LIMIT value given in the SQL text is ignored.
 
-<p>All types of <a href="lang_select.html">SELECT</a> statement, including aggregate and <a href="lang_select.html#compound">compound SELECT</a>
+<p>所有类型的<a href="lang_select.html">SELECT</a>语句，包括聚合查询和<a href="lang_select.html#compound">复合 SELECT</a>查询（使用UNION或EXCEPT关键词查询）都可以使用在标量子查询中。
+<br />All types of <a href="lang_select.html">SELECT</a> statement, including aggregate and <a href="lang_select.html#compound">compound SELECT</a>
 queries (queries with keywords like UNION or EXCEPT) are allowed as scalar
 subqueries.
 
-<h3>Table Column Names</h3>
+<h3>表的列名
+<br />Table Column Names</h3>
 
-<p>A column name can be any of the names defined in the <a href="lang_createtable.html">CREATE TABLE</a>
+<p>列名可以是<a href="lang_createtable.html">CREATE TABLE</a>语句中定义的任何名字，也可以是"<b>ROWID</b>"、"<b>OID</b>"、 "<b>_ROWID_</b>"这三个特殊标识符之一。这些特殊标识符都是指代每个关联表中每一行的唯一整数键（<a href="lang_createtable.html#rowid">rowid</a>）的。这些特殊标识符只有当 <a href="lang_createtable.html">CREATE TABLE</a>语句中没有定义同名列的情况下才能引用到行键。在任何可以使用普通列的地方都可以使用rowid。
+<br />A column name can be any of the names defined in the <a href="lang_createtable.html">CREATE TABLE</a>
 statement or one of the following special identifiers: "<b>ROWID</b>",
 "<b>OID</b>", or "<b>_ROWID_</b>".
 These special identifiers all describe the
@@ -608,7 +677,8 @@ statement does not define a real column with the same name.
 The rowid can be used anywhere a regular
 column can be used.</p>
 
-<p>A <a href="lang_select.html">SELECT</a> statement used as either a scalar subquery or as the 
+<p>在标量子查询或者IN、NOT IN、EXISTS表达式的右值中使用的<a href="lang_select.html">SELECT</a>语句都可以包含外层查询的列引用。这种子查询被认为是一个关联查询。这个关联查询会在每次需要其结果的时候都重新计算一遍。一个非关联查询只会计算一次并且复用结果。
+<br />A <a href="lang_select.html">SELECT</a> statement used as either a scalar subquery or as the 
 right-hand operand of an IN, NOT IN or EXISTS expression may contain 
 references to columns in the outer query. Such a subquery is known as
 a correlated subquery. A correlated subquery is reevaluated each time
@@ -617,47 +687,57 @@ and the result reused as necessary.
 
 <a name="castexpr"></a>
 
-<h3>CAST expressions</h3>
+<h3>CAST表达式
+<br />CAST expressions</h3>
 
-<p>A CAST expression of the form "CAST(&lt;expr&gt; AS &lt;type-name&gt;)"
+<p>"CAST(&lt;expr&gt; AS &lt;type-name&gt;)"格式的CAST表达式是用来将&lt;expr&gt;的值转换为&lt;type-name&gt;所指定的不同的<a href="datatype3.html#storageclasses">存储类</a>。
+CAST转换类似于在一个值上发生<a href="datatype3.html#affinity">列亲和性</a>转换，不过不同的是CAST操作符转换会导致有损耗的不可逆的转换，而列亲和力只会做无损耗可逆的转换。
+<br />A CAST expression of the form "CAST(&lt;expr&gt; AS &lt;type-name&gt;)"
 is used to convert the value of &lt;expr&gt; to 
 a different <a href="datatype3.html#storageclasses">storage class</a> specified by &lt;type-name&gt;.
-A CAST conversion is similar to the conversion that takes
-place when a <a href="datatype3.html#affinity">column affinity</a> is applied to a value except that with
+A CAST conversion is similar to the conversion that takes place when a <a href="datatype3.html#affinity">column affinity</a> is applied to a value except that with
 the CAST operator the conversion always takes place even if the conversion
 lossy and irreversible, whereas column affinity only changes the data type
 of a value if the change is lossless and reversible.
 
-<p>If the value of &lt;expr&gt; is NULL, then the result of the CAST
+<p>如果&lt;expr&gt;的值为NULL，那么CAST表达式的结果也是NULL。否则，结果的存储类是通过执行&lt;type-name&gt;上的<a href="datatype3.html#affname">列亲和性选择规则</a>来决定的。
+<br />If the value of &lt;expr&gt; is NULL, then the result of the CAST
 expression is also NULL. Otherwise, the storage class of the result
 is determined by applying the <a href="datatype3.html#affname">rules for determining column affinity</a> to
 the &lt;type-name&gt;.
 
 <table border=1>
 <tr>
-  <th> Affinity of &lt;type-name&gt;
-  <th> Conversion Processing
+  <th> &lt;type-name&gt;的亲和力
+<br />Affinity of &lt;type-name&gt;
+  <th> 转换处理
+<br />Conversion Processing
 <tr>
   <td> NONE 
-  <td> Casting a value to a &lt;type-name&gt; with no affinity causes the value to
+  <td> 将一个值转换到无亲和性的 &lt;type-name&gt;会导致这个值被转换为BLOB。转换到BLOB的过程是首先将这个值按照数据库连接<a href="pragma.html#pragma_encoding">编码</a> 的转换为TEXT，然后再将这个TEXT表示为BLOB字节序列。
+<br />Casting a value to a &lt;type-name&gt; with no affinity causes the value to
   be converted into a BLOB.  Casting to a BLOB consists of first casting
   the value to TEXT in the <a href="pragma.html#pragma_encoding">encoding</a> of the database connection, then
   interpreting the resulting byte sequence as a BLOB instead of as TEXT.
 
 <tr>
   <td> TEXT
-  <td> To cast a BLOB value to TEXT, the sequence of bytes that make up the
+  <td> 把一个BLOB值转换为TEXT的过程是将构成BLOB的字节序列按照数据库的编码表示成一个文本。
+<br />To cast a BLOB value to TEXT, the sequence of bytes that make up the
   BLOB is interpreted as text encoded using the database encoding.
-  <p>
+  <p>把INTEGER或REAL值转换为TEXT类似通过<a href="c3ref/mprintf.html">sqlite3_snprintf()</a>来输出这个值。只不过结果TEXT的编码使用的是数据库连接的<a href="pragma.html#pragma_encoding">编码</a>。
+<br />
    Casting an INTEGER or REAL value into TEXT renders the value as if via 
     <a href="c3ref/mprintf.html">sqlite3_snprintf()</a> except that the resulting TEXT uses the <a href="pragma.html#pragma_encoding">encoding</a> of
     the database connection.
 
 <tr>
   <td> REAL
-  <td> When casting a BLOB value to a REAL, the value is first converted to
+  <td> 当把一个BLOB值转换为REAL时，这个值会首先转换为TEXT。
+<br />When casting a BLOB value to a REAL, the value is first converted to
         TEXT.
-       <p>When casting a TEXT value to REAL, the longest possible prefix of
+       <p>当把一个TEXT值转换为REAL时，首先将文本值中实数所能支持的最长的前缀提取出来，然后把剩余的部分忽略掉。当把一个TEXT转换为REAL时，TEXT值前面的空格部分都会被忽略掉。如果文本前缀无法表示为一个实数，那么结果会转换为0.0。
+<br />When casting a TEXT value to REAL, the longest possible prefix of
         the value that can be interpreted as a real number is extracted from
         the TEXT value and the remainder ignored. Any leading spaces in the
         TEXT value are ignored when converging from TEXT to REAL. If there is
@@ -666,16 +746,19 @@ the &lt;type-name&gt;.
 
 <tr>
   <td> INTEGER
-  <td> When casting a BLOB value to INTEGER, the value is first converted to
+  <td> 当把一个BLOB值转换为INTEGER时，这个值会首先转换为TEXT。
+<br />When casting a BLOB value to INTEGER, the value is first converted to
         TEXT.
-       <p>When casting a TEXT value to INTEGER, the longest possible prefix of
+       <p>当把一个TEXT值转换为INTEGER时，首先将文本值中整数所能支持的最长的前缀提取出来，然后把剩余的部分忽略掉。当把一个TEXT转换为INTEGER时，TEXT值前面的空格部分都会被忽略掉。如果文本前缀无法表示为一个整数，那么结果会转换为0。
+<br />When casting a TEXT value to INTEGER, the longest possible prefix of
         the value that can be interpreted as an integer number is extracted from
         the TEXT value and the remainder ignored. Any leading spaces in the
         TEXT value when converting from TEXT to INTEGER are ignored. If there
         is no prefix that can be interpreted as an integer number, the result
         of the conversion is 0.
 
-      <p>A cast of a REAL value into an INTEGER results in the integer
+      <p>将REAL值转换为INTEGER时，结果值为在REAL值和零之间最接近REAL值的整数值。如果REAL值大于有符号整数的最大值(+9223372036854775807)，那么，结果将是最大的有符号整数。如果REAL值小于有符号整数的最小值(-9223372036854775808) ，那么结果将是最小的有符号整数。
+<br />A cast of a REAL value into an INTEGER results in the integer
       between the REAL value and zero that is closest to the REAL value.
       If a REAL is greater than the greatest possible signed
       integer (+9223372036854775807) then the result is the greatest possible
@@ -683,26 +766,30 @@ the &lt;type-name&gt;.
       integer (-9223372036854775808) then the result is the least possible
       signed integer.
 
-      <p>Prior to SQLite version 3.8.2, casting a REAL value greater than
+      <p>在SQLite3.8.2版之前，将大于+9223372036854775807.0的REAL转换为整数时结果为最大的负整数-9223372036854775808。这个行为是为了模拟x86/x64硬件做类似的转换时的行为。
+<br />Prior to SQLite version 3.8.2, casting a REAL value greater than
       +9223372036854775807.0 into an integer resulted in the most negative
       integer, -9223372036854775808.  This behavior was meant to emulate the
       behavior of x86/x64 hardware when doing the equivalent cast.
 
 <tr>
   <td> NUMERIC
-  <td> Casting a TEXT or BLOB value into NUMERIC first does a forced
+  <td> 将TEXT或BLOB值转换为NUMBERIC时，首先强制转换为REAL，然后如果可以无损可逆的转换为INTEGER则再一次将REAL转换为INTEGER。这是SQLite中唯一NUMBERIC和INTEGER<a href="datatype3.html#affinity">亲和力</a>行为不同的环境。
+<br />Casting a TEXT or BLOB value into NUMERIC first does a forced
    conversion into REAL but then further converts the result into INTEGER if
    and only if the conversion from REAL to INTEGER is lossless and reversible.
    This is the only context in SQLite where the NUMERIC and INTEGER <a href="datatype3.html#affinity">affinities</a>
    behave differently.
-   <p> Casting a REAL or INTEGER value to NUMERIC is a no-op, even if a real
+   <p> 将REAL或INTEGER转换为NUMBERIC是不会进行操作的，即使实数值可以无损的转换为一个整数也不会进行转换操作。
+<br />Casting a REAL or INTEGER value to NUMERIC is a no-op, even if a real
    value could be losslessly converted to an integer.
 
 </tr>
 
 </table>
 
-<p>Note that the result from casting any non-BLOB value into a 
+<p>注意，从一个非BLOB值转换为一个BLOB的结果和从一个BLOB值转换为一个非BLOB的结果可能会是不同的，这依赖于数据库的<a href="pragma.html#pragma_encoding">编码</a>是UTF-8、UTF-16be 还是 UTF-16le。
+<br />Note that the result from casting any non-BLOB value into a 
 BLOB and the result from casting any BLOB value into a non-BLOB value
 may be different depending on whether the database <a href="pragma.html#pragma_encoding">encoding</a> is UTF-8,
 UTF-16be, or UTF-16le.
@@ -710,31 +797,43 @@ UTF-16be, or UTF-16le.
 
 <a name="booleanexpr"></a>
 
-<h3>Boolean Expressions</h3>
+<h3>布尔表达式
+<br />Boolean Expressions</h3>
 
-<p>The SQL language features several contexts where an expression is 
+<p>SQL语句特定了一些环境，在这些环境下表达式的结果会被转换为布尔值（true或false）。这些环境包括：
+<br />The SQL language features several contexts where an expression is 
 evaluated and the result converted to a boolean (true or false) value. These
 contexts are:
 
   <ul>
-    <li> the WHERE clause of a SELECT, UPDATE or DELETE statement,
-    <li> the ON or USING clause of a join in a SELECT statement,
-    <li> the HAVING clause of a SELECT statement,
-    <li> the WHEN clause of an SQL trigger, and
-    <li> the WHEN clause or clauses of some CASE expressions.
+    <li> SELECT、UPDATE和DELETE语句中的WHERE子句。
+<br />the WHERE clause of a SELECT, UPDATE or DELETE statement,
+    <li> SELECT语句中连接用的ON和USING子句。
+<br />the ON or USING clause of a join in a SELECT statement,
+    <li> SELECT语句中的HAVING子句。
+<br />the HAVING clause of a SELECT statement,
+    <li> SQL触发器中的WHEN子句。
+<br />the WHEN clause of an SQL trigger, and
+    <li> CASE表达式中的WHEN子句。
+<br />the WHEN clause or clauses of some CASE expressions.
   </ul>
 
-<p>To convert the results of an SQL expression to a boolean value, SQLite
+<p>在将SQL表达式的结果转换为一个布尔值时，SQLite首先将结果通过与<a href="lang_expr.html#castexpr">CAST 表达式</a>一样的方法转换成一个NUMBERIC值。NULL或零值（整数值0或者实数值0.0）都会被看做false。其它所有值被看做true。
+<br />To convert the results of an SQL expression to a boolean value, SQLite
 first casts the result to a NUMERIC value in the same way as a 
 <a href="lang_expr.html#castexpr">CAST expression</a>. A NULL or zero value (integer value 0 or real value 0.0) is
 considered to be false. All other values are considered true.
 
-<p>For example, the values NULL, 0.0, 0, 'english' and '0' are all considered
+<p>例如：NULL、0.0、0、'english' 和 '0'都被视为false。1、1.0、0.1、-0.1和'1english'都被视为true。
+<br />For example, the values NULL, 0.0, 0, 'english' and '0' are all considered
 to be false. Values 1, 1.0, 0.1, -0.1 and '1english' are considered to 
 be true.
 
-<h3>Functions</h3>
-<p>Both <a href="lang_corefunc.html">simple</a> and <a href="lang_aggfunc.html">aggregate</a> functions are supported.
+<h3>函数
+<br />Functions</h3>
+<p><a href="lang_corefunc.html">普通函数</a> 和 <a href="lang_aggfunc.html">聚合函数</a>都可以支持。（为了展示需要，普通函数又被进一步细分为了<a href="lang_corefunc.html">核心函数</a> 和 <a href="lang_datefunc.html">日期时间函数</a>。）
+普通函数可以再任何表达式中使用。普通函数会依照输入立即返回结果。而聚合函数只能使用在SELECT语句中。聚合函数会计算结果集中的所有记录行。
+<br />Both <a href="lang_corefunc.html">simple</a> and <a href="lang_aggfunc.html">aggregate</a> functions are supported.
 (For presentation purposes, simple functions are further subdivided into
 <a href="lang_corefunc.html">core functions</a> and <a href="lang_datefunc.html">date-time functions</a>.)
 A simple function can be used in any expression.  Simple functions return
