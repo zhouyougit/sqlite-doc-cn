@@ -136,24 +136,29 @@ a:visited { color: #734559 }
 
 
 <p>
-  The VACUUM command rebuilds the entire database. There are several 
+  VACUUM命令会重建整个数据库。当遇到如下情况时应用可以考虑使用该命令：
+<br />The VACUUM command rebuilds the entire database. There are several 
   reasons an application might do this:
 
 <ul>
-  <li> <p> Unless SQLite is running in "auto_vacuum=FULL" mode, when a large
+  <li> <p> 如果SQLite没有运行在"auto_vacuum=FULL"模式下，那么当从数据库文件中删除大量数据后，数据库会遗留下来许多空空间，而不会"释放"数据库页。这就是说，数据库文件可能比实际所需的空间要大。运行VACUUM可以重建这个数据库，回收空间，减少数据库文件的大小。
+<br />Unless SQLite is running in "auto_vacuum=FULL" mode, when a large
      amount of data is deleted from the database file it leaves behind empty
      space, or "free" database pages. This means the database file might
      be larger than strictly necessary. Running VACUUM to rebuild the 
      database reclaims this space and reduces the size of the database file.
 
-  <li> <p> Frequent inserts, updates, and deletes can cause the database file
+  <li> <p> 频繁的插入、更新和删除操作会导致数据库文件碎片化——一个表或索引中的数据会被分散到整整数据库文件中。运行VACUUM可以确保每个表或索引都尽可能的在数据库文件中连续存储。在一些情况下，VACUUM还可以减少数据库中部分填满的页数量，从而进一步减少数据库文件尺寸。
+<br />Frequent inserts, updates, and deletes can cause the database file
      to become fragmented - where data for a single table or index is scattered 
      around the database file. Running VACUUM ensures that each table and
      index is largely stored contiguously within the database file. In some
      cases, VACUUM may also reduce the number of partially filled pages in
      the database, reducing the size of the database file further.
 
-  <li> <p> Normally, the database <a href="pragma.html#pragma_page_size">page_size</a> and whether or not the database
+  <li> <p> 通常在数据库文件实际创建之前就必须配置好数据库<a href="pragma.html#pragma_page_size">page_size</a>和是否支持<a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a>。不过，只要不是<a href="wal.html">write-ahead log</a>模式，已有数据库的<a href="pragma.html#pragma_page_size">page_size</a> 和 <a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a>参数都可以通过使用<a href="pragma.html#pragma_page_size">pragma page_size</a>  和 
+     <a href="pragma.html#pragma_auto_vacuum">pragma auto_vacuum</a>指令来修改，这样会立即VACUUM数据库。如果是<a href="wal.html">write-ahead log</a>模式，那么只能修改<a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a>属性。
+<br />Normally, the database <a href="pragma.html#pragma_page_size">page_size</a> and whether or not the database
      supports <a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a> must be configured before the database file is
      actually created. However, when not in <a href="wal.html">write-ahead log</a> mode, the 
      <a href="pragma.html#pragma_page_size">page_size</a> and/or <a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a> properties of an existing database may be
@@ -163,10 +168,12 @@ a:visited { color: #734559 }
      support property can be changed using VACUUM.
 </ul>
 
-<p>VACUUM only works on the main database. It is not possible to VACUUM an
+<p>VACUUM只能在主数据库上使用，不能在附加库上使用VACUUM。
+<br />VACUUM only works on the main database. It is not possible to VACUUM an
 attached database file.
 
-<p>The VACUUM command works by copying the contents of the database into
+<p>VACUUM命令首先将数据库的内容复制到一个临时数据库文件中，然后再使用临时文件覆盖原有数据库。当覆盖原始库的时候，对回滚日志或<a href="wal.html">write-ahead log</a>WAL文件的使用就像是在其它数据库事务中一样。也就是说，数据库在执行VACUUM时，大约需要原始数据库文件两倍大小的空闲磁盘空间。
+<br />The VACUUM command works by copying the contents of the database into
 a temporary database file and then overwriting the original with the 
 contents of the temporary file. When overwriting the original, a rollback
 journal or <a href="wal.html">write-ahead log</a> WAL file is used just as it would be for any
@@ -174,14 +181,17 @@ other database transaction. This means that when VACUUMing a database,
 as much as twice the size of the original database file is required in free
 disk space.
 
-<p>The VACUUM command may change the <a href="lang_createtable.html#rowid">ROWIDs</a> of entries in any
+<p>VACUUM命令会修改没有明确指定<a href="lang_createtable.html#rowid">INTEGER PRIMARY KEY</a>的表的记录的<a href="lang_createtable.html#rowid">ROWIDs</a>。
+<br />The VACUUM command may change the <a href="lang_createtable.html#rowid">ROWIDs</a> of entries in any
 tables that do not have an explicit <a href="lang_createtable.html#rowid">INTEGER PRIMARY KEY</a>.
 </p>
 
-<p>A VACUUM will fail if there is an open transaction, or if there are one or
+<p>如果有开始的事务或者有一条以上SQL语句正在执行，那么VACUUM会失败。
+<br />A VACUUM will fail if there is an open transaction, or if there are one or
 more active SQL statements when it is run.
 
-<p>As of SQLite version 3.1, an alternative to using the VACUUM command to
+<p>从SQLite3.1版开始，增加了一个使用VACUUM命令在数据被删除后回收空间的方法，就是使用<a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a>指令开启auto-vacuum模式。当开启了<a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a>模式，无需使用VACUUM命令重建整个数据库，就可以在删除数据后空闲的页会被回收，并压缩文件大小。不过使用<a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a>会增加数据库文件的碎片化。并且<a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a>无法像VACUUM一样压缩部分填满的页。
+<br />As of SQLite version 3.1, an alternative to using the VACUUM command to
 reclaim space after data has been deleted is auto-vacuum mode, enabled using
 the <a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a> pragma. When <a href="pragma.html#pragma_auto_vacuum">auto_vacuum</a> is enabled for a database
 free pages may be reclaimed after deleting data, causing the file to shrink,
