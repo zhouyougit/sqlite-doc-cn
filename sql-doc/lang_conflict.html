@@ -135,12 +135,14 @@ a:visited { color: #734559 }
 </blockquote>
 
 
-<p>The ON CONFLICT clause is not a separate SQL command.  It is a
+<p>ON CONFLICT子句不是一个独立的SQL命令。这是一个非标准的子句，可以用在许多其他SQL命令中。之所以为其单独划分一章是因为它不是标准SQL的一部分，因此与其他命令联系并不紧密。
+<br />The ON CONFLICT clause is not a separate SQL command.  It is a
 non-standard clause that can appear in many other SQL commands.
 It is given its own section in this document because it is not
 part of standard SQL and therefore might not be familiar.</p>
 
-<p>The syntax for the ON CONFLICT clause is as shown above for
+<p>上图所示的是ON CONFLICT子句在CREATE TABLE命令中的语法。在INSERT和UPDATE命令中需要使用关键词"OR"替换"ON CONFLICT"以便该语法阅读更加自然。例如，使用 "INSERT OR IGNORE"替代"INSERT ON CONFLICT IGNORE"。虽然关键词变了，但是这个子句的含义是一样的。
+<br />The syntax for the ON CONFLICT clause is as shown above for
 the CREATE TABLE command.  For the INSERT and
 UPDATE commands, the keywords "ON CONFLICT" are replaced by "OR" so that
 the syntax reads more naturally.  For example, instead of
@@ -148,7 +150,8 @@ the syntax reads more naturally.  For example, instead of
 The keywords change but the meaning of the clause is the same
 either way.</p>
 
-<p>The ON CONFLICT clause applies to UNIQUE and NOT NULL
+<p>ON CONFLICT子句适用于UNIQUE和NOT NULL约束（还包括PRIMARY KEY约束这种与UNIQUE约束类似的约束）。ON CONFLICT算法不用应用于<a href="foreignkeys.html">FOREIGN KEY 约束</a>。一共有五个可选的冲突解决算法：ROLLBACK、ABORT、FAIL、IGNORE和REPLACE。默认的冲突解决算法是ABORT。下面是这些算法的具体含义：
+<br />The ON CONFLICT clause applies to UNIQUE and NOT NULL
 constraints (and to PRIMARY KEY constraints which for the purposes 
 of this section are the same thing as UNIQUE constraints).
 The ON CONFLICT algorithm does not
@@ -160,7 +163,8 @@ is what they mean:</p>
 
 <dl>
 <dt><b>ROLLBACK</b></dt>
-<dd><p> When an applicable constraint violation occurs, the ROLLBACK
+<dd><p> 当发生支持的约束违规时，ROLLBACK解决算法会终止当前的SQL语句，抛出一个SQL_CONSTRAINT错误，并回滚当前事务。如果当前没有有效的事务（不包括隐式事务，隐式事务会在每个命令开始前创建）那么ROLLBACK解决算法的处理方案会喝ABORT算法一样。
+<br />When an applicable constraint violation occurs, the ROLLBACK
 resolution algorithm aborts the current SQL statement with
 an SQLITE_CONSTRAINT error and rolls back the current transaction.
 If no transaction is
@@ -169,7 +173,8 @@ command) then the ROLLBACK resolution algorithm works the same as the
 ABORT algorithm.</p></dd>
 
 <dt><b>ABORT</b></dt>
-<dd><p> When an applicable constraint violation occurs, the ABORT
+<dd><p> 当发生支持的约束违规时，ABORT解决算法会终止当前SQL语句，抛出一个SQLITE_CONSTRAINT错误并撤销当前SQL语句做出的所有修改。但是同一个事务中之前的SQL语句做出的修改会被保留并且事务会恢复执行。这是默认的行为，也是SQL标准中规定的行为。
+<br />When an applicable constraint violation occurs, the ABORT
 resolution algorithm aborts the current SQL statement
 with an SQLITE_CONSTRAINT error and backs out any changes
 made by the current SQL statement; but changes caused
@@ -179,18 +184,20 @@ This is the default behavior and the behavior specified by the SQL
 standard.</p></dd>
 
 <dt><b>FAIL</b></dt>
-<dd><p> When an applicable constraint violation occurs, the FAIL
+<dd><p> 当发生支持的约束违规时，FAIL冲突解决算法会终止当前SQL语句，抛出一个SQLITE_CONSTRAINT错误。不过FAIL解决方法不会撤销这个SQL语句已经做出的修改，而且这条语句的失败并不会导致当前事务结束。
+例如：当一个UPDATE进行更新时，第100行违反了约束规则，那么前99行修改都会被保留，而对第100行的修改则不会发生。
+<br />When an applicable constraint violation occurs, the FAIL
 resolution algorithm aborts the current SQL statement with an
 SQLITE_CONSTRAINT error.  But the FAIL resolution does not
-back out prior changes of the SQL statement that failed nor does
-it end the transaction.
+back out prior changes of the SQL statement that failed nor does it end the transaction.
 For example, if an UPDATE
 statement encountered a constraint violation on the 100th row that
 it attempts to update, then the first 99 row changes are preserved
 but changes to rows 100 and beyond never occur.</p></dd>
 
 <dt><b>IGNORE</b></dt>
-<dd><p> When an applicable constraint violation occurs, 
+<dd><p> 当发生支持的约束违规时，IGNORE冲突解决算法会跳过违反约束的那一行数据，就像没有错误发生一样继续处理SQL语句中后续的行。在违反约束那行数据前后的插入或更新都可以正常执行。当使用IGNORE冲突解决算法是不会返回任何错误。
+<br />When an applicable constraint violation occurs, 
 the IGNORE resolution algorithm skips the one row that contains
 the constraint violation and continues processing subsequent rows
 of the SQL statement as if nothing went wrong.
@@ -200,7 +207,10 @@ normally. No error is returned when the IGNORE conflict resolution
 algorithm is used.</p></dd>
 
 <dt><b>REPLACE</b></dt>
-<dd><p> When a UNIQUE constraint violation occurs, the REPLACE algorithm
+<dd><p> 当一个UNIQUE约束被违反时，REPLACE算法会删除导致约束违规的那个已经存在的行，然后插入或更新当前行，整个命令会正常的继续执行。
+如果是违反了NOT NULL约束，REPLACE冲突解决算法会使用这一列的默认值来替代NULL值，如果当前列没有默认值，那么会使用ABORT算法。
+如果是违反了CHECK约束，REPLACE冲突解决算法的处理方式会与ABORT一样。
+<br />When a UNIQUE constraint violation occurs, the REPLACE algorithm
 deletes pre-existing rows that are causing the constraint violation
 prior to inserting or updating the current row and the command continues 
 executing normally.
@@ -211,18 +221,21 @@ value, then the ABORT algorithm is used.
 If a CHECK constraint violation occurs, the REPLACE conflict resolution
 algorithm always works like ABORT.</p>
 
-<p>When the REPLACE conflict resolution strategy deletes rows in order to
+<p>当REPLACE冲突解决策略为了满足约束而删除记录时，只有当开启了<a href="pragma.html#pragma_recursive_triggers">递归触发器</a>才会执行<a href="lang_createtrigger.html">删除触发器</a>。
+<br />When the REPLACE conflict resolution strategy deletes rows in order to
 satisfy a constraint, <a href="lang_createtrigger.html">delete triggers</a> fire if and only if
 <a href="pragma.html#pragma_recursive_triggers">recursive triggers</a> are enabled.</p>
 
-<p>The <a href="c3ref/update_hook.html">update hook</a> is not invoked for rows that
+<p>由REPLACE冲突解决策略删除的记录是不会执行<a href="c3ref/update_hook.html">update hook</a>的。REPLACE也不会增加<a href="c3ref/changes.html">修改计数器</a>。不过这段记录的这些特殊行为在未来的版本中可能会做出修改。
+<br />The <a href="c3ref/update_hook.html">update hook</a> is not invoked for rows that
 are deleted by the REPLACE conflict resolution strategy.  Nor does
 REPLACE increment the <a href="c3ref/changes.html">change counter</a>.
 The exceptional behaviors defined in this paragraph might change 
 in a future release.</p>
 </dl>
 
-<p>The algorithm specified in the OR clause of an INSERT or UPDATE
+<p>在INSERT或UPDATE语句中使用OR子句指定的算法会覆盖CREATE TABLE中指定的算法。如果两处都没有指定算法，那么会使用ABORT算法。
+<br />The algorithm specified in the OR clause of an INSERT or UPDATE
 overrides any algorithm specified in a CREATE TABLE.
 If no algorithm is specified anywhere, the ABORT algorithm is used.</p>
 
