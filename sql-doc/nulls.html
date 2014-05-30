@@ -130,10 +130,14 @@ a:visited { color: #734559 }
   
 
 
-<h2>NULL Handling in SQLite Versus Other Database Engines</h2>
+<h2>SQLite对比其他数据库引擎处理NULL的方法
+<br />NULL Handling in SQLite Versus Other Database Engines</h2>
 
 <p>
-The goal is
+目标是使SQLite处理NULL的逻辑能按照标准的方式。
+但是，SQL标准中关于如何处理NULL的描述似乎模糊不清。
+SQL标准中关于在所有情况下如何精确的处理NULL并没有描述清楚。
+<br />The goal is
 to make SQLite handle NULLs in a standards-compliant way.
 But the descriptions in the SQL standards on how to handle
 NULLs seem ambiguous. 
@@ -142,7 +146,11 @@ be handled in all circumstances.
 </p>
 
 <p>
-So instead of going by the standards documents, various popular
+所以，SQLite没有依照标准文档来进行，而是考察了各种各样流行的SQL引擎看看它们是如何处理NULL的。这个方案使SQLite运行的更加接近其它引擎。
+于是开发了一个SQL测试脚本，并且由志愿者在各种各样的SQL RDBMS上运行。然后依照这些测试的运行结果推断出每个引擎是如何处理NULL值的。
+原始的测试是在2002年五月运行的。
+在这篇文档的末尾可以找到这个测试脚本。
+<br />So instead of going by the standards documents, various popular
 SQL engines were tested to see how they handle NULLs.  The idea
 was to make SQLite work like all the other engines.
 An SQL test script was developed and run by volunteers on various
@@ -153,7 +161,11 @@ A copy of the test script is found at the end of this document.
 </p>
 
 <p>
-SQLite was originally coded in such a way that the answer to
+在SQLite最初实现的时候是按照下面的图表中所有问题的答案都是"Yes"进行的。
+但是在其它SQL引擎上运行的试验表明没有一个引擎是按照这个方式工作的。
+所以SQLite修改为按照Oracle、PostgreSQL和DB2的方式来实现。
+这个方式导致在SELECT DISTINCT语句和SELECT里的UNION操作符中将多个NULL当做相同的。而在UNIQUE列中多个NULL依然是相互不同的。这似乎有点儿武断，但是兼容其它引擎的期望超过了这个缺点。
+<br />SQLite was originally coded in such a way that the answer to
 all questions in the chart below would be "Yes".  But the
 experiments run on other SQL engines showed that none of them
 worked this way.  So SQLite was modified to work the same as
@@ -165,7 +177,8 @@ to be compatible with other engines outweighed that objection.
 </p>
 
 <p>
-It is possible to make SQLite treat NULLs as distinct for the
+让SQLite在SELECT DISTINCT和UNION中将所有NULL区分对待是可以的。如果想要这么做只需要修改源文件<tt>sqliteInt.h</tt>中NULL_ALWAYS_DISTINCT宏定义的值，然后重新编译即可。
+<br />It is possible to make SQLite treat NULLs as distinct for the
 purposes of the SELECT DISTINCT and UNION.  To do so, one should
 change the value of the NULL_ALWAYS_DISTINCT #define in the
 <tt>sqliteInt.h</tt> source file and recompile.
@@ -173,6 +186,10 @@ change the value of the NULL_ALWAYS_DISTINCT #define in the
 
 <blockquote>
 <p>
+<i>2003-07-13更新：</i>在这篇文档最初写完后，一些数据库引擎的测试已经更新，并且很多用户非常友好的提交了下面图标的修正。
+原始数据展示了非常多样的行为，但是经过一段时间，这些行为的范围慢慢向PostgreSQl/Oracle模式聚拢。
+唯一明显的不同是Informix和MS-SQL都在UNIQUE列中将多个NULL当做相同处理。
+<br />
 <i>Update 2003-07-13:</i>
 Since this document was originally written some of the database engines
 tested have been updated and users have been kind enough to send in
@@ -184,7 +201,10 @@ indistinct in a UNIQUE column.
 </p>
 
 <p>
-The fact that NULLs are distinct for UNIQUE columns but are indistinct for
+事实上，多个NULL在UNIQUE列中是不同的，而在SELECT DISTINCT和UNION中是相同的，这依旧是模糊的。
+这似乎应当是多个NULL在任何地方都相同或都不同。并且SQL标准文档建议多个NULL应当在所有地方都是不同的。
+然而，从写本文开始，没有一个测试的SQL引擎在SELECT DISTINCT或UNION中奖多个NULL当做不同来对待。
+<br />The fact that NULLs are distinct for UNIQUE columns but are indistinct for
 SELECT DISTINCT and UNION continues to be puzzling.  It seems that NULLs
 should be either distinct everywhere or nowhere.  And the SQL standards
 documents suggest that NULLs should be distinct everywhere.  Yet as of
@@ -195,7 +215,8 @@ DISTINCT statement or in a UNION.
 
 
 <p>
-The following table shows the results of the NULL handling experiments.
+下面的表格展示了NULL处理实验的结果。
+<br />The following table shows the results of the NULL handling experiments.
 </p>
 
 <table border=1 cellpadding=3 width="100%">
@@ -209,7 +230,8 @@ The following table shows the results of the NULL handling experiments.
 <th>OCELOT</th>
 </tr>
 
-<tr><td>Adding anything to null gives null</td>
+<tr><td>NULL加任何内容都返回NULL
+<br />Adding anything to null gives null</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
@@ -218,7 +240,8 @@ The following table shows the results of the NULL handling experiments.
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 </tr>
-<tr><td>Multiplying null by zero gives null</td>
+<tr><td>null乘以零返回null
+<br />Multiplying null by zero gives null</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
@@ -227,25 +250,18 @@ The following table shows the results of the NULL handling experiments.
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 </tr>
-<tr><td>nulls are distinct in a UNIQUE column</td>
+<tr><td>在UNIQUE列中每个NULL都是不同的
+<br />nulls are distinct in a UNIQUE column</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#aaaad2">(Note 4)</td>
+<td valign="center" align="center" bgcolor="#aaaad2">(备注 4)</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 </tr>
-<tr><td>nulls are distinct in SELECT DISTINCT</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-</tr>
-<tr><td>nulls are distinct in a UNION</td>
+<tr><td>在SELECT DISTINCT中每个NULL都是不同的
+<br />nulls are distinct in SELECT DISTINCT</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
@@ -254,7 +270,18 @@ The following table shows the results of the NULL handling experiments.
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 </tr>
-<tr><td>"CASE WHEN null THEN 1 ELSE 0 END" is 0?</td>
+<tr><td>在UNION中每个NULL都是不同的
+<br />nulls are distinct in a UNION</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
+</tr>
+<tr><td>"CASE WHEN null THEN 1 ELSE 0 END" 是0？
+<br />"CASE WHEN null THEN 1 ELSE 0 END" is 0?</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
@@ -263,7 +290,8 @@ The following table shows the results of the NULL handling experiments.
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 </tr>
-<tr><td>"null OR true" is true</td>
+<tr><td>"null OR true"是true？
+<br />"null OR true" is true</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
@@ -272,7 +300,8 @@ The following table shows the results of the NULL handling experiments.
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 </tr>
-<tr><td>"not (null AND false)" is true</td>
+<tr><td>"not (null AND false)"是true？
+<br />"not (null AND false)" is true</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
@@ -292,56 +321,64 @@ The following table shows the results of the NULL handling experiments.
 <th>Borland<br>Interbase</th>
 </tr>
 
-<tr><td>Adding anything to null gives null</td>
+<tr><td>NULL加任何内容都返回NULL
+<br />Adding anything to null gives null</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 </tr>
-<tr><td>Multiplying null by zero gives null</td>
+<tr><td>NULL乘以零返回NULL
+<br />Multiplying null by zero gives null</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 </tr>
-<tr><td>nulls are distinct in a UNIQUE column</td>
+<tr><td>在UNIQUE列中每个NULL都是不同的
+<br />nulls are distinct in a UNIQUE column</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
-<td valign="center" align="center" bgcolor="#aaaad2">(Note 4)</td>
-<td valign="center" align="center" bgcolor="#aaaad2">(Note 4)</td>
+<td valign="center" align="center" bgcolor="#aaaad2">(备注 4)</td>
+<td valign="center" align="center" bgcolor="#aaaad2">(备注 4)</td>
 </tr>
-<tr><td>nulls are distinct in SELECT DISTINCT</td>
+<tr><td>在SELECT DISTINCT中每个NULL都是不同的
+<br />nulls are distinct in SELECT DISTINCT</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No (Note 1)</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-</tr>
-<tr><td>nulls are distinct in a UNION</td>
-<td valign="center" align="center" bgcolor="#aaaad2">(Note 3)</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
-<td valign="center" align="center" bgcolor="#c7a9a9">No (Note 1)</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No (备注 1)</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 </tr>
-<tr><td>"CASE WHEN null THEN 1 ELSE 0 END" is 0?</td>
-<td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
-<td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
-<td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
-<td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
-<td valign="center" align="center" bgcolor="#aaaad2">(Note 5)</td>
+<tr><td>在UNION中每个NULL都是不同的
+<br />nulls are distinct in a UNION</td>
+<td valign="center" align="center" bgcolor="#aaaad2">(备注 3)</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No (备注 1)</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
+<td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 </tr>
-<tr><td>"null OR true" is true</td>
+<tr><td>"CASE WHEN null THEN 1 ELSE 0 END" 是0？
+<br />"CASE WHEN null THEN 1 ELSE 0 END" is 0?</td>
+<td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
+<td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
+<td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
+<td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
+<td valign="center" align="center" bgcolor="#aaaad2">(备注 5)</td>
+</tr>
+<tr><td>"null OR true"是true？
+<br />"null OR true" is true</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 </tr>
-<tr><td>"not (null AND false)" is true</td>
+<tr><td>"not (null AND false)"是true？
+<br />"not (null AND false)" is true</td>
 <td valign="center" align="center" bgcolor="#c7a9a9">No</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
 <td valign="center" align="center" bgcolor="#a9c7a9">Yes</td>
@@ -352,48 +389,60 @@ The following table shows the results of the NULL handling experiments.
 
 <table border=0 align="right" cellpadding=0 cellspacing=0>
 <tr>
-<td valign="top" rowspan=5>Notes:&nbsp;&nbsp;</td>
+<td valign="top" rowspan=5>备注：&nbsp;&nbsp;</td>
 <td>1.&nbsp;</td>
-<td>Older versions of firebird omits all NULLs from SELECT DISTINCT
+<td>老版本的firebird中会忽略SELECT DISTINCT和UNION中的所有NULL。
+<br />Older versions of firebird omits all NULLs from SELECT DISTINCT
 and from UNION.</td>
 </tr>
 <tr><td>2.&nbsp;</td>
-<td>Test data unavailable.</td>
+<td>测试数据无法获得
+<br />Test data unavailable.</td>
 </tr>
 <tr><td>3.&nbsp;</td>
-<td>MySQL version 3.23.41 does not support UNION.</td>
+<td>MySQL 3.23.41版不支持UNION。
+<br />MySQL version 3.23.41 does not support UNION.</td>
 </tr>
 <tr><td>4.&nbsp;</td>
-<td>DB2, SQL Anywhere, and Borland Interbase 
+<td>DB2、 SQL Anywhere 和 Borland Interbase 在UNIQUE列中不支持NULL。
+<br />DB2, SQL Anywhere, and Borland Interbase 
 do not allow NULLs in a UNIQUE column.</td>
 </tr>
 <tr><td>5.&nbsp;</td>
-<td>Borland Interbase does not support CASE expressions.</td>
+<td>Borland Interbase不支持CASE表达式。
+<br />Borland Interbase does not support CASE expressions.</td>
 </tr>
 </table>
 <br clear="both">
 
 <p>&nbsp;</p>
 <p>
-The following script was used to gather information for the table
+下面的脚本用于手机上面表格中的数据。
+<br />The following script was used to gather information for the table
 above.
 </p>
 
 <pre>
+-- 我确定SQL在处理NULL上是多变的，并且无法按照逻辑来推理的。这必须依靠试验来
+-- 发现。为了这个目的，我准备了后面这个脚本来测试各种SQL数据库是如何处理NULL的。
+-- 我的目的是通过这个脚本收集的信息来使得SQLite尽可能的与其他数据库相似。
 -- I have about decided that SQL's treatment of NULLs is capricious and cannot be
 -- deduced by logic.  It must be discovered by experiment.  To that end, I have 
 -- prepared the following script to test how various SQL databases deal with NULL.
 -- My aim is to use the information gather from this script to make SQLite as much
 -- like other databases as possible.
 --
+-- 如果你乐意在你的数据库引擎上运行这个脚本，并把结果邮件发送给我drh@hwaci.com，这将是对我的大帮助。请确认你用来测试的数据库引擎的标识。谢谢。
 -- If you could please run this script in your database engine and mail the results
 -- to me at drh@hwaci.com, that will be a big help.  Please be sure to identify the
 -- database engine you use for this test.  Thanks.
 --
+-- 如果你不得不修改这个脚本才能在你的数据库引擎上运行，那么请将你修改的脚本和结果一起发送给我。
 -- If you have to change anything to get this script to run with your database
 -- engine, please send your revised script together with your results.
 --
 
+-- 创建一个测试表和数据
 -- Create a test table with data
 create table t1(a int, b int, c int);
 insert into t1 values(1,0,0);
@@ -404,6 +453,7 @@ insert into t1 values(5,null,0);
 insert into t1 values(6,null,1);
 insert into t1 values(7,null,null);
 
+-- 检查CASE在测试表达式中如何处理NULL
 -- Check to see what CASE does with NULLs in its test expressions
 select a, case when b<>0 then 1 else 0 end from t1;
 select a+10, case when not b<>0 then 1 else 0 end from t1;
@@ -414,16 +464,20 @@ select a+50, case when not (b<>0 or c<>0) then 1 else 0 end from t1;
 select a+60, case b when c then 1 else 0 end from t1;
 select a+70, case c when b then 1 else 0 end from t1;
 
+-- 测试当NULL和零相乘会发生什么？
 -- What happens when you multiple a NULL by zero?
 select a+80, b*0 from t1;
 select a+90, b*c from t1;
 
+-- NULL和其它操作符会发生什么？
 -- What happens to NULL for other operators?
 select a+100, b+c from t1;
 
+-- 测试聚合操作符如何处理NULL
 -- Test the treatment of aggregate operators
 select count(*), count(b), sum(b), avg(b), min(b), max(b) from t1;
 
+-- 检查WHERE子句中NULL的行为
 -- Check the behavior of NULLs in WHERE clauses
 select a+110 from t1 where b<10;
 select a+120 from t1 where not b>10;
@@ -432,12 +486,15 @@ select a+140 from t1 where b<10 AND c=1;
 select a+150 from t1 where not (b<10 AND c=1);
 select a+160 from t1 where not (c=1 AND b<10);
 
+-- 检查在DISTINCT查询中NULL的行为
 -- Check the behavior of NULLs in a DISTINCT query
 select distinct b from t1;
 
+-- 检查在UNION查询中NULL的行为
 -- Check the behavior of NULLs in a UNION query
 select b from t1 union select b from t1;
 
+-- 创建一个包含UNIQUE列的新表。检查多个NULL是否会当做不同记录。
 -- Create a new table with a unique column.  Check to see if NULLs are considered
 -- to be distinct.
 create table t2(a int, b int unique);
