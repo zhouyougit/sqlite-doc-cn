@@ -130,34 +130,46 @@ a:visited { color: #734559 }
   
 
 
-<h2>SQL Features That SQLite Does Not Implement</h2>
+<h2>SQLite不支持的SQL特性
+<br />SQL Features That SQLite Does Not Implement</h2>
 
 <p>
-SQLite implements most of the common features of SQL.
+SQLite实现了SQL的大部分通用特性。相比尝试列出所有SQLite支持的SQL特性，列出SQLite不支持的要容易的多。下面展示了SQL中没有支持的特性。
+<br />SQLite implements most of the common features of SQL.
 Rather than try to list all the features of SQL that SQLite does
 support, it is much easier to list those that it does not.
 Unsupported features of SQL are shown below.</p>
 
 <table cellpadding="10">
 
-<tr><td valign="top"><b><nobr>RIGHT and FULL OUTER JOIN</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
-  LEFT OUTER JOIN is implemented, but not RIGHT OUTER JOIN or
+<tr><td valign="top"><b><nobr>RIGHT 和 FULL OUTER JOIN
+<br />RIGHT and FULL OUTER JOIN</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
+  实现了LEFT OUTER JOIN，但是没有实现RIGHT OUTER JOIN和FULL OUTER JOIN。
+<br />LEFT OUTER JOIN is implemented, but not RIGHT OUTER JOIN or
   FULL OUTER JOIN.
-</td></tr><tr><td valign="top"><b><nobr>Complete ALTER TABLE support</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
-  Only the RENAME TABLE and ADD COLUMN variants of the 
+</td></tr><tr><td valign="top"><b><nobr>完整的ALTER TABLE支持
+<br />Complete ALTER TABLE support</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
+  只有RENAME TABLE和ADD COLUMN两种形式的ALTER TABLE能支持。其它类型的ALTER TABLE操作，例如DROP COLUMN、ALTER COLUMN、ADD CONSTRAINT等等都被忽略了。
+<br />Only the RENAME TABLE and ADD COLUMN variants of the 
   ALTER TABLE command are supported.  Other kinds of ALTER TABLE operations
   such as
   DROP COLUMN, ALTER COLUMN, ADD CONSTRAINT, and so forth are omitted.
-</td></tr><tr><td valign="top"><b><nobr>Complete trigger support</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
-  FOR EACH ROW triggers are supported but not FOR EACH STATEMENT
+</td></tr><tr><td valign="top"><b><nobr>完整的触发器支持
+<br />Complete trigger support</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
+  支持FOR EACH ROW触发器但是不支持FOR EACH STATEMENT触发器。
+<br />FOR EACH ROW triggers are supported but not FOR EACH STATEMENT
   triggers.
-</td></tr><tr><td valign="top"><b><nobr>Writing to VIEWs</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
-  VIEWs in SQLite are read-only.  You may not execute a DELETE, INSERT, or
+</td></tr><tr><td valign="top"><b><nobr>写入VIEW
+<br />Writing to VIEWs</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
+  VIEW在SQLite中是只读的。你不能在视图上执行DELETE、INSERT或UPDATE语句。但是你可以创建一个在试图DELETE、INSERT或UPDATE一个视图时触发的触发器，并且在触发器的内容中实现你需要的内容。
+<br />VIEWs in SQLite are read-only.  You may not execute a DELETE, INSERT, or
   UPDATE statement on a view. But you can create a trigger
   that fires on an attempt to DELETE, INSERT, or UPDATE a view and do
   what you need in the body of the trigger.
-</td></tr><tr><td valign="top"><b><nobr>GRANT and REVOKE</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
-  Since SQLite reads and writes an ordinary disk file, the
+</td></tr><tr><td valign="top"><b><nobr>GRANT和REVOKE
+<br />GRANT and REVOKE</nobr></b></td><td width="10">&nbsp;</th><td valign="top">
+  由于SQLite读写的是一个普通的磁盘文件，所以唯一的访问限制就是下层操作系统上的标准文件防伪权限。客户端/服务端 RDBMS上一般拥有的GRANT和REVOKE命令在SQLite中没有实现，这是因为这些在嵌入式数据库引擎中是无意义的。
+<br />Since SQLite reads and writes an ordinary disk file, the
   only access permissions that can be applied are the normal
   file access permissions of the underlying operating system.
   The GRANT and REVOKE commands commonly found on client/server
