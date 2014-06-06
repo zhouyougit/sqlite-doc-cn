@@ -133,14 +133,18 @@ a:visited { color: #734559 }
 
 
 
-<h1 align="center">How SQLite Is Tested</h1>
+<h1 align="center">如何测试SQLite
+<br />How SQLite Is Tested</h1>
 
-<h2>1.0 Introduction</h2>
+<h2>1.0 介绍
+<br />1.0 Introduction</h2>
 
-<p>The reliability and robustness of SQLite is achieved in part
+<p>SQLite的可靠性和鲁棒性某种程度上来说，来自于完整和细致的测试。
+<br />The reliability and robustness of SQLite is achieved in part
 by thorough and careful testing.</p>
 
-<p>As of <a href="releaselog/3_8_0.html">version 3.8.0</a>,
+<p>从<a href="releaselog/3_8_0.html"> 3.8.0版</a>开始，SQLite库包含大约84.3千行C代码。相比而言，这个项目拥有1084倍的测试代码和测试脚本——91452.5千代码行
+<br />As of <a href="releaselog/3_8_0.html">version 3.8.0</a>,
 the SQLite library consists of approximately
 84.3 KSLOC of C code.
 (KSLOC means thousands of "Source Lines Of Code" or, in other words,
@@ -150,30 +154,47 @@ By comparison, the project has
 test code and test scripts - 
 91452.5 KSLOC.</p>
 
-<h3>1.1 Executive Summary</h3>
+<h3>1.1 执行概要
+<br />1.1 Executive Summary</h3>
 
 <ul>
-<li> Three independently developed test harnesses
-<li> 100% branch test coverage in an as-deployed configuration
-<li> Millions and millions of test cases
-<li> Out-of-memory tests
-<li> I/O error tests
-<li> Crash and power loss tests
-<li> Fuzz tests
-<li> Boundary value tests
-<li> Disabled optimization tests
-<li> Regression tests
-<li> Malformed database tests
-<li> Extensive use of assert() and run-time checks
-<li> Valgrind analysis
-<li> Signed-integer overflow checks
+<li> 三套独立开发测试工具
+<br />Three independently developed test harnesses
+<li> 100%的分支测试覆盖率
+<br />100% branch test coverage in an as-deployed configuration
+<li> 数百万的测试用例
+<br />Millions and millions of test cases
+<li> 内存溢出测试
+<br />Out-of-memory tests
+<li> I/O错误测试
+<br />I/O error tests
+<li> 崩溃和断电测试
+<br />Crash and power loss tests
+<li> 模糊测试
+<br />Fuzz tests
+<li> 边界值测试
+<br />Boundary value tests
+<li> 禁用优化测试
+<br />Disabled optimization tests
+<li> 回归测试
+<br />Regression tests
+<li> 畸形数据库测试
+<br />Malformed database tests
+<li> 广泛使用assert()和运行时检测
+<br />Extensive use of assert() and run-time checks
+<li> Valgrind 分析
+<br />Valgrind analysis
+<li> 有符号整数溢出检查
+<br />Signed-integer overflow checks
 </ul>
 
 <a name="harnesses"></a>
 
-<h2>2.0 Test Harnesses</h2>
+<h2>2.0 测试工具
+<br />2.0 Test Harnesses</h2>
 
-<p>There are three independent test harnesses used for testing the 
+<p>一共有三套独立开发测试工具用来测试SQLite核心库。每个测试工具都是独立设计、维护和管理的。
+<br />There are three independent test harnesses used for testing the 
 core SQLite library.
 Each test harness is designed, maintained, and managed separately
 from the others.
@@ -183,7 +204,8 @@ from the others.
 <li><p>
 <a name="tcl"></a>
 
-The <b>TCL Tests</b> are the oldest set of tests for SQLite.  
+<b>TCL 测试</b>是SQLite中最老的测试集。它被包含在了SQLite核心同一个代码树中，并且和SQLite核心一样是公共域的。TCL测试是开发过程中最主要的测试工具。TCL测试使用<a href="http://www.tcl.tk/">TCL 脚本语言</a>编写而成。TCL测试工具本身包含了24.2千行C代码，用于创建TCL接口。整个测试脚本包含760个文件，一共10.3MB大。一共30295个独立测试用例，而且许多测试用例是参数化的，会运行多次（使用不同的参数）。所以整个测试要运行上百万个独立测试。
+<br />The <b>TCL Tests</b> are the oldest set of tests for SQLite.  
 They are contained in the same source tree as the
 SQLite core and like the SQLite core are in the public domain.  The
 TCL tests are the primary tests used during development.
@@ -201,7 +223,8 @@ separate tests are performed.
 </li>
 
 <li><p>
-The <b><a href="th3.html">TH3</a></b> test harness is a set of proprietary tests, written in
+<b><a href="th3.html">TH3</a></b>测试工具是一个私有的测试集，是使用C写成的，为SQLite核心库提供了100%分支测试覆盖率（100% MC/DC测试覆盖）。TH3测试是设计用于在嵌入式专有平台上运行的，这个平台很难支持TCL或者其他工作站服务。TH3测试只使用公开的SQLite接口。TH3对于<a href="consortium.html">SQLite 联盟</a>成员是自由的，并且通过许可证提供给他人使用。TH3由51.2MB或691.2千行C代码实现的35211个独立测试用例组成。TH3测试注重参数化，因此，全覆盖测试一共需要运行大约80万个不同的测试示例。这些提供了100%分支测试覆盖的测试用例组成了整个TH3测试集的一个子集。在发布之前的侵泡测试需要做上亿的测试。更多官员TH3的信息参见<a href="th3.html">这里</a>。
+<br />The <b><a href="th3.html">TH3</a></b> test harness is a set of proprietary tests, written in
 C that provide 100% branch test coverage (and 100% MC/DC test coverage) to
 the core SQLite library.  The TH3 tests are designed to run
 on embedded and specialized platforms that would not easily support
@@ -220,7 +243,8 @@ Additional information on TH3 is <a href="th3.html">available separately</a>.</p
 <li><p>
 <a name="slt"></a>
 
-The <a href="http://www.sqlite.org/sqllogictest"><b>SQL Logic Test</b></a>
+<a href="http://www.sqlite.org/sqllogictest"><b>SQL 逻辑测试</b></a>或称为SLT测试工具，用来在SQLite和多个其它数据库引擎上运行巨量的SQL语句，然后验证他们是否能得到正确的结果。SLT目前会比较SQLite与PostgreSQL、MySQL、Microsoft SQL Server 和 Oracle 10g。SLT运行720万条查询，包含1.12GB的测试数据。
+<br />The <a href="http://www.sqlite.org/sqllogictest"><b>SQL Logic Test</b></a>
 or SLT test harness is used to run huge numbers
 of SQL statements against both SQLite and several other SQL database engines
 and verify that they all get the same answers.  SLT currently compares
@@ -230,11 +254,13 @@ SLT runs 7.2 million queries comprising
 </p></li>
 </ol>
 
-<p>All of the tests above must run successfully, on multiple platforms
+<p>上面的所有测试在每次发布SQLite之前，都必须能够在多种平台和多种编译时选项下成功运行。All of the tests above must run successfully, on multiple platforms
 and under multiple compile-time configurations,
 before each release of SQLite.</p>
 
-<p>Prior to each check-in to the SQLite source tree, developers
+<p>每次迁入代码到SQLite源码树中时，开发者都会代表性的运行一部分Tcl测试（叫做"快速测试"），包含大约20.22万条测试用例。
+快速测试包含除了异常、模糊和侵泡测试以外的所有测试。快速测试背后的想法是，这足够捕获绝大部分的错误，但是只需要运行几分钟，而不是几小时。
+<br />Prior to each check-in to the SQLite source tree, developers
 typically run a subset (called "veryquick") of the Tcl tests
 consisting of about 
 202.2 thousand test cases.
@@ -245,9 +271,11 @@ instead of a few hours.</p>
 
 <a name="anomoly"></a>
 
-<h2>3.0 Anomaly Testing</h2>
+<h2>3.0 异常测试
+<br />3.0 Anomaly Testing</h2>
 
-<p>Anomaly tests are tests designed to verify the correct behavior
+<p>异常测试是设计用来测试当SQLite中出现错误时的正确行为的。在一个全功能平台上（非常）容易构建一个SQL数据库引擎来运行结构良好的输入信息。而构建一个能在系统功能失灵的平台上稳健的运行残缺的输入数据的引擎则是非常难的。而异常测试就是为后者设计的。
+<br />Anomaly tests are tests designed to verify the correct behavior
 of SQLite when something goes wrong.  It is (relatively) easy to build
 an SQL database engine that behaves correctly on well-formed inputs
 on a fully functional computer.  It is more difficult to build a system
@@ -257,9 +285,12 @@ behavior.</p>
 
 <a name="oomtesting"></a>
 
-<h3>3.1 Out-Of-Memory Testing</h3>
+<h3>3.1 内存溢出测试
+<br />3.1 Out-Of-Memory Testing</h3>
 
-<p>SQLite, like all SQL database engines, makes extensive use of
+<p>SQLite和其他所有的SQL数据库引擎一样，广泛的使用了malloc()（更多信息参见单独的报告<a href="malloc.html">SQLite中的动态内存分配</a>）。
+在服务器和工作站上，malloc()在实际上不会失败，因此正确的处理内存溢出（OOM）错误就不是特别的重要。但是在嵌入式设备中OOM错误恐怖的多，并且SQLite目前越来越多的应用在了嵌入式设备中，这就使得SQLite优雅的处理OOM错误变得非常重要了。
+<br />SQLite, like all SQL database engines, makes extensive use of
 malloc()  (See the separate report on
 <a href="malloc.html">dynamic memory allocation in SQLite</a> for
 additional detail.)
@@ -269,7 +300,9 @@ But on embedded devices, OOM errors are frighteningly common and since
 SQLite is frequently used on embedded devices, it is important that
 SQLite be able to gracefully handle OOM errors.</p>
 
-<p>OOM testing is accomplished by simulating OOM errors.
+<p>OOM测试通过模拟OOM错误来完成。SQLite允许应用使用<a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a>,...)接口替换malloc()的实现。
+TCL和TH3测试工具都能够插入一个修改过的malloc()版本，以便能够控制当分配具体数值的内存之后产生失败。这个修改版的malloc可以被设置为只失败一次，然后继续正常工作，也可以设置为一旦失败后续的都会失败。OOM测试是在一个循环中完成的。在循环的第一次迭代中，修改版的malloc在第一次分配请求时产生失败。这时，SQLite会允许一些操作，并检查确保SQLite正确的处理了OOM错误。这时修改版malloc中的第几次失败的计数器自增1，并继续测试。循环继续进行，直到全部操作运行完成并且没有遇到模拟的OOM失败。这样的测试会运行两次，一次是使用只失败一次的malloc，一次使用一旦失败后续全失败的malloc。
+<br />OOM testing is accomplished by simulating OOM errors.
 SQLite allows an application to substitute an alternative malloc()
 implementation using the <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a>,...)
 interface.  The TCL and TH3 test harnesses are both capable of
@@ -290,9 +323,11 @@ to fail continuously after the first failure.</p>
 
 <a name="ioerrtesting"></a>
 
-<h3>3.2 I/O Error Testing</h3>
+<h3>3.2 I/O 错误测试
+<br />3.2 I/O Error Testing</h3>
 
-<p>I/O error testing seeks to verify that SQLite responds sanely
+<p>I/O错误测试用于力争验证当遇到I/O操作失败时SQLite响应的稳健性。I/O错误可能来自于磁盘驱动器已满、磁盘硬件故障、当使用网络文件系统时的网络故障、SQL执行期间修改了文件权限或者系统配置或者其它硬件或操作系统故障。无论什么原因，对于SQLite来说能正确的处理这些错误都是非常重要的。I/O错误测试目的就是验证这些功能的执行。
+<br />I/O error testing seeks to verify that SQLite responds sanely
 to failed I/O operations.  I/O errors might result from a full disk drive,
 malfunctioning disk hardware, network outages when using a network
 file system, system configuration or permission changes that occur in the 
@@ -301,7 +336,8 @@ malfunctions.  Whatever the cause, it is important that SQLite be able
 to respond correctly to these errors and I/O error testing seeks to
 verify that it does.</p>
 
-<p>I/O error testing is similar in concept to OOM testing; I/O errors
+<p>I/O测试的概念与OOM测试类似；模拟I/O错误和制造中断来验证SQLite是否能正确的响应这些模拟出来的错误。I/O错误可以再TCL喝TH3测试工具中通过插入一个新的<a href="c3ref/vfs.html">虚拟文件系统对象</a>来模拟，这可以指定在完成多少个I/O操作之后产生一个I/O错误。与OOM错误测试一样，I/O错误模拟可以设置为只失败一次，也可以设置为一旦失败后续都失败。在一个循环中进行测试，慢慢移动产生错误的位置，知道所有测试用例都无误的运行完成。循环会运行两次，一次将I/O错误模拟设置为只产生一次错误，第二次设置为一旦发生错误，后续都发生错误。
+<br />I/O error testing is similar in concept to OOM testing; I/O errors
 are simulated and checks are made to verify that SQLite responds
 correctly to the simulated errors.  I/O errors are simulated in both
 the TCL and TH3 test harnesses by inserting a new
@@ -315,16 +351,19 @@ once with the I/O error simulator set to simulate only a single failure
 and a second time with it set to fail all I/O operations after the first
 failure.</p>
 
-<p>In I/O error tests, after the I/O error simulation failure mechanism
+<p>在I/O错误测试中，在模拟完I/O错误之后关闭失败机制，然后使用<a href="pragma.html#pragma_integrity_check">PRAGMA integrity_check</a>来检查数据库，以确保I/O错误没有引入数据库错误。
+<br />In I/O error tests, after the I/O error simulation failure mechanism
 is disabled, the database is examined using
 <a href="pragma.html#pragma_integrity_check">PRAGMA integrity_check</a> to make sure that the I/O error has not
 introduced database corruption.</p>
 
 <a name="crashtesting"></a>
 
-<h3>3.3 Crash Testing</h3>
+<h3>3.3 崩溃测试
+<br />3.3 Crash Testing</h3>
 
-<p>Crash testing seeks to demonstrate that an SQLite database will not
+<p>崩溃测试用于验证SQLite数据库如果出现应用或操作系统崩溃或者在数据库更新过程中断电不会导致数据库损坏。另有一篇名为<a href="atomiccommit.html">SQLite中的原子提交</a>白皮书详细描述了SQLite用于防止数据库在崩溃中损坏的预防措施。崩溃测试努力去验证这些预防措施能够正确的工作。
+<br />Crash testing seeks to demonstrate that an SQLite database will not
 go corrupt if the application or operating system crashes or if there
 is a power failure in the middle of a database update.  A separate
 white-paper titled
@@ -333,12 +372,14 @@ defensive measure SQLite takes to prevent database corruption following
 a crash.  Crash tests strive to verify that those defensive measures
 are working correctly.</p>
 
-<p>It is impractical to do crash testing using real power failures, of
+<p>使用真实的断电来做崩溃测试是不切实际的，所以崩溃测试都是使用模拟来完成的。插入一个可选的<a href="c3ref/vfs.html">虚拟文件系统</a>，这可以允许测试工具模拟一次崩溃后的数据库文件状态。
+<br />It is impractical to do crash testing using real power failures, of
 course, and so crash testing is done in simulation.  An alternative
 <a href="c3ref/vfs.html">Virtual File System</a> is inserted that allows the test
 harness to simulate the state of the database file following a crash.</p>
 
-<p>In the TCL test harness, the crash simulation is done in a separate
+<p>在TCL测试工具中，崩溃模拟在另一个进程中完成。测试主进程创建一个子进程来允许一些SQLite操作并且在写操作中的某个地方随机发生崩溃。使用一个特殊的<a href="vfs.html">VFS</a>对异步的写操作进行随机重排或者损坏，以模拟缓冲文件系统的影响。在子进程终止后原先的测试进程打开并读取数据库来验证子进程试图要做的修改是否成功的完成还是完整的回滚了。使用<a href="pragma.html#pragma_integrity_check">integrity_check</a> <a href="pragma.html#syntax">PRAGMA</a>来确保没有数据库错误发生。
+<br />In the TCL test harness, the crash simulation is done in a separate
 process.  The main testing process spawns a child process which runs
 some SQLite operation and randomly crashes somewhere in the middle of
 a write operation.  A special <a href="vfs.html">VFS</a> randomly reorders and corrupts
@@ -350,7 +391,8 @@ completed successfully or else were completely rolled back.  The
 <a href="pragma.html#pragma_integrity_check">integrity_check</a> <a href="pragma.html#syntax">PRAGMA</a> is used to make sure no database corruption
 occurs.</p>
 
-<p>The TH3 test harness needs to run on embedded systems that do not
+<p>TH3测试工具需要在嵌入式系统中运行，这导致没有能力创建一个子进程。所以它使用一个内存中的<a href="vfs.html">VFS</a>来模拟崩溃。内存<a href="vfs.html">VFS</a>可以控制在完成一定数量I/O操作后生成整个文件系统的一个快照。崩溃测试是在一个循环中运行的，在循环中的每次迭代中，不断向前移动产生快照的点，直到SQLite的测试操作运行完成。在循环中，当SQLite完成测试操作之后，文件系统会恢复快照，并且引入一些随机的文件损害，而这正是当遇到断电后所期望看到的损害特征。这是打开并检查数据库，确保数据库格式是完整的，并且事务要么已经完成，要么完全回滚。循环的内部会对每个快照使用不同的随机损害来重复多次。
+<br />The TH3 test harness needs to run on embedded systems that do not
 necessarily have the ability to spawn child processes, so it uses
 an in-memory <a href="vfs.html">VFS</a> to simulate crashes.  The in-memory <a href="vfs.html">VFS</a> can be rigged
 to make a snapshot of the entire filesystem after a set number of I/O
@@ -368,24 +410,30 @@ snapshot with different random damage each time.</p>
 
 <a name="multifail"></a>
 
-<h3>3.4 Compound failure tests</h3>
+<h3>3.4 复合错误测试
+<br />3.4 Compound failure tests</h3>
 
-<p>The test suites for SQLite also explore the result of stacking
+<p>SQLite的测试工具同样会探测堆积多种错误的结果。例如测试用例会测试当正在恢复前一个崩溃的过程中发生I/O错误或者OOM故障时是否能保证正确的处理。
+<br />The test suites for SQLite also explore the result of stacking
 multiple failures.  For example, tests are run to ensure correct behavior
 when an I/O error or OOM fault occurs while trying to recover from a
 prior crash.
 
 <a name="fuzztesting"></a>
 
-<h2>4.0 Fuzz Testing</h2>
+<h2>4.0 模糊测试
+<br />4.0 Fuzz Testing</h2>
 
-<p><a href="http://en.wikipedia.org/wiki/Fuzz_testing">Fuzz testing</a>
+<p><a href="http://en.wikipedia.org/wiki/Fuzz_testing">模糊测试</a>用于测试当SQLite遇到无效、超出范围、畸形的输入数据时的响应是否正确。
+<br /><a href="http://en.wikipedia.org/wiki/Fuzz_testing">Fuzz testing</a>
 seeks to establish that SQLite responds correctly to invalid, out-of-range,
 or malformed inputs.</p>
 
-<h3>4.1 SQL Fuzz</h3>
+<h3>4.1 模糊SQL
+<br />4.1 SQL Fuzz</h3>
 
-<p>SQL fuzz testing consists of creating syntactically correct yet
+<p>SQL模糊测试是构造一些语法正确但是野蛮且无意义的SQL语句，并将其传入给SQLite，看SQLite会对其做什么。通常会返回一种错误（例如"表不存在(no such table)"）。有时候，纯偶然的，某个SQL语句的语法是正确的。这种情况下，运行最终的预编译语句，确认其是否能给出一个合理的结果。
+<br />SQL fuzz testing consists of creating syntactically correct yet
 wildly nonsensical SQL statements and feeding them to SQLite to see
 what it will do with them.  Usually some kind of error is returned
 (such as "no such table").  Sometimes, purely by chance, the SQL
@@ -393,14 +441,17 @@ statement also happens to be semantically correct.  In that case, the
 resulting prepared statement is run to make sure it gives a reasonable
 result.</p>
 
-<p>The SQL fuzz generator tests are part of the TCL test suite.
+<p>SQL模糊生成测试是TCL测试中的一部分，在完整的测试中，一共包含11。49万个模糊生成的SQL需要测试。
+<br />The SQL fuzz generator tests are part of the TCL test suite.
 During a full test run, about 114.9 
 thousand fuzz SQL statements are
 generated and tested.</p>
 
-<h3>4.2 Malformed Database Files</h3>
+<h3>4.2 畸形数据库文件
+<br />4.2 Malformed Database Files</h3>
 
-<p>There are numerous test cases that verify that SQLite is able to
+<p>有许多测试用例是用来验证看SQLite是否能够处理畸形的数据库文件。这些测试首先构建一个良好的数据库文件，然后使用除了SQLite以外的某种方式修改其中的一个或多个字节以破坏文件，然后使用SQLite读取数据库。一些测试用例中这些改动的字节位于数据中间，这样保持了数据库格式完好，而修改了数据库中的内容。另一些测试用例中，修改了文件中不再使用的字节，这样不会对完整的数据库造成影响。有趣的测试用例是当文件中定义数据库结构的字节被修改时，畸形数据库测试验证中，SQLite会发现文件格式的错误并使用<a href="c3ref/c_abort.html">SQLITE_CORRUPT</a>返回码报告错误，而不会产生缓冲溢出、引用NULL指针或者执行其他不健康的动作
+<br />There are numerous test cases that verify that SQLite is able to
 deal with malformed database files.
 These tests first build a well-formed database file, then add
 corruption by changing one or more bytes in the file by some means
@@ -417,9 +468,11 @@ using the <a href="c3ref/c_abort.html">SQLITE_CORRUPT</a> return code without ov
 buffers, dereferencing NULL pointers, or performing other
 unwholesome actions.</p>
 
-<h3>4.3 Boundary Value Tests</h3>
+<h3>4.3 边界值测试
+<br />4.3 Boundary Value Tests</h3>
 
-<p>SQLite defines certain <a href="limits.html">limits</a> on its operation, such as the
+<p>SQLite在操作中定义了一些<a href="limits.html">限制</a>。例如表中的最大列数、一条SQL语句的最大长度或者正整数的最大值。TCL和TH3测试工具中都包含了许多测试会将SQLite增加到其定义的边界值的边缘处，然后验证这些可接受的值是否正确执行了。还有一些测试使用超过定义的限制的值，用以验证SQLite是否正确的返回了错误。源码中包含了<a href="testing.html#testcase">测试用例宏</a>用来验证是否每个边界值的两边都被测试过。
+<br />SQLite defines certain <a href="limits.html">limits</a> on its operation, such as the
 maximum number of columns in a table, the maximum length of an 
 SQL statement, or the maximum value of an integer.  The TCL and TH3 test
 suites both contains numerous tests that push SQLite right to the edge
@@ -431,9 +484,11 @@ have been tested.</p>
 
 <a name="regressiontesting"></a>
 
-<h2>5.0 Regression Testing</h2>
+<h2>5.0 回归测试
+<br />5.0 Regression Testing</h2>
 
-<p>Whenever a bug is reported against SQLite, that bug is not considered
+<p>当一个SQLite中的bug被报告出来，在修复这个bug之前，会先创建新的测试用例用来复现这个bug的，然后将其加入到TCL和TH3测试工具中。多年以来，这样产生了千千万万的新测试用例。这些回归测试用以确认这些过去已经修复的bug，不会在未来的SQLite版本中再一次引入。
+<br />Whenever a bug is reported against SQLite, that bug is not considered
 fixed until new test cases that would exhibit the bug have been added 
 to either the TCL or TH3 test suites.
 Over the years,
@@ -444,15 +499,18 @@ SQLite.</p>
 
 <a name="leakcheck"></a>
 
-<h2>6.0 Automatic Resource Leak Detection</h2>
+<h2>6.0 自动资源泄露探测
+<br />6.0 Automatic Resource Leak Detection</h2>
 
-<p>Resource leak occurs when system resources
+<p>当系统资源分配后不再释放就会发生资源泄露。在血多应用中最麻烦的资源泄露是内存泄露——当使用malloc()申请内存后没有使用free()释放。不过一些其它类型的资源也同样会发生泄露：文件描述符、线程、互斥体等等。
+<br />Resource leak occurs when system resources
 are allocated and never freed.  The most troublesome resource leaks
 in many applications are memory leaks - when memory is allocated using
 malloc() but never released using free().  But other kinds of resources
 can also be leaked:  file descriptors, threads, mutexes, etc.</p>
 
-<p>Both the TCL and TH3 test harnesses automatically track system
+<p>TCL和TH3测试工具都会自动跟踪系统资源并在<u>每次</u>测试运行时汇报资源泄露。不需要专门的配置和安装，如果一个改动引起了内存泄露，测试工具将会迅速识别出来。SQLite的目标是永远没有内存泄露，即使是在发生了类似OOM错误或磁盘I/O错误等异常之后也不会。测试工具都极度强调这点。
+<br />Both the TCL and TH3 test harnesses automatically track system
 resources and report resource leaks on <u>every</u> test run.
 No special configuration or setup is required.   The test harnesses
 are especially vigilant with regard to memory leaks.  If a change
@@ -463,32 +521,39 @@ harnesses are zealous to enforce this.</p>
 
 <a name="coverage"></a>
 
-<h2>7.0 Test Coverage</h2>
+<h2>7.0 测试覆盖
+<br />7.0 Test Coverage</h2>
 
-<p>The SQLite core has 100% branch test coverage under <a href="th3.html">TH3</a> in
+<p>通过<a href="http://gcc.gnu.org/onlinedocs/gcc/Gcov.html">gcov</a>的测量，SQLite核心部分在<a href="th3.html">TH3</a>默认配置下达到了100%的分支测试覆盖。
+<br />The SQLite core has 100% branch test coverage under <a href="th3.html">TH3</a> in
 its default configuration as measured by
 <a href="http://gcc.gnu.org/onlinedocs/gcc/Gcov.html">gcov</a>.</p>
 
-<p>The "SQLite core" in the previous paragraph excludes the
+<p>上段中的"SQLite 核心"排除了依赖于操作系统的后端<a href="vfs.html">VFS</a>，因为不可能为这些模块编写跨平台的测试。扩展模块，例如FTS3和RTree也同样从分析中排除了。
+<br />The "SQLite core" in the previous paragraph excludes the
 operating-system dependent <a href="vfs.html">VFS</a> backends, since it is
 not possible to write cross-platform tests for those modules.  Extensions
 such as FTS3 and RTree are also excluded from the analysis.</p>
 
 <a name="stmtvbr"></a>
 
-<h3>7.1 Statement versus branch coverage</h3>
+<h3>7.1 语句与分支覆盖
+<br />7.1 Statement versus branch coverage</h3>
 
-<p>There are many ways to measure test coverage.  The most popular
+<p>有许多方式来测量分支覆盖。最常用的标准是“语句覆盖”。当你听到某人说他的程序“XX% 测试覆盖”而没有更多的说明是，他们通常是说语句覆盖。语句覆盖测量是指代码中被测试工具至少执行过一次的行数的百分比。
+<br />There are many ways to measure test coverage.  The most popular
 metric is "statement coverage".  When you hear someone say that their
 program as "XX% test coverage" without further explanation, they usually
 mean statement coverage.  Statement coverage measures what percentage
 of lines of code are executed at least once by the test suite.</p>
 
-<p>Branch coverage is more rigorous than statement coverage.  Branch
+<p>分支覆盖要比语句覆盖更加严格。分支覆盖是指机器码分支指令两个方向都至少测试过一遍的数量。
+<br />Branch coverage is more rigorous than statement coverage.  Branch
 coverage measures the number of machine-code branch instructions that
 are evaluated at least once on both directions.</p>
 
-<p>To illustrate the difference between statement coverage and
+<p>为了展示语句覆盖和分支覆盖之间的不同，请考虑下面设想的这行C代码：
+<br />To illustrate the difference between statement coverage and
 branch coverage, consider the following hypothetical
 line of C code:</p>
 
@@ -496,7 +561,8 @@ line of C code:</p>
 if( a>b && c!=25 ){ d++; }
 </pre></blockquote>
 
-<p>Such a line of C code might generate a dozen separate machine code
+<p>这样一行C代码可能会生成数十条独立的机器码指令。只要其中有一条指令被执行了，我们就会说这条语句被测试了。所有，例如，可能会有条件表达式总为false的情况，这时变量“d”就从来没有自增过。即使这样，语句覆盖会将这行代码记录为测试过。
+<br />Such a line of C code might generate a dozen separate machine code
 instructions.  If any one of those instructions is ever evaluated, then
 we say that the statement has been tested.  So, for example, it might
 be the case that the conditional expression is
@@ -504,7 +570,8 @@ always false and the "d" variable is
 never incremented.  Even so, statement coverage counts this line of
 code as having been tested.</p>
 
-<p>Branch coverage is more strict.  With branch coverage, each test and
+<p>分支覆盖更加严格。在分支测试中，语句中的每个测试盒每个字块都会被分开对待。上例中为了达到100%分支覆盖，那么至少需要三条测试用例：
+<br />Branch coverage is more strict.  With branch coverage, each test and
 each subblock within the statement is considered separately.  In order
 to achieve 100% branch coverage in the example above, there must be at
 least three test cases:</p>
@@ -515,7 +582,8 @@ least three test cases:</p>
 <li> a>b && c!=25
 </ul></p>
 
-<p>Any one of the above test cases would provide 100% statement coverage
+<p>上面测试用例的任意一条都可以认为是100%语句覆盖率，但是100%分支覆盖则必须三条全有。通常来说，100%分支覆盖就意味着100%语句覆盖，反之则不是。再次强调，SQLite中的<a href="th3.html">TH3</a>测试工具提供了更强的测试覆盖——100%分支测试覆盖。
+<br />Any one of the above test cases would provide 100% statement coverage
 but all three are required for 100% branch coverage.  Generally speaking,
 100% branch coverage implies 100% statement coverage, but the converse is
 not true.  To reemphasize, the
@@ -524,14 +592,17 @@ test coverage - 100% branch test coverage.</p>
 
 <a name="defensivecode"></a>
 
-<h3>7.2 Coverage testing of defensive code</h3>
+<h3>7.2 防御代码的覆盖测试
+<br />7.2 Coverage testing of defensive code</h3>
 
-<p>A well-written C program will typically contain some defensive tests
+<p>一个书写良好的C程序通常会包含一些防御性的测试，这些在联系中往往总是true或false。这导致了一个编程困境：是否应该移除防御代码以达到100%的分支覆盖？
+<br />A well-written C program will typically contain some defensive tests
 which in practice are always true or always false.  This leads to a 
 programming dilemma:  Does one remove defensive code in order to obtain
 100% branch coverage?</p>
 
-<p>In SQLite, the answer to the previous question is "no".
+<p>在SQLite中，上面这个问题的回答是“不”。为了测试的目的，SQLite源码中定义了名为ALWAYS()和NEVER()的宏。ALWAYS()宏包围的条件是期望总是true的，NEVER()包围的的条件是期望总是false的。这些宏就像一个注释一样指出这个条件是一个防御代码。对于标准构建，这些宏是直接通过的：
+<br />In SQLite, the answer to the previous question is "no".
 For testing purposes, the SQLite source code defines
 macros called ALWAYS() and NEVER().   The ALWAYS() macro
 surrounds conditions
@@ -545,7 +616,8 @@ For standard builds, these macros are pass-throughs:</p>
 #define NEVER(X)   (X)
 </pre></blockquote>
 
-<p>During most testing, however, these macros will throw an assertion
+<p>在大多数测试中如果这些宏的参数不是所期望的值，那么会抛出一个断言故障。这会快速的提示开发者，这可能是一个错误的设计。
+<br />During most testing, however, these macros will throw an assertion
 fault if their argument does not have the expected truth value.  This
 alerts the developers quickly to incorrect design assumptions.
 
@@ -554,7 +626,8 @@ alerts the developers quickly to incorrect design assumptions.
 #define NEVER(X)   ((X)?assert(0),1:0)
 </pre></blockquote>
 
-<p>When measuring test coverage, these macros are defined to be constant
+<p>当测量测试覆盖时，这些宏定义为常量值，所以他们不会生成汇编语言的分支指令，因此在计算分支覆盖率时不会进入计算。
+<br />When measuring test coverage, these macros are defined to be constant
 truth values so that they do not generate assembly language branch
 instructions, and hence do not come into play when calculating the
 branch coverage:</p>
@@ -564,7 +637,8 @@ branch coverage:</p>
 #define NEVER(X)   (0)
 </pre></blockquote>
 
-<p>The test suite is designed to be run three times, once for each of
+<p>测试工具会运行三次，依次使用上面所示的ALWAYS()和NEVER()宏定义。三次测试的结果应当是完全一样的。有一个<a href="c3ref/test_control.html">sqlite3_test_control</a>(<a href="c3ref/c_testctrl_always.html">SQLITE_TESTCTRL_ALWAYS</a>, ...)接口可以用于运行时验证在开发中这些宏是否正确的设置为了第一种形式（直接通过）。
+<br />The test suite is designed to be run three times, once for each of
 the ALWAYS() and NEVER() definitions shown above.  All three test runs
 should yield exactly the same result.  There is a run-time test using
 the <a href="c3ref/test_control.html">sqlite3_test_control</a>(<a href="c3ref/c_testctrl_always.html">SQLITE_TESTCTRL_ALWAYS</a>, ...) interface that
@@ -573,9 +647,11 @@ form (the pass-through form) for deployment.</p>
 
 <a name="testcase"></a>
 
-<h3>7.3 Forcing coverage of boundary values and boolean vector tests</h3>
+<h3>7.3 强制覆盖边界值和布尔向量测试
+<br />7.3 Forcing coverage of boundary values and boolean vector tests</h3>
 
-<p>Another macro used in conjunction with test coverage measurement is
+<p>另一个与测量测试覆盖率相关的宏是<tt>testcase()</tt>宏。参数是我们希望测试的条件，要能计算出来的true和false。在非覆盖测试构建中（也就是说在发行版构建中）<tt>testcase()</tt>宏是空置的：
+<br />Another macro used in conjunction with test coverage measurement is
 the <tt>testcase()</tt> macro.  The argument is a condition for which
 we want test cases that evaluate to both true and false.
 In non-coverage builds (that is to say, in release builds) the
@@ -585,7 +661,8 @@ In non-coverage builds (that is to say, in release builds) the
 #define testcase(X)
 </pre></blockquote>
 
-<p>But in a coverage measuring build, the <tt>testcase()</tt> macro
+<p>而在测量覆盖率构建中，<tt>testcase()</tt>宏会生成计算参数中的条件表达式的代码。这时在分析中，会检查以确保测试存在，然后计算条件语句的ture和false。下面是<tt>testcase()</tt>的使用示例，用于帮助验证边界值被测试过。例如：
+<br />But in a coverage measuring build, the <tt>testcase()</tt> macro
 generates code that evaluates the conditional expression in its argument.  
 Then during analysis, a check
 is made to ensure tests exist that evaluate the conditional to both true
@@ -598,7 +675,8 @@ testcase( a==b+1 );
 if( a>b && c!=25 ){ d++; }
 </pre></blockquote>
 
-<p>Testcase macros are also used when two or more cases of a switch
+<p>testcase宏同样用于switch语句中的两个或以上条件进入同一个代码块的情况，确保代码对所有条件都能进入：
+<br />Testcase macros are also used when two or more cases of a switch
 statement go to the same block of code, to make sure that the code was
 reached for all cases:</p>
 
@@ -615,7 +693,9 @@ switch( op ){
 }
 </pre></blockquote>
 
-<p>For bitmask tests, <tt>testcase()</tt> macros are used to verify that every
+<p>对于位掩码测试，<tt>testcase()</tt>宏可以用来验证位掩码的每一位对测试的影响。例如，在下面的代码块中，如果条件为true则表示掩码包含了两个位之一，指明MAIN_DB或者TEMP_DB打开了。
+将<tt>testcase()</tt>宏用在条件语句之前，以验证两种条件都被测试过：
+<br />For bitmask tests, <tt>testcase()</tt> macros are used to verify that every
 bit of the bitmask affects the test.  For example, in the following block
 of code, the condition is true if the mask contains either of two bits
 indicating either a MAIN_DB or a TEMP_DB is being opened.  
@@ -628,14 +708,18 @@ testcase( mask & SQLITE_OPEN_TEMP_DB );
 if( (mask & (SQLITE_OPEN_MAIN_DB|SQLITE_OPEN_TEMP_DB))!=0 ){ ... }
 </pre></blockquote>
 
-<p>The SQLite source code contains 695
+<p>在SQLite源码中包含了695次<tt>testcase()</tt>宏的使用。
+<br />The SQLite source code contains 695
 uses of the <tt>testcase()</tt> macro.</p>
 
 <a name="mcdc"></a>
 
-<h3>7.4 Branch coverage versus MC/DC</h3>
+<h3>7.4 分支覆盖与MC/DC
+<br />7.4 Branch coverage versus MC/DC</h3>
 
-<p>Two methods of measuring test coverage were described above:
+<p>上面描述了两种评估测试覆盖率的方法：“语句”和“分支”覆盖。除了这两个还有许多其他测试覆盖的度量方法。另一个有名的度量方法是“修订条件/判定覆盖（Modified
+Condition/Decision Coverage）”或叫做MC/DC。<a href="http://en.wikipedia.org/wiki/Modified_Condition/Decision_Coverage">维基百科</a>是如下这么定义MC/DC的：
+<br />Two methods of measuring test coverage were described above:
 "statement" and "branch" coverage.  There are many other test coverage
 metrics besides these two.  Another popular metric is "Modified
 Condition/Decision Coverage" or MC/DC.  
@@ -643,14 +727,19 @@ Condition/Decision Coverage" or MC/DC.
 defines MC/DC as follows:</p>
 
 <ul>
-<li> Each decision tries every possible outcome.
-<li> Each condition in a decision takes on every possible outcome.
-<li> Each entry and exit point is invoked.
-<li> Each condition in a decision is shown to independently
+<li> 每个判定要测试所有的结果。
+<br />Each decision tries every possible outcome.
+<li> 一个判定中的每个情况得出每一个可能的结果。
+<br />Each condition in a decision takes on every possible outcome.
+<li> 每个入口和出口点都要执行过。
+<br />Each entry and exit point is invoked.
+<li> 一个判定中的每个条件都能展现出对判定结果的独立影响。
+<br />Each condition in a decision is shown to independently
      affect the outcome of the decision.
 </ul>
 
-<p>In the C programming language 
+<p>在C编程语言中<b><tt>&amp;&amp;</tt></b>和<b><tt>||</tt></b>是“短路”操作符，MC/DC和分支覆盖几乎是一样的事情。其最主要的不同是在布尔向量测试。这可以测试比特向量中若干个比特中的几个，并且仍然可以获得100%的分支测试覆盖，即使MC/DC（要求是判定中的每个情况得出每个可能的结果）中的第二个元素可能不满足。
+<br />In the C programming language 
 where <b><tt>&amp;&amp;</tt></b> and <b><tt>||</tt></b>
 are "short-circuit" operators, MC/DC and branch coverage are very nearly
 the same thing.  The primary difference is in boolean vector tests.
@@ -659,16 +748,19 @@ One can test for any of several bits in bit-vector and still obtain
 requirement that each condition in a decision take on every possible outcome -
 might not be satisfied.</p>
 
-<p>SQLite uses <tt>testcase()</tt> macros as described in the previous
+<p>SQLite使用<tt>testcase()</tt>宏作为一个前置的小段描述来确保比特向量判定中的每个情况得出了每种可能的结果。通过这种方法，SQLite在除100%分支覆盖之外同样实现了100% MC/DC。
+<br />SQLite uses <tt>testcase()</tt> macros as described in the previous
 subsection to make sure that every condition in a bit-vector decision takes
 on every possible outcome.  In this way, SQLite also achieves 100% MC/DC
 in addition to 100% branch coverage.</p>
 
 <a name="thoughts1"></a>
 
-<h3>7.5 Experience with full test coverage</h3>
+<h3>7.5 全测试覆盖经验
+<br />7.5 Experience with full test coverage</h3>
 
-<p>The developers of SQLite have found that full coverage testing is an
+<p>SQLite的开发者们发现，全覆盖测试是防止在系统进化过程中引入新bug的一个极端有效的方法。因为SQLite核心代码中的每一个独立的分支指令都被测试用例所覆盖，开发者们可以自信的说他们修改一部分的代码不会对另一部分代码造成位置的后果。如果没有这样的保证维护SQLite的质量将是非常非常难的事情。
+<br />The developers of SQLite have found that full coverage testing is an
 extremely productive method for preventing the introduction of new bugs
 as the system evolves.  Because every single branch
 instruction in SQLite core code is covered by test cases, the developers
@@ -679,25 +771,32 @@ assurances.</p>
 
 <a name="dynamicanalysis"></a>
 
-<h2>8.0 Dynamic Analysis</h2>
+<h2>8.0 动态分析
+<br />8.0 Dynamic Analysis</h2>
 
-<p>Dynamic analysis refers to internal and external checks on the
+<p>
+动态分析是在SQLite运行中给执行的代码引入内部和外部的检查。
+动态分析被证明对维护SQLite质量有巨大的帮助。
+<br />Dynamic analysis refers to internal and external checks on the
 SQLite code which are performed while the code is live and running.
 Dynamic analysis has proven to be a great help in maintaining the
 quality of SQLite.</p>
 
 <a name="asserts"></a>
 
-<h3>8.1 Assert</h3>
+<h3>8.1 断言（Assert）
+<br />8.1 Assert</h3>
 
-<p>The SQLite core contains 3691 <tt>assert()</tt>
+<p>SQLite核心中包含了3691个<tt>assert()</tt>语句，使用其来校验函数的前置条件和后置条件以及循环不变量。Assert()是一个宏，是ANSI-C的标准部分。其参数是一个假定永远为true的布尔值。如果断言为false，程序会打印出错误信息并停止。
+<br />The SQLite core contains 3691 <tt>assert()</tt>
 statements that verify function preconditions and postconditions and
 loop invariants.  Assert() is a macro which is a standard part of
 ANSI-C.  The argument is a boolean value that is assumed to always be
 true.  If the assertion is false, the program prints an error message
 and halts.</p>
 
-<p>Assert() macros are disabled by compiling with the NDEBUG macro defined.
+<p>Assert()宏可以在编译时使用NDEBUG宏定义来禁用。在大多数系统中，断言默认是启用的。但是在SQLite中，断言太多了而且在许多关乎性能的位置——如果启用断言，数据库引擎运行速度会降低三倍。因此SQLite构建（发布版）默认是禁用断言的。只有当定义了SQLITE_DEBUG预处理宏编译出来的SQLite才会启用断言语句。
+<br />Assert() macros are disabled by compiling with the NDEBUG macro defined.
 In most systems, asserts are enabled by default.  But in SQLite, the
 asserts are so numerous and are in such performance critical places, that
 the database engine runs about three times slower when asserts are enabled.
@@ -707,9 +806,11 @@ SQLITE_DEBUG preprocessor macro defined.</p>
 
 <a name="valgrind"></a>
 
-<h3>8.2 Valgrind</h3>
+<h3>8.2 Valgrind
+<br />8.2 Valgrind</h3>
 
-<p><a href="http://valgrind.org/">Valgrind</a> is perhaps the most amazing
+<p><a href="http://valgrind.org/">Valgrind</a>可能是这个世界上最神奇和有用的开发工具。Valgrind是一个模拟器——模拟一个运行Linux程序的x86。（Valgrind对于除Linux意外平台的端口还在开发中，可是在写本文时，Valgrind只能稳定的在Linux上运行。根据SQLite开发者的见解，认为这是说对于所有软件开发者来说Linux应当是首选的平台。）当Valgrind运行一个Linux程序时，它能找到所有值得关注的错误类型，例如数组越界、访问未初始化的内存、栈溢出、内存泄露等等。Valgrind可以找出许多其他针对SQLite的测试很容易漏掉的问题。并且，当Valgrind发现一个错误时，它能直接将开发者带入一个符号化的调试器，准确的定位到发生错误的地方，以帮助快速修复问题。
+<br /><a href="http://valgrind.org/">Valgrind</a> is perhaps the most amazing
 and useful developer tool in the world.  Valgrind is a simulator - it simulates
 an x86 running a Linux binary.  (Ports of Valgrind for platforms other
 than Linux are in development, but as of this writing, Valgrind only
@@ -723,7 +824,8 @@ And, when Valgrind does find an error, it can dump the developer directly
 into a symbolic debugger at the exact point where the error occur, to
 facilitate a quick fix.</p>
 
-<p>Because it is a simulator, running a binary in Valgrind is slower than 
+<p>由于它是一个模拟器，在Valgrind上运行程序要比在原始硬件上运行慢的多。（给一个快速的预估，一个应用程序在工作站上的Valgrind中运行大概相当于在一个智能手机的原始硬件上运行。）所以通过Valgrind来运行SQLite全部的测试是不太现实的。不管怎样，每次发布前快速测试和TH3覆盖测试还是在Valgrind上运行。
+<br />Because it is a simulator, running a binary in Valgrind is slower than 
 running it on native hardware.  (To a first approximation, an application
 running in Valgrind on a workstation will perform about the same as it
 would running natively on a smartphone.)  So it is impractical to run the full
@@ -733,9 +835,11 @@ release.</p>
 
 <a name="memtesting"></a>
 
-<h3>8.3 Memsys2</h3>
+<h3>8.3 Memsys2
+<br />8.3 Memsys2</h3>
 
-<p>SQLite contains a pluggable
+<p>SQLite包含一个可插拔的<a href="malloc.html">内存分配系统</a>。默认实现使用系统的malloc()和free()。然而，如果SQLite使用<a href="compile.html#memdebug">SQLITE_MEMDEBUG</a>参数编译，那么会插入一个封装的内存分配器（<a href="malloc.html#memdebug">memsys2</a>），用于在运行时发现内存分配错误。memsys2封装会检测内存泄露，当然，也同样会检查缓冲越界、使用未初始化的内存和试图访问已经释放的内存。这些事情valgrind同样做了（而且，事实上Valgrind做的更好）。但是memsys2的优势是其运行的要比Valgrind快得多，这就意味着这个检查可以更加经常的进行或应用于更长的测试中。
+<br />SQLite contains a pluggable
 <a href="malloc.html">memory allocation subsystem</a>.
 The default implementation uses system malloc() and free(). 
 However, if SQLite is compiled with <a href="compile.html#memdebug">SQLITE_MEMDEBUG</a>, an alternative
@@ -750,9 +854,11 @@ means the checks can be done more often and for longer tests.</p>
 
 <a name="mutextesting"></a>
 
-<h3>8.4 Mutex Asserts</h3>
+<h3>8.4 互斥体断言（Mutex Asserts）
+<br />8.4 Mutex Asserts</h3>
 
-<p>SQLite contains a pluggable mutex subsystem.  Depending on 
+<p>SQLite包含一个可插拔的互斥体子系统。依靠编译器选项来选择，默认的互斥体系统包含<a href="c3ref/mutex_held.html">sqlite3_mutex_held()</a> 和 <a href="c3ref/mutex_held.html">sqlite3_mutex_notheld()</a>两个接口，这可以发现一个特有的互斥体是否被当前线程持有。在SQLite中这两个接口在assert()语句中广泛的使用，用以验证互斥体是否都在正确的时候获取和释放，为了SQLite能在多线程应用中正确工作，需要做二次检查。
+<br />SQLite contains a pluggable mutex subsystem.  Depending on 
 compile-time options, the default mutex system contains interfaces
 <a href="c3ref/mutex_held.html">sqlite3_mutex_held()</a> and <a href="c3ref/mutex_held.html">sqlite3_mutex_notheld()</a> that detect
 whether or not a particular mutex is held by the calling thread.
@@ -763,9 +869,11 @@ in multi-threaded applications.</p>
 
 <a name="journaltest"></a>
 
-<h3>8.5 Journal Tests</h3>
+<h3>8.5 日志测试
+<br />8.5 Journal Tests</h3>
 
-<p>One of the things that SQLite does to ensure that transactions
+<p>SQLite需要确保的一件事是事务能在系统宕机、断电中保证原子性，这要确保在将修改写入数据库之前将所有的改变写入回滚日志中。TCL测试工具中包含一个可选的<a href="vfs.html">OS 后端</a>实现，用于帮助验证事故时的正确性。“日志测试VFS”会监控数据库文件和回滚日志之间的所有磁盘I/O流量，以检测确保在未首先写入回滚日志之前不会向数据库文件写入任何内容。如果发现了任何差异，那么会抛出一个断言错误。
+<br />One of the things that SQLite does to ensure that transactions
 are atomic across system crashes and power failures is to write
 all changes into the rollback journal file prior to changing the
 database.  The TCL test harness contains an alternative
@@ -776,15 +884,18 @@ checking to make sure that nothing is written into the database
 file which has not first been written and synced to the rollback journal.
 If any discrepancies are found, an assertion fault is raised.</p>
 
-<p>The journal tests are an additional double-check over and above
+<p>日志测试是一个关于崩溃测试的附加二次测试，用于确保SQLite事务在系统崩溃和断电过程中保持原子性。
+<br />The journal tests are an additional double-check over and above
 the crash tests to make sure that SQLite transactions will be atomic
 across system crashes and power failures.</p>
 
 <a name="intoverflow"></a>
 
-<h3>8.6 Signed-Integer Overflow Checks</h3>
+<h3>8.6 有符号整数溢出检查
+<br />8.6 Signed-Integer Overflow Checks</h3>
 
-<p>The various C language standards say that the signed-integer overflow
+<p>各种C语言标准表明有符号整数溢出行为是未定义的。换句话说，当你给一个有符号整数加一个值时，一旦结果太大而无法适用于整数，这个值并不一定会变成一个负数，虽然大多数程序员都这么期望。它可以是这样，但也可以完全不是这样。看<a href="http://thiemonagel.de/2010/01/signed-integer-overflow/">这里</a>和<a href="http://blog.regehr.org/archives/482">这里</a>两个示例。甚至同一个编译器在代码中不同的地方或者不同的优化选项下会对有符号整数溢出做出不同的处理。
+<br />The various C language standards say that the signed-integer overflow
 behavior is undefined.  In other words, when you add a value to a signed
 integer such that the result is too large to fit in that integer, the
 value does not necessarily wrap around to a negative number, as most
@@ -795,7 +906,8 @@ and <a href="http://blog.regehr.org/archives/482">here</a>.  Even the
 same compiler might do something different with signed integer overflow
 in different places in the code or at different optimizations settings.</p>
 
-<p>SQLite never overflows a signed integer.
+<p>SQLite不会溢出一个有符号整数。为了核实这一点，测试用例会至少使用GCC的-ftrapv选项编译运行一次。-ftrapv选项会使GCC在有符号整数溢出时生成一个painc()代码。在做加法时，有大量的测试用例通过使用类似"<b>SELECT -1*(-9223372036854775808);</b>"的边界值计算来努力造成有符号整数溢出。
+<br />SQLite never overflows a signed integer.
 To verify this, the test suites are run at least once when compiled with
 the -ftrapv option to GCC.  The -ftrapv option causes GCC to generate code
 that will panic() on a signed integer overflow.  In addition, there are
@@ -806,21 +918,25 @@ using boundary value calculations such as
 
 <a name="disopttest"></a>
 
-<h2>9.0 Disabled Optimization Tests</h2>
+<h2>9.0 禁用优化选项测试
+<br />9.0 Disabled Optimization Tests</h2>
 
-<p>The <a href="c3ref/test_control.html">sqlite3_test_control</a>(<a href="c3ref/c_testctrl_always.html">SQLITE_TESTCTRL_OPTIMIZATIONS</a>, ...) interface
+<p><a href="c3ref/test_control.html">sqlite3_test_control</a>(<a href="c3ref/c_testctrl_always.html">SQLITE_TESTCTRL_OPTIMIZATIONS</a>, ...)接口允许在运行时选择禁用SQL语句优化。SQLite应当总能在优化选项开启和关闭的情况下生成完全一致的结果。仅仅是在优化选项开启时结果返回的快一些。所以在生产环境中，总是会将优化选项打开（默认设置）。
+<br />The <a href="c3ref/test_control.html">sqlite3_test_control</a>(<a href="c3ref/c_testctrl_always.html">SQLITE_TESTCTRL_OPTIMIZATIONS</a>, ...) interface
 allows selected SQL statement optimizations to be disabled at run-time.
 SQLite should always generate exactly the same answer with optimizations
 enabled and with optimizations disabled; the answer simply arrives quicker
 with the optimizations turned on.  So in a production environment, one always
 leaves the optimizations turned on (the default setting).</p>
 
-<p>One verification technique used on SQLite is to run an entire test suite
+<p>在SQLite上使用的一个验证的技巧是将整个测试运行两边，以便是讲优化选项打开，第二遍将优化选项关闭，然后验证两次输出结果是否一致。这样表示优化选项没有引入错误。
+<br />One verification technique used on SQLite is to run an entire test suite
 twice, once with optimizations left on and a second time with optimizations
 turned off, and verify that the same output is obtained both times.  This
 shows that the optimizations do not introduce errors.</p>
 
-<p>Not all test cases can be handled this way.  Some test cases check
+<p>并不是所有的测试用例可以这样处理。一些测试用例检查以确认优化选项真的能减少总计算时间，这要通过在查询中计算磁盘访问次数、操作排序、全扫描步奏或其他处理步骤来确认。这些测试在优化选项关闭后会失败。不过多数的测试用例只是简单的检查获取的结果是否正确，这些测试用例都可以在关闭优化选项后成功运行，并以此展示优化选项不会引发失败。
+<br />Not all test cases can be handled this way.  Some test cases check
 to verify that the optimizations really are reducing the amount of
 computation by counting the number of disk accesses, sort operations, 
 full-scan steps, or other processing steps that occur during queries.
@@ -833,19 +949,23 @@ cause malfunctions.</p>
 
 <a name="cklist"></a>
 
-<h2>10.0 Checklists</h2>
+<h2>10.0 核查清单
+<br />10.0 Checklists</h2>
 
-<p>The SQLite developers use an on-line checklist to coordinate testing
+<p>SQLite开发者们使用一个一行的核查清单来标注测试行为，并验证在每版SQLite发行之前通过了所有的测试。<a href="http://www.sqlite.org/checklists/index.html">历史核查清单</a>用于记录历史参考。
+<br />The SQLite developers use an on-line checklist to coordinate testing
 activity and to verify that all tests pass prior each SQLite release.
 <a href="http://www.sqlite.org/checklists/index.html">Past checklists</a>
 are retained for historical reference.</p>
 
-<p>The latest checklists contain approximately 200 items that are
+<p>最新的核查清单包含大约200个项目，这些会对每个发行版依次检查。有些核查清单项目只需要花费几秒钟来验证并标注，而有的测试工具需要运行许多小时。
+<br />The latest checklists contain approximately 200 items that are
 individually checked for each release.  Some checklist items only take
 a few seconds to verify and mark off.  Others involve test suites
 that run for many hours.</p>
 
-<p>The release checklist is not automated: developers run each item on
+<p>最终的核查清单不是自动进行的：开发者们人工运行清单中的每一个项目。我们发现人工进行这个过程是非常重要的。有时候在运行清单中的项目时即使自身通过的，但是依然会发现问题。因此在最高层人工审查测试输出是非常重要的，并且不断的自问“这是正确的么？”
+<br />The release checklist is not automated: developers run each item on
 the checklist manually.  We find that it is important to keep a human in
 the loop.  Sometimes problems are found while running a checklist item
 even though the test itself passed.  It is important to have a human
@@ -854,9 +974,11 @@ reviewing the test output at the highest level, and constantly asking
 
 <a name="staticanalysis"></a>
 
-<h2>11.0 Static Analysis</h2>
+<h2>11.0 静态分析
+<br />11.0 Static Analysis</h2>
 
-<p>Static analysis means analyzing code at or before compile-time to
+<p>静态分析是指在编译前分析代码来检查正确性。静态分析包括查看编译警告信息和使用类似<a href="http://clang-analyzer.llvm.org/">Clang Static Analyzer</a>的深入分析引擎来运行代码。SQLite在Linux和Mac上使用GCC和Clang加-Wall和-Wextra参数编译不会有任何警告，在Windows上使用MSVC也同样不会。Clang Static Analyzer工具“扫描构建”不会生成一个警告。不过其他的静态分析器可能会生成一些警告。我们期望用户不要太在意这些警告，代之的是从上面所描述的SQLite严密的测试中得以慰藉。
+<br />Static analysis means analyzing code at or before compile-time to
 check for correctness.  Static analysis includes looking at compiler
 warning messages and running the code through more in-depth
 analysis engines such as the
@@ -870,7 +992,8 @@ warnings and to instead take solace in the intense testing of SQLite
 described above. 
 </p>
 
-<p>Static analysis has not proven to be especially helpful in finding
+<p>静态分析未被证明对从SQLite中找出bug特别有帮助。静态分析只能在SQLite中找出很少的bug，但是这些事异常。许多引入SQLite中的bug是在试图去除编译警告的过程中产生的，这可以通过静态分析来找出。
+<br />Static analysis has not proven to be especially helpful in finding
 bugs in SQLite.  Static analysis has found a few bugs in SQLite, but
 those are the exceptions.  More bugs have been
 introduced into SQLite while trying to get it to compile without 
@@ -878,9 +1001,11 @@ warnings than have been found by static analysis.</p>
 
 <a name="summary"></a>
 
-<h2>12.0 Summary</h2>
+<h2>12.0 概要
+<br />12.0 Summary</h2>
 
-<p>SQLite is open source.  This gives many people the idea that
+<p>SQLite是开源的。这给许多人一个概念是其不像商业软件那样测试完备，也可能是不可靠的。但是，这个印象是错误的。SQLite在这个领域表现出了非常高的可靠性和非常低的故障率，尤其是其进化的是如此迅速。SQLite的质量一部分来自于仔细的代码设计和实现，但是广泛的测试在维护和提高SQLite质量上也扮演了至关重要的角色。本文介绍了每个SQLite发行版所需经历的测试过程，这也是希望能让读者么相信SQLite是可以适用于危险任务应用的。
+<br />SQLite is open source.  This gives many people the idea that
 it is not well tested as commercial software and is perhaps unreliable.
 But that impression is false.  
 SQLite has exhibited very high reliability in the field and
