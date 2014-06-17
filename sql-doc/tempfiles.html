@@ -131,12 +131,15 @@ a:visited { color: #734559 }
 
 
 
-<h1 align="center">SQLite's Use Of Temporary Disk Files</h1>
+<h1 align="center">SQLite使用的临时磁盘文件
+<br />SQLite's Use Of Temporary Disk Files</h1>
 
-<h2>1.0 Introduction</h2>
+<h2>1.0 简介
+<br />1.0 Introduction</h2>
 
 <p>
-On of the <a href="different.html">distinctive features</a> of
+SQLite的一个<a href="different.html">与众不同的特点</a>是数据由一个单独的磁盘文件构成。这将SQLite的移动或备份一个数据简化为了拷贝一个文件。这也同样使SQLite适合与用作<a href="whentouse.html#appfileformat">应用程序文件格式</a>。但是虽然完整的数据库都保存在一个磁盘文件中，SQLite在处理数据库的过程中还是使用到了很多临时文件。
+<br />One of the <a href="different.html">distinctive features</a> of
 SQLite is that a database consists of a single disk file.
 This simplifies the use of SQLite since moving or backing up a
 database is a simple as copying a single file.  It also makes
@@ -148,7 +151,8 @@ course of processing a database.
 </p>
 
 <p>
-This article describes the various temporary files that SQLite
+这篇文章介绍了SQLite创建和使用的各种各样的临时文件。介绍了这些文件何时创建、何时删除、用来做什么、为什么重要以及在创建临时文件开销很大的系统上如何避免他们。
+<br />This article describes the various temporary files that SQLite
 creates and uses.  It describes when the files are created, when
 they are deleted, what they are used for, why they are important,
 and how to avoid them on systems where creating temporary files is
@@ -156,7 +160,8 @@ expensive.
 </p>
 
 <p>
-The manner in which SQLite uses temporary files is not considered
+SQLite使用临时文件的方法不属于SQLite和应用之间合约的一部分。这篇文档中的内容准确的描述了到文档写成或最后更新之时SQLite时如何运行的。但是不能保证SQLite未来的版本中会按照同样的方式使用临时文件。在未来的SQLite发行版中，可能会使用新的临时文件，也可能停止使用一些当前的临时文件。
+<br />The manner in which SQLite uses temporary files is not considered
 part of the contract that SQLite makes with applications.  The
 information in this document is a correct description of how
 SQLite operates at the time that this document was written or last
@@ -169,35 +174,40 @@ in future releases of SQLite.
 
 <a name="types"></a>
 
-<h2>2.0 Nine Kinds Of Temporary Files</h2>
+<h2>2.0 九种临时文件
+<br />2.0 Nine Kinds Of Temporary Files</h2>
 
 <p>
-SQLite currently uses nine distinct types of temporary files:
+SQLite目前使用九种类型的临时文件：
+<br />SQLite currently uses nine distinct types of temporary files:
 </p>
 
 <ol>
-<li>Rollback journals</li>
-<li>Master journals</li>
-<li>Write-ahead Log (WAL) files</li>
-<li>Shared-memory files</li>
-<li>Statement journals</li>
-<li>TEMP databases</li>
-<li>Materializations of views and subqueries</li>
-<li>Transient indices</li>
-<li>Transient databases used by VACUUM</li>
+<li>回滚日志（Rollback journals）</li>
+<li>主日志（Master journals）</li>
+<li>WAL文件（Write-ahead Log (WAL) files）</li>
+<li>共享内存文件（Shared-memory files）</li>
+<li>语句日志（Statement journals）</li>
+<li>临时数据库（TEMP databases）</li>
+<li>具体化的视图和子查询（Materializations of views and subqueries）</li>
+<li>瞬时索引（Transient indices）</li>
+<li>VACUUM中使用的瞬时数据库（Transient databases used by VACUUM）</li>
 </ol>
 
 <p>
-Additional information about each of these temporary file types
+下面是每种临时文件类型的详细信息。
+<br />Additional information about each of these temporary file types
 is in the sequel.
 </p>
 
 <a name="rollbackjrnl"></a>
 
-<h3>2.1 Rollback Journals</h3>
+<h3>2.1回滚日志（Rollback Journals）
+<br />2.1 Rollback Journals</h3>
 
 <p>
-A rollback journal is a temporary file used to implement
+SQLite中回滚日志是一个用来实现原子提交和回滚能力的临时文件（具体如何运行的参见另一篇名为<a href="atomiccommit.html">SQLite中的原子提交</a>的文档）。回滚日志总是位于数据库文件相同的目录内，并且名字是数据库名加八个字符的 "<b>-journal</b>"后缀。回滚日志是SQLite实现原子提交和回滚功能的基础。如果没有回滚日志，SQLite将无法回滚未完成的事务，并且当事务执行过程中遇到崩溃或断电时，整个数据库很可能会出现错误。
+<br />A rollback journal is a temporary file used to implement
 atomic commit and rollback capabilities in SQLite.
 (For a detailed discussion of how this works, see
 the separate document titled
@@ -217,13 +227,15 @@ go corrupt without a rollback journal.
 </p>
 
 <p>
-The rollback journal is <i>usually</i> created and destroyed at the
+回滚日志<i>通常</i>会在分别事务开始和结束的时候创建和销毁。但是这个规定会有例外。
+<br />The rollback journal is <i>usually</i> created and destroyed at the
 start and end of a transaction, respectively.  But there are exceptions
 to this rule.
 </p>
 
 <p>
-If a crash or power loss occurs in the middle of a transaction,
+如果在事务中间发生崩溃或者断电，那么回滚日志会留在磁盘中。下一次另一个应用试图打开数据库文件时，会发现有遗留的回滚日志存在（这种情况下我们称之为“热日志”）并使用日志中的信息来将数据库状态恢复到未完成的事务执行之前。SQLite就是这样实现原子提交的。
+<br />If a crash or power loss occurs in the middle of a transaction,
 then the rollback journal file is left on disk.  The next time
 another application attempts to open the database file, it notices
 the presence of the abandoned rollback journal (we call it a "hot
@@ -234,7 +246,8 @@ atomic commit.
 </p>
 
 <p>
-If an application puts SQLite in 
+如果应用程序使用下面PRAGMA将SQLite设置为<a href="pragma.html#pragma_locking_mode">互斥锁模式</a>：
+<br />If an application puts SQLite in 
 <a href="pragma.html#pragma_locking_mode">exclusive locking mode</a> using
 the pragma:
 </p>
@@ -244,7 +257,8 @@ PRAGMA locking_mode=EXCLUSIVE;
 </pre></blockquote>
 
 <p>
-SQLite creates a new rollback journal at the start of the first
+SQLite在互斥锁模式会话中的第一个事务开始时创建一个新回滚日志。但是在这个事务的结尾不会删除回滚日志。回滚日志可能会截短，也可能会在头部写入零（这依赖于你使用的SQLite版本），但是回滚日志不会删除。回滚日志会一直保留到推出互斥锁访问模式之后删除。
+<br />SQLite creates a new rollback journal at the start of the first
 transaction within an exclusive locking mode session.  But at the
 conclusion of the transaction, it does not delete the rollback
 journal.  The rollback journal might be truncated, or its header
@@ -253,7 +267,10 @@ but the rollback journal is not deleted.  The rollback journal is
 not deleted until exclusive access mode is exited.</p>
 
 <p>
-Rollback journal creation and deletion is also changed by the
+回滚日志的创建和删除可以使用<a href="pragma.html#pragma_journal_mode">journal_mode PRAGMA</a>来修改。
+默认的回滚日志模式是DELETE，其默认行为和上面描述的一样是在每次事务结束时删除回滚日志文件。PERSIST 日志模式不会删除回滚日志，而是在回滚日志的开头覆写入零，这可以阻止其他进程根据这个日志进行回滚。这样的效果与删除日志文件一样，而不用负担实际删除文件的开销。也就是说，PERSIST日志模式表现的行为和EXCLUSIVE锁模式是一样的。OFF日志模式会使SQLite彻底地省略回滚日志。也就是说如果日志模式设置为OFF，那么不会写入任何回滚日志。OFF日志模式禁用了SQLite的原子提交和回滚功能。如果设置了OFF日志模式，ROLLBACK命令就不可用了。在OFF日志模式下，如果在事务过程中发生了崩溃或者断电，那么将不可能恢复并且数据库文件可能会出现错误。
+MEMORY日志模式会将回滚日志存储在内存中而不是磁盘上。MEMORY日志模式下ROLLBACK命令依然可以使用，但是由于磁盘上没有文件来进行恢复，所以在事务过程中发生崩溃或者断电依然会有可能导致数据库损坏。
+<br />Rollback journal creation and deletion is also changed by the
 <a href="pragma.html#pragma_journal_mode">journal_mode pragma</a>.
 The default journaling mode is DELETE, which is the default behavior
 of deleting the rollback journal file at the end of each transaction,
@@ -282,10 +299,12 @@ the MEMORY journal mode will likely result in a corrupt database.
 
 <a name="walfile"></a>
 
-<h3>2.2 Write-Ahead Log (WAL) Files</h3>
+<h3>2.2 WAL文件
+<br />2.2 Write-Ahead Log (WAL) Files</h3>
 
 <p>
-A write-ahead log or WAL file is used in place of a rollback journal
+WAL文件是用来在<a href="wal.html">WAL 模式</a>下替代回滚日志的。正如回滚日志一样，WAL文件的目的是实现原子提交和回滚。WAL文件通常与数据库文件位于同一个目录下，文件名是数据库名字加4个字符的后缀"<b>-wal</b>"。WAL文件在打开第一个数据库连接的时候创建，并且通常在最后一个连接关闭时删除。不过，如果最后一个连接没有正常的关闭，WAL文件会遗留在文件系统中，并且会在下一次数据库打开时自动进行清除。
+<br />A write-ahead log or WAL file is used in place of a rollback journal
 when SQLite is operating in <a href="wal.html">WAL mode</a>.  As with the rollback journal,
 the purpose of the WAL file is to implement atomic commit and rollback.
 The WAL file is always located in the same directory
@@ -301,10 +320,12 @@ opened.
 
 <a name="shmfile"></a>
 
-<h3>2.3 Shared-Memory Files</h3>
+<h3>2.3 共享内存文件
+<br />2.3 Shared-Memory Files</h3>
 
 <p>
-When operating in <a href="wal.html">WAL mode</a>, all SQLite database connections associated
+当在<a href="wal.html">WAL 模式</a>下运行时，同一个数据库文件上的所有数据库连接之间需要共享一些内存来用做WAL文件的索引。在大多数的实现中，共享内存是通过在一个专门为此建立的文件上执行mmap()来实现的——共享内存文件。共享内存文件与数据库文件位于同一个目录中，名字是数据库文件名加上4个字符的后缀"<b>-shm</b>"。共享内存文件只存在于WAL模式下。
+<br />When operating in <a href="wal.html">WAL mode</a>, all SQLite database connections associated
 with the same database file need to share some memory that is used as an
 index for the WAL file.  In most implementations, this shared memory is
 implemented by calling mmap() on a file created for this sole purpose:
@@ -315,7 +336,8 @@ Shared memory files only exist while running in WAL mode.
 </p>
 
 <p>
-The shared-memory file contains no persistent content.  The only purpose
+共享内存文件不包含需要持久化的内容。共享内存文件的唯一目的就是在多个进程同时访问同一个WAL模式数据库时提供一个共享内存块。如果<a href="vfs.html">VFS</a>能够提供其它访问共享内存的方法，那么可以使用其它方法而不是共享内存文件。例如，如果<a href="pragma.html#pragma_locking_mode">PRAGMA locking_mode</a>设置为EXCLUSIVE（意味着只有一个进程可以访问数据库文件），那么可以再堆上分配共享内存，而不是使用共享内存文件，这样就完全不需要创建共享内存文件了。
+<br />The shared-memory file contains no persistent content.  The only purpose
 of the shared-memory file is to provide a block of shared memory for use
 by multiple processes all accessing the same database in WAL mode.
 If the <a href="vfs.html">VFS</a> is able to provide an alternative method for accessing shared
@@ -328,7 +350,8 @@ created.
 </p>
 
 <p>
-The shared-memory file has the same lifetime as its associated WAL file.
+共享内存文件的生命期和相关联的WAL文件一样。当创建WAL文件时就会创建共享内存文件，当删除WAL文件时就会删除共享内存文件。当WAL文件恢复的时候，共享内存文件会依照恢复后的WAL文件内容进行重建。
+<br />The shared-memory file has the same lifetime as its associated WAL file.
 The shared-memory file is created when the WAL file is created and is
 deleted when the WAL file is deleted.  During WAL file recovery, the
 shared memory file is recreated from scratch based on the contents of
@@ -337,10 +360,12 @@ the WAL file being recovered.
 
 <a name="masterjrnl"></a>
 
-<h3>2.4 Master Journal Files</h3>
+<h3>2.4 主日志文件
+<br />2.4 Master Journal Files</h3>
 
 <p>
-The master journal file is used as part of the atomic commit
+主日志文件是用于当一个事务需要修改多个数据库（使用<a href="lang_attach.html">ATTACH</a>语句添加到一个<a href="c3ref/sqlite3.html">数据库连接</a>上）时作为原子提交处理的一部分。主日志文件通常与主数据库文件位于同一个目录（主数据库文件就是调用<a href="c3ref/open.html">sqlite3_open()</a>、<a href="c3ref/open.html">sqlite3_open16()</a>或<a href="c3ref/open.html">sqlite3_open_v2()</a>创建<a href="c3ref/sqlite3.html">数据库连接</a>时指定的数据库文件），命名是数据库名加一个随机的后缀。主日志中包含了事务中修改的所有附加数据库的名字。当主日志文件删除时，多数据库事务提交。更多信息参见<a href="atomiccommit.html">SQLite中的原子提交</a>。
+<br />The master journal file is used as part of the atomic commit
 process when a single transaction makes changes to multiple
 databases that have been added to a single <a href="c3ref/sqlite3.html">database connection</a>
 using the <a href="lang_attach.html">ATTACH</a> statement.  The master journal file is always
@@ -358,7 +383,8 @@ additional detail.
 </p>
 
 <p>
-The master journal file is only created in cases where a single
+主日志文件只有当一条<a href="c3ref/sqlite3.html">数据库连接</a>需要处理<a href="lang_attach.html">ATTACH</a>语句附加上的两个或多个辅助数据库，且一个事务中需要修改一个以上数据库文件时才会创建。如果不使用主日志，那么多个数据库上的事务提交只能分别保证每个数据库是原子的，而不能原子提交所有数据库。也就是说，如果提交过程被崩溃或断电中断后，一些数据库上的事务已经完成，而另一些数据库上的事务可能会回滚。而主日志可以保证所有数据库要么一起提交，要么一起回滚。
+<br />The master journal file is only created in cases where a single
 <a href="c3ref/sqlite3.html">database connection</a> is talking with two or more databases files
 as a result of using <a href="lang_attach.html">ATTACH</a> to connection to auxiliary databases,
 and where a single transaction modifies more than one of those
@@ -374,10 +400,12 @@ changes in all databases to either rollback or commit together.
 
 <a name="stmtjrnl"></a>
 
-<h3>2.5 Statement Journal Files</h3>
+<h3>2.5 语句日志文件
+<br />2.5 Statement Journal Files</h3>
 
 <p>
-A statement journal file is used to rollback partial results of
+语句日志文件用于回滚大事务中一条语句的部分结果。例如，假设一条UPDATE语句将修改数据库中的100行记录。但是在修改了前50行后，UPDATE因违反了约束而阻塞了整个语句。语句日志被用来撤销前50行的改动，以便数据库恢复到语句开始时的状态
+<br />A statement journal file is used to rollback partial results of
 a single statement within a larger transaction.  For example, suppose
 an UPDATE statement will attempt to modify 100 rows in the database.
 But after modifying the first 50 rows, the UPDATE hits
@@ -388,7 +416,8 @@ of the statement.
 </p>
 
 <p>
-A statement journal is only created for an UPDATE or INSERT statement
+语句日志只会在UPDATE或INSERT语句执行中创建，这是因为这两个语句在触发器中可能会修改数据库中的多行记录，并且可能会违反约束或者抛出异常，因而需要撤销部分结果。如果UPDATE和INSERT不在BEGIN...COMMIT里面并且在同一个数据库连接中没有其它的有效语句，那么就会使用普通的回滚日志而不需要创建语句日志。如果选择使用了<a href="lang_conflict.html">冲突解决算法</a> ，那么也会忽略语句日志。例如：
+<br />A statement journal is only created for an UPDATE or INSERT statement
 that might change multiple rows of a database and which might hit a
 constraint or a RAISE exception within a trigger and thus need to
 undo partial results.
@@ -412,7 +441,8 @@ REPLACE INTO ....
 </pre></blockquote>
 
 <p>
-The statement journal is given a randomized name, not necessarily
+语句日志的命名是随机的，也不需要和主数据库在同一个目录中，并且会在事务的结尾处自动删除。语句日志的大小与创建语句日志的UPDATE或INSERT语句执行的变动量成比例。
+<br />The statement journal is given a randomized name, not necessarily
 in the same directory as the main database, and is automatically
 deleted at the conclusion of the transaction.  The size of the
 statement journal is proportional to the size of the change implemented
@@ -422,9 +452,12 @@ to be created.
 
 <a name="tempdb"></a>
 
-<h3>2.6 TEMP Databases</h3>
+<h3>2.6 临时数据库
+<br />2.6 TEMP Databases</h3>
 
-<p>Tables created using the "CREATE TEMP TABLE" syntax are only
+<p>使用"CREATE TEMP TABLE"语法创建的表只对最初执行"CREATE TEMP TABLE"语句的<a href="c3ref/sqlite3.html">数据库连接</a>可见。这些临时表以及相关索引、触发器和视图全部存储在一个独立的临时数据库文件中，这个文件在执行第一条"CREATE TEMP TABLE"语句时就创建了。这个独立的临时数据库文件同样有相关联的回滚日志。
+用于存储临时表的临时数据库文件在使用<a href="c3ref/close.html">sqlite3_close()</a>关闭<a href="c3ref/sqlite3.html">数据库连接</a>时会自动删除。
+<br />Tables created using the "CREATE TEMP TABLE" syntax are only
 visible to the <a href="c3ref/sqlite3.html">database connection</a> in which the "CREATE TEMP TABLE"
 statement is originally evaluated.  These TEMP tables, together
 with any associated indices, triggers, and views, are collectively
@@ -438,7 +471,11 @@ using <a href="c3ref/close.html">sqlite3_close()</a>.
 </p>
 
 <p>
-The TEMP database file is very similar to auxiliary database
+临时数据库与<a href="lang_attach.html">ATTACH</a>语句添加的附加数据库基本一致，仅仅有几个不同的参数。
+临时数据库在<a href="c3ref/sqlite3.html">数据库连接</a>关闭时会自动删除。
+临时数据库永远使用<a href="pragma.html#pragma_synchronous">synchronous=OFF</a> 和 <a href="pragma.html#pragma_journal_mode">journal_mode=PERSIST</a> PRAGMA设置。
+并且临时数据库无法使用<a href="lang_detach.html">DETACH</a>，其它进程也不能<a href="lang_attach.html">ATTACH</a>临时数据库。
+<br />The TEMP database file is very similar to auxiliary database
 files added using the <a href="lang_attach.html">ATTACH</a> statement, though with a few
 special properties.
 The TEMP database is always automatically deleted when the
@@ -451,16 +488,21 @@ another process <a href="lang_attach.html">ATTACH</a> the TEMP database.
 </p>
 
 <p>
-The temporary files associated with the TEMP database and its
+临时数据库相关的临时文件和其回滚日志只有在应用使用了"CREATE TEMP TABLE" 语句之后才会创建。
+<br />The temporary files associated with the TEMP database and its
 rollback journal are only created if the application makes use
 of the "CREATE TEMP TABLE" statement.
 </p>
 
 <a name="views"></a>
 
-<h3>2.7 Materializations Of Views And Subqueries</h3>
+<h3>2.7 具体化的视图和子查询
+<br />2.7 Materializations Of Views And Subqueries</h3>
 
-<p>Queries that contain subqueries must sometime evaluate
+<p>包含子查询的查询有时候必须单独执行子查询，然后将结果存储在一个临时表中，然后使用临时表的内容再计算外层查询。我们称之为“具体化”子查询。
+SQLite中的查询优化器会试图避免具体化，但是有些时候，这是很难避免的。具体化创建的临时表会分别存储在单独的临时文件中，并且会在查询结尾自动删除。
+当然，临时表的大小依赖于具体化的子查询的数据数量。
+<br />Queries that contain subqueries must sometime evaluate
 the subqueries separately and store the results in a temporary
 table, then use the content of the temporary table to evaluate
 the outer query.
@@ -475,7 +517,8 @@ data in the materialization of the subquery, of course.
 </p>
 
 <p>
-A subquery on the right-hand side of IN operator must often
+IN操作符右边的子查询总是会具体化。
+<br />A subquery on the right-hand side of IN operator must often
 be materialized.  For example:
 </p>
 
@@ -484,7 +527,8 @@ SELECT * FROM ex1 WHERE ex1.a IN (SELECT b FROM ex2);
 </pre></blockquote>
 
 <p>
-In the query above, the subquery "SELECT b FROM ex2" is evaluated
+在上面的查询中，会先计算子查询"SELECT b FROM ex2"，然后将其结果存储在一个临时表（实际上是个临时索引），这样可以使用一个简单的二叉查询来判断一个值是否存在。一旦这个表构建完成，外层的查询就开始运行，依次检查预期结果中的每一行的ex1.a是否包含在临时表中。只有结果为true的行才会输出。
+<br />In the query above, the subquery "SELECT b FROM ex2" is evaluated
 and its results are stored in a temporary table (actually a temporary
 index) that allows one to determine whether or not a value ex2.b
 exists using a simple binary search.  Once this table is constructed,
@@ -494,7 +538,8 @@ The row is output only if the check is true.
 </p>
 
 <p>
-To avoid creating the temporary table, the query might be rewritten
+为了避免创建临时表，这个查询可以按照下面的方式重写：
+<br />To avoid creating the temporary table, the query might be rewritten
 as follows:
 </p>
 
@@ -503,20 +548,23 @@ SELECT * FROM ex1 WHERE EXISTS(SELECT 1 FROM ex2 WHERE ex2.b=ex1.a);
 </pre></blockquote>
 
 <p>
-Recent versions of SQLite (version 3.5.4 and later)
+较新的SQLite版本（3.5.4版以后）如果ex2.b上有索引就会自动完成这个重写。
+<br />Recent versions of SQLite (version 3.5.4 and later)
 will do this rewrite automatically
 if an index exists on the column ex2.b.
 </p>
 
 <p>
-If the right-hand side of an IN operator can be list of values
+如果IN操作符的右边可以将值罗列出来，像下面一样：
+<br />If the right-hand side of an IN operator can be list of values
 as in the following:
 </p>
 <blockquote><pre>
 SELECT * FROM ex1 WHERE a IN (1,2,3);
 </pre></blockquote>
 <p>
-List values on the right-hand side of IN are treated as a 
+IN操作符右边的列举值会被当做一个必须具体化的子查询来对待。也就是说，上面的语句实际上会被当做：
+<br />List values on the right-hand side of IN are treated as a 
 subquery that must be materialized.  In other words, the
 previous statement acts as if it were:
 </p>
@@ -526,13 +574,15 @@ SELECT * FROM ex1 WHERE a IN (SELECT 1 UNION ALL
                               SELECT 3);
 </pre></blockquote>
 <p>
-A temporary index is always used to hold the values of the
+当IN操作符右边是值列表时，总是会建立一个临时索引来持有这些值。
+<br />A temporary index is always used to hold the values of the
 right-hand side of an IN operator when that right-hand side
 is a list of values.
 </p>
 
 <p>
-Subqueries might also need to be materialized when they appear
+当FROM子句中出现SELECT语句时，这个自查徐也同样会具体化。例如：
+<br />Subqueries might also need to be materialized when they appear
 in the FROM clause of a SELECT statement.  For example:
 </p>
 
@@ -541,7 +591,8 @@ SELECT * FROM ex1 JOIN (SELECT b FROM ex2) AS t ON t.b=ex1.a;
 </pre></blockquote>
 
 <p>
-Depending on the query, SQLite might need to materialize the 
+根据这个查询，SQLite可能会需要具体化"(SELECT b FROM ex2)"这个子查询，将其存储到临时表中，然后在ex1和临时表之间执行JOIN。查询优化器通过"扁平化"查询来避免这样。在上面的例子中，查询可以扁平化，所以SQLite会自动将查询转化为：
+<br />Depending on the query, SQLite might need to materialize the 
 "(SELECT b FROM ex2)" subquery into a temporary table, then
 perform the join between ex1 and the temporary table.  The
 query optimizer tries to avoid this by "flattening" the
@@ -554,7 +605,8 @@ SELECT ex1.*, ex2.b FROM ex1 JOIN ex2 ON ex2.b=ex1.a;
 </blockquote></pre>
 
 <p>
-More complex queries may or may not be able to employ query
+许多复合查询都可能可以通过扁平化查询来避免临时表。一个查询是否能扁平化取决于子查询或外层查询中是否包含聚合函数、ORDER BY或GROUP BY子句、LIMIT子句等等。一个查询是否能扁平化的规则是非常复杂的，已经远超出了这篇文档的范围。
+<br />More complex queries may or may not be able to employ query
 flattening to avoid the temporary table.  Whether or not
 the query can be flattened depends on such factors as whether
 or not the subquery or outer query contain aggregate functions,
@@ -565,27 +617,34 @@ very complex and are beyond the scope of this document.
 
 <a name="transidx"></a>
 
-<h3>2.8 Transient Indices</h3>
+<h3>2.8 瞬时索引
+<br />2.8 Transient Indices</h3>
 
 <p>
-SQLite may make use of transient indices to
+SQLite会利用瞬时索引来实现SQL语言的一些特性，例如：
+<br />SQLite may make use of transient indices to
 implement SQL language features such as:
 </p>
 
 <ul>
-<li>An ORDER BY or GROUP BY clause</li>
-<li>The DISTINCT keyword in an aggregate query</li>
-<li>Compound SELECT statements joined by UNION, EXCEPT, or INTERSECT</li>
+<li>ORDER BY 或 GROUP BY 子句
+<br />An ORDER BY or GROUP BY clause</li>
+<li>聚合查询中的DISTINCT 关键词
+<br />The DISTINCT keyword in an aggregate query</li>
+<li>使用UNION、EXCEPT或INTERSECT 连接的复合查询
+<br />Compound SELECT statements joined by UNION, EXCEPT, or INTERSECT</li>
 </ul>
 
 <p>
-Each transient index is stored in its own temporary file.
+每个瞬时索引都存储在一个单独的临时文件中。瞬时索引的临时文件会在使用其的语句结束时自动删除。
+<br />Each transient index is stored in its own temporary file.
 The temporary file for a transient index is automatically deleted
 at the end of the statement that uses it.
 </p>
 
 <p>
-SQLite strives to implement ORDER BY clauses using a preexisting
+SQLite力求使用已有的索引来实现ORDER BY子句。如果已经有合适的索引，SQLite会按照这个索引来遍历提取所需的信息，而不是原始表。这样使得返回的记录行是按照期望的顺序。但是如果SQLite无法找到合适的索引，则会执行查询，然后将每一行存储在一个瞬时索引中，其中数据就是每行的数据，键就是ORDER BY的内容。在查询执行完之后，SQLite重新遍历开始从头遍历瞬时索引，以便按照期望的顺序输出行记录。
+<br />SQLite strives to implement ORDER BY clauses using a preexisting
 index.  If an appropriate index already exists, SQLite will walk
 the index, rather than the underlying table, to extract the 
 requested information, and thus cause the rows to come out in
@@ -598,7 +657,8 @@ rows in the desired order.
 </p>
 
 <p>
-SQLite implements GROUP BY by ordering the output rows in the
+SQLite通过将输出记录按照GROUP BY语句暗示的顺序进行排序来实现GROUP BY的。每一行输出结果都要和之前的内容进行比较来判断是否是一个新“组”。GROUP BY语句的排序和ORDER BY语句是完全一样的方法。尽量使用已有的索引，如果没有合适的索引可用，那么创建一个瞬时索引。
+<br />SQLite implements GROUP BY by ordering the output rows in the
 order suggested by the GROUP BY terms.  Each output row is
 compared to the previous to see if it starts a new "group".
 The ordering by GROUP BY terms is done in exactly the same way
@@ -608,7 +668,8 @@ index is created.
 </p>
 
 <p>
-The DISTINCT keyword on an aggregate query is implemented by
+聚合查询中的DISTINCT关键词也是通过在临时文件中创建瞬时索引来实现的，查询会将每行结果都存储到索引中，当新计算出一行结果时会检查这一行是否在瞬时索引中已经存在了，如果存在了，那么这一行结果就会被丢弃掉。
+<br />The DISTINCT keyword on an aggregate query is implemented by
 creating a transient index in a temporary file and storing
 each result row in that index.  As new result rows are computed
 a check is made to see if they already exist in the transient
@@ -616,7 +677,8 @@ index and if they do the new result row is discarded.
 </p>
 
 <p>
-The UNION operator for compound queries is implemented by creating
+复合查询中的UNION操作符也是通过在临时文件中创建瞬时索引来实现的，查询会将左右两边子查询的结果都存储到瞬时索引中，然后抛弃重复的。在两个子查询都计算完后，再次从头到尾遍历瞬时索引来生成最终结果。
+<br />The UNION operator for compound queries is implemented by creating
 a transient index in a temporary file and storing the results
 of the left and right subquery in the transient index, discarding
 duplicates.  After both subqueries have been evaluated, the
@@ -624,7 +686,8 @@ transient index is walked from beginning to end to generate the final output.
 </p>
 
 <p>
-The EXCEPT operator for compound queries is implemented by creating
+复合查询中的UNION操作符也是通过在临时文件中创建瞬时索引来实现的，先将左边子查询的结果存储到瞬时索引中，然后从索引中移除包含在右边子查询结果中的数据，最后从头到尾遍历瞬时索引来生成最终结果。
+<br />The EXCEPT operator for compound queries is implemented by creating
 a transient index in a temporary file, storing the results of the
 left subquery in this transient index, then removing the result 
 from right subquery from the transient index, and finally walking
@@ -632,7 +695,8 @@ the index from beginning to end to obtain the final output.
 </p>
 
 <p>
-The INTERSECT operator for compound queries is implemented by
+复合查询中的INTERSECT操作符是通过创建两个独立的瞬时索引来实现的，其中每个索引在一个单独的文件中。左右两边的子查询分别进行计算，并将结果分别存入两个索引中。然后同时遍历两个索引，当遇到两边都有的记录则输出。
+<br />The INTERSECT operator for compound queries is implemented by
 creating two separate transient indices, each in a separate
 temporary file.  The left and right subqueries are evaluated
 each into a separate transient index.  Then the two indices
@@ -641,17 +705,20 @@ are output.
 </p>
 
 <p>
-Note that the UNION ALL operator for compound queries does not
+注意复合查询中的UNION ALL操作符本身是没有使用瞬时索引（不过当然，UNION ALL左右两边的子查询中可能会使用到瞬时索引，这取决于子查询是如何组成的）。
+<br />Note that the UNION ALL operator for compound queries does not
 use transient indices by itself (though of course the right
 and left subqueries of the UNION ALL might use transient indices
 depending on how they are composed.)
 
 <a name="vacuumdb"></a>
 
-<h3>2.9 Transient Database Used By <a href="lang_vacuum.html">VACUUM</a></h3>
+<h3>2.9 <a href="lang_vacuum.html">VACUUM</a>中使用的瞬时数据库
+<br />2.9 Transient Database Used By <a href="lang_vacuum.html">VACUUM</a></h3>
 
 <p>
-The <a href="lang_vacuum.html">VACUUM</a> command works by creating a temporary file
+<a href="lang_vacuum.html">VACUUM</a>命令首先创建一个临时文件，然后将整个数据库在临时文件中重建，然后将临时文件中的内容复制回原始数据库文件内，最后删除临时文件。
+<br />The <a href="lang_vacuum.html">VACUUM</a> command works by creating a temporary file
 and then rebuilding the entire database into that temporary
 file.  Then the content of the temporary file is copied back
 into the original database file and the temporary file is
@@ -659,17 +726,21 @@ deleted.
 </p>
 
 <p>
-The temporary file created by the <a href="lang_vacuum.html">VACUUM</a> command exists only
+<a href="lang_vacuum.html">VACUUM</a>命令创建的临时文件只存在于命令执行的过程中。这个临时文件的大小不会大于原始数据库。
+<br />The temporary file created by the <a href="lang_vacuum.html">VACUUM</a> command exists only
 for the duration of the command itself.  The size of the temporary
 file will be no larger than the original database.
 </p>
 
 <a name="tempstore"></a>
 
-<h2>3.0 The SQLITE_TEMP_STORE Compile-Time Parameter and Pragma</h2>
+<h2>3.0 SQLITE_TEMP_STORE 编译器参数和PRAGMA
+<br />3.0 The SQLITE_TEMP_STORE Compile-Time Parameter and Pragma</h2>
 
 <p>
-The temporary files associated with transaction control, namely
+与事务控制相关的临时文件，依旧是回滚日志、主日志、WAL文件和共享内存文件都会写入磁盘。而其他类型的临时文件可能只存储与内存中，永远不欧诺个写入磁盘。
+除了回滚日志、主日志和语句日志以外的其他临时文件是写入磁盘还是仅仅存在内存中，这依赖于<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数、<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>和临时文件的大小。
+<br />The temporary files associated with transaction control, namely
 the rollback journal, master journal, write-ahead log (WAL) files,
 and shared-memory files, are always written to disk.
 But the other kinds of temporary files might be stored in memory
@@ -682,38 +753,47 @@ and on the size of the temporary file.
 </p>
 
 <p>
-The <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter is a #define whose value is
+<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数是一个宏定义，其值是0到3（包含）之间的一个整数。<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数的具体含义如下：
+<br />The <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter is a #define whose value is
 an integer between 0 and 3, inclusive.  The meaning of the
 <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter is as follows:
 </p>
 
 <ol type="1">
 <li value="0">
-Temporary files are always stored on disk regardless of the setting
+不管<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>如何设置，临时文件始终存储在磁盘中。
+<br />Temporary files are always stored on disk regardless of the setting
 of the <a href="pragma.html#pragma_temp_store">temp_store pragma</a>.
 </li>
 <li value="1">
-Temporary files are stored on disk by default but this can be
+默认情况临时文件存储在磁盘中，但是可以使用<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>修改配置。
+<br />Temporary files are stored on disk by default but this can be
 overridden by the <a href="pragma.html#pragma_temp_store">temp_store pragma</a>.
 </li>
 <li value="2">
+默认情况临时文件存储在内存中，但是可以使用<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>修改配置。
+<br />
 Temporary files are stored in memory by default but this can be
 overridden by the <a href="pragma.html#pragma_temp_store">temp_store pragma</a>.
 </li>
 <li value="3">
+不管<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>如何设置，临时文件始终存储在内存中。
+<br />
 Temporary files are always stored in memory regardless of the setting
 of the <a href="pragma.html#pragma_temp_store">temp_store pragma</a>.
 </li>
 </ol>
 
 <p>
-The default value of the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter is 1,
+<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数的默认值是1。这意味着临时文件会存储在磁盘中，但是可以使用<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>来修改设置。
+<br />The default value of the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter is 1,
 which means to store temporary files on disk but provide the option
 of overriding the behavior using the <a href="pragma.html#pragma_temp_store">temp_store pragma</a>.
 </p>
 
 <p>
-The <a href="pragma.html#pragma_temp_store">temp_store pragma</a> has
+<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>是一个整数值，它会影响到将临时文件存储在哪儿的决定。temp_store PRAGMA的值的具体含义如下：
+<br />The <a href="pragma.html#pragma_temp_store">temp_store pragma</a> has
 an integer value which also influences the decision of where to store
 temporary files.  The values of the temp_store pragma have the
 following meanings:
@@ -721,16 +801,20 @@ following meanings:
 
 <ol type="1">
 <li value="0">
-Use either disk or memory storage for temporary files as determined
+由<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数来决定临时文件是存储在磁盘上还是内存中。
+<br />Use either disk or memory storage for temporary files as determined
 by the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter.
 </li>
 <li value="1">
-If the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter specifies memory storage for
+如果<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数指定了将临时文件存储在内存中，那么修改设置，改为存储在磁盘上。否则依照<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数的设置。
+<br />If the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter specifies memory storage for
 temporary files, then override that decision and use disk storage instead.
 Otherwise follow the recommendation of the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time
 parameter.
 </li>
 <li value="2">
+如果<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数指定了将临时文件存储在磁盘中，那么修改设置，改为存储在内存中。否则依照<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数的设置。
+<br />
 If the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter specifies disk storage for
 temporary files, then override that decision and use memory storage instead.
 Otherwise follow the recommendation of the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time
@@ -739,13 +823,15 @@ parameter.
 </ol>
 
 <p>
-The default setting for the <a href="pragma.html#pragma_temp_store">temp_store pragma</a> is 0,
+<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>的模式设置是0。意味着依照<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数的设置。
+<br />The default setting for the <a href="pragma.html#pragma_temp_store">temp_store pragma</a> is 0,
 which means to following the recommendation of <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time
 parameter.
 </p>
 
 <p>
-To reiterate, the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter and the 
+再次声明，<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数和<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>只能影响除了回滚日志和主日志意外的其他临时文件。回滚日志和主日志不管<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数和<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>如何设置都只能存储在磁盘里。
+<br />To reiterate, the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter and the 
 <a href="pragma.html#pragma_temp_store">temp_store pragma</a> only
 influence the temporary files other than the rollback journal
 and the master journal.  The rollback journal and the master
@@ -756,10 +842,12 @@ the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time paramet
 
 <a name="otheropt"></a>
 
-<h2>4.0 Other Temporary File Optimizations</h2>
+<h2>4.0 其他临时文件优化
+<br />4.0 Other Temporary File Optimizations</h2>
 
 <p>
-SQLite uses a page cache of recently read and written database
+SQLite对最近读取和写入的数据库页使用页缓存。页缓存不但在主数据库文件中使用，同时也在临时文件中的瞬时索引和表中使用。如果SQLite需要使用临时索引或表，并且<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数和<a href="pragma.html#pragma_temp_store">temp_store PRAGMA</a>设置将临时索引和表存储在磁盘中，那么实际上其中的数据初始时依然存储在内存中的页缓存中。在页缓存满之前是不会打开临时文件，也不会真正将数据写入磁盘的。
+<br />SQLite uses a page cache of recently read and written database
 pages.  This page cache is used not just for the main database
 file but also for transient indices and tables stored in temporary
 files.  If SQLite needs to use a temporary index or table and
@@ -772,7 +860,8 @@ written to disk until the page cache is full.
 </p>
 
 <p>
-This means that for many common cases where the temporary tables
+这意味着，在许多情况下，当临时表和索引非常小（小到可以存储在页缓存中）是，不会创建临时文件，也就不会发生任何磁盘I/O。只有当临时数据的大到RAM无法存储时才会将数据写入磁盘。
+<br />This means that for many common cases where the temporary tables
 and indices are small (small enough to fit into the page cache)
 no temporary files are created and no disk I/O occurs.  Only
 when the temporary data becomes too large to fit in RAM does
@@ -780,7 +869,9 @@ the information spill to disk.
 </p>
 
 <p>
-Each temporary table and index is given its own page cache
+每个临时表和索引都会分配独有的页缓存，其可以存储的数据库页的最大数量依赖于SQLITE_DEFAULT_TEMP_CACHE_SIZE编译器参数（默认值是500页）。每个临时表和索引的页缓存的最大数据库页数量都是一样的。这个值无法在运行时修改或者每个索引或表一个值。
+每个临时文件使用自身的SQLITE_DEFAULT_TEMP_CACHE_SIZE页限制来获取其私有的页缓存。
+<br />Each temporary table and index is given its own page cache
 which can store a maximum number of database pages determined
 by the SQLITE_DEFAULT_TEMP_CACHE_SIZE compile-time parameter.
 (The default value is 500 pages.)
