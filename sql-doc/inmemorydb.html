@@ -131,13 +131,16 @@ a:visited { color: #734559 }
 
 
 
-<h1 align="center">In-Memory Databases</h1>
+<h1 align="center">内存数据库
+<br />In-Memory Databases</h1>
 
-<p>An SQLite database is normally stored in a single ordinary disk
+<p>SQLite数据库通常是存储在一个单独的普通磁盘文件中。不过，在某些情况下，数据库也可以存储在内存中。
+<br />An SQLite database is normally stored in a single ordinary disk
 file. However, in certain circumstances, the database might be stored in
 memory.</p>
 
-<p>The most common way to force an SQLite database to exist purely 
+<p>建立一个纯内存数据库最常用的方法是使用特殊的文件名"<b>:memory:</b>"来打开数据库。也就是说，传入<a href="c3ref/open.html">sqlite3_open()</a>、<a href="c3ref/open.html">sqlite3_open16()</a>或<a href="c3ref/open.html">sqlite3_open_v2()</a>这几个函数的参数不是一个真正磁盘文件的名字，而是一个字符串":memory:"。例如：
+<br />The most common way to force an SQLite database to exist purely 
 in memory is to open the database using the special filename
 "<b>:memory:</b>".  In other words, instead of passing the name of
 a real disk file into one of the <a href="c3ref/open.html">sqlite3_open()</a>, <a href="c3ref/open.html">sqlite3_open16()</a>, or
@@ -148,14 +151,16 @@ example:</p>
 rc = sqlite3_open(":memory:", &amp;db);
 </pre></blockquote>
 
-<p>When this is done, no disk file is opened.  
+<p>当完成调用时，不会打开任何磁盘文件。而是创建了一个纯内存数据库。一旦数据库连接断开，这个数据库就消失了。每个:memory:数据库都是独立的。所以两个使用文件名":memory:"打开的数据库连接会创建两个独立的内存数据库。
+<br />When this is done, no disk file is opened.  
 Instead, a new database is created
 purely in memory.  The database ceases to exist as soon as the database
 connection is closed.  Every :memory: database is distinct from every
 other.  So, opening two database connections each with the filename
 ":memory:" will create two independent in-memory databases.</p>
 
-<p>The special filename ":memory:" can be used anywhere that a database
+<p>特殊文件名":memory:"可以用在任何允许使用数据库文件名的地方。例如，可以再<a href="lang_attach.html">ATTACH</a>命令中当做<i>文件名</i>来使用：
+<br />The special filename ":memory:" can be used anywhere that a database
 filename is permitted.  For example, it can be used as the
 <i>filename</i> in an <a href="lang_attach.html">ATTACH</a> command:</p>
 
@@ -163,12 +168,14 @@ filename is permitted.  For example, it can be used as the
 ATTACH DATABASE ':memory:' AS aux1;
 </pre></blockquote>
 
-<p>Note that in order for the special ":memory:" name to apply and to
+<p>注意，创建纯内存数据库使用的特殊文件名":memory:"里面不能加入任何其他文本内容。因此，如果使用"./:memory:"这样的名字，则会在预定的目录中创建一个存储在磁盘文件中的磁盘数据库。
+<br />Note that in order for the special ":memory:" name to apply and to
 create a pure in-memory database, there must be no additional text in the
 filename.  Thus, a disk-based database can be created in a file by prepending
 a pathname, like this:  "./:memory:".</p>
 
-<p>The special ":memory:" filename also works when using <a href="uri.html">URI filenames</a>.
+<p>特殊文件名":memory:"同样适用于<a href="uri.html">URI 文件名</a>。例如：
+<br />The special ":memory:" filename also works when using <a href="uri.html">URI filenames</a>.
 For example:
 
 <blockquote><pre>
@@ -183,9 +190,11 @@ ATTACH DATABASE 'file::memory:' AS aux1;
 
 <a name="sharedmemdb"></a>
 
-<h2>In-memory Databases And Shared Cache</h2>
+<h2>内存数据库和共享缓存
+<br />In-memory Databases And Shared Cache</h2>
 
-<p>In-memory databases are allowed to use <a href="sharedcache.html">shared cache</a> if they are
+<p>如果是使用<a href="uri.html">URI 文件名</a>打开的内存数据库，那么就允许使用<a href="sharedcache.html">共享缓存</a>。如果使用原始的":memory:"名字来创建内存数据库，那么这个数据库只能使用私用的缓存，并且只有原始打开这个数据库的数据库连接才可以访问。不过可以使用如下方式来让多个数据库连接打开同一个内存数据库：
+<br />In-memory databases are allowed to use <a href="sharedcache.html">shared cache</a> if they are
 opened using a <a href="uri.html">URI filename</a>.  If the unadorned ":memory:" name is used
 to specify the in-memory database, then that database always has a private
 cache and is this only visible to the database connection that originally
@@ -202,13 +211,15 @@ Or,
 ATTACH DATABASE 'file::memory:?cache=shared' AS aux1;
 </pre></blockquote>
 
-<p>This allows separate database connections to share the same
+<p>这个允许各个不同的数据库连接共享同一个内存数据库。当然，共享内存数据库的所有数据库连接必须在同一个进程中。当最后一个连接关闭时，响应的内存数据库会自动删除并释放内存。
+<br />This allows separate database connections to share the same
 in-memory database.  Of course, all database connections sharing the
 in-memory database need to be in the same process.  The database is
 automatically deleted and memory is reclaimed when the last connection
 to the database closes.
 
-<p>If two or more distinct but shareable in-memory databases are needed
+<p>如果需要在一个进程中创建两个或多个可以共享访问的独立内存数据库，那么使用<a href="uri.html">URI 文件名</a>的<a href="uri.html#coreqp">mode=memory</a>查询参数可以创建一个命名内存数据库：
+<br />If two or more distinct but shareable in-memory databases are needed
 in a single process, then the <a href="uri.html#coreqp">mode=memory</a> query parameter can
 be used with a <a href="uri.html">URI filename</a> to create a named in-memory database:
 
@@ -222,16 +233,19 @@ Or,
 ATTACH DATABASE 'file:memdb1?mode=memory&amp;cache=shared' AS aux1;
 </pre></blockquote>
 
-<p>When an in-memory database is named in this way, it will only share its
+<p>当使用这种方式来命名内存数据库，那么这个数据库只会和其它使用相同名字的链接共享内存。
+<br />When an in-memory database is named in this way, it will only share its
 cache with another connection that uses exactly the same name.
 
 
 
 <a name="temp_db"></a>
 
-<h2>Temporary Databases</h2>
+<h2>临时数据库
+<br />Temporary Databases</h2>
 
-<p>When the name of the database file handed to <a href="c3ref/open.html">sqlite3_open()</a> or to
+<p>如果传入<a href="c3ref/open.html">sqlite3_open()</a>或<a href="lang_attach.html">ATTACH</a>的文件名是个空字符串，那么就会创建一个新的临时数据库。
+<br />When the name of the database file handed to <a href="c3ref/open.html">sqlite3_open()</a> or to
 <a href="lang_attach.html">ATTACH</a> is an empty string, then a new temporary file is created to hold
 the database.</p>
 
@@ -243,12 +257,14 @@ rc = sqlite3_open("", &amp;db);
 ATTACH DATABASE '' AS aux2;
 </pre></blockquote>
 
-<p>A different temporary file is created each time, so that just like as
+<p>每次执行都会创建一个不同的临时文件，这与使用特定字符串":memory:"类似，两个不同的数据库连接创建的临时数据库分别是各自私有的。当创建临时库的链接关闭后临时库会自动删除。
+<br />A different temporary file is created each time, so that just like as
 with the special ":memory:" string, two database connections to temporary
 databases each have their own private database.  Temporary databases are
 automatically deleted when the connection that created them closes.</p>
 
-<p>Even though a disk file is allocated for each temporary database, in
+<p>虽然每个临时数据库都会分配一个磁盘文件，但是在实际中，临时数据库通常位于内存中的页缓存中，因此，使用":memory:"创建的纯内存数据库与空文件名创建的临时库之间只有很小的区别。它们之间唯一的区别就是":memory:"数据库只能存在于内存中，而临时数据库当数据量变大或者受到内存压力时可以写入磁盘。
+<br />Even though a disk file is allocated for each temporary database, in
 practice the temporary database usually resides in the in-memory pager
 cache and hence is very little difference between a pure in-memory database
 created by ":memory:" and a temporary database created by an empty filename.
@@ -256,7 +272,8 @@ The sole difference is that a ":memory:" database must remain in memory
 at all times whereas parts of a temporary database might be flushed to
 disk if database becomes large or if SQLite comes under memory pressure.</p>
 
-<p>The previous paragraphs describe the behavior of temporary databases
+<p>前一段描述的是默认SQLite配置下的临时数据库行为。如果需要，应用程序可以使用<a href="pragma.html#pragma_temp_store">temp_store pragma</a>和<a href="compile.html#temp_store">SQLITE_TEMP_STORE</a>编译期参数来强制临时数据库的行为与纯内存数据库一致。
+<br />The previous paragraphs describe the behavior of temporary databases
 under the default SQLite configuration.  An application can use the
 <a href="pragma.html#pragma_temp_store">temp_store pragma</a> and the <a href="compile.html#temp_store">SQLITE_TEMP_STORE</a> compile-time parameter to
 force temporary databases to behave as pure in-memory databases, if desired.
