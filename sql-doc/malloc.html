@@ -130,17 +130,20 @@ a:visited { color: #734559 }
   
 
 
-<h1>Dynamic Memory Allocation In SQLite</h1>
+<h1>SQLite中的动态内存分配
+<br />Dynamic Memory Allocation In SQLite</h1>
 
 
-<p>SQLite uses dynamic memory allocation to obtain
+<p>SQLite使用动态内存分配来获取存储各种对象（例如：<a href="c3ref/sqlite3.html">数据库连接</a> and <a href="c3ref/stmt.html">预编译语句</a>），以及构建数据库文件的内存缓存和存储查询结果。SQLite为了动态内存分配子系统的可靠性、可预测性、鲁棒性和高效付出了巨大的努力。
+<br />SQLite uses dynamic memory allocation to obtain
 memory for storing various objects
 (ex: <a href="c3ref/sqlite3.html">database connections</a> and <a href="c3ref/stmt.html">prepared statements</a>) and to build
 a memory cache of the database file and to hold the results of queries.
 Much effort has gone into making the dynamic memory allocation subsystem
 of SQLite reliable, predictable, robust, and efficient.</p>
 
-<p>This document provides an overview of dynamic memory allocation within 
+<p>本文档为SQLite中的动态内存分配提供了一个概览。本文的目标读者是那些需要在苛刻的环境中调节SQLite以达到最高性能的软件工程师。本文不需要使用SQLite的知识。SQLite的默认设置和配置以及可以再大多数应用中良好的运行了，但是本文中包含的信息对于想要调整SQLite以适应与特殊需求或者在特殊环境下运行的工程师来说是很有用的。
+<br />This document provides an overview of dynamic memory allocation within 
 SQLite.  The target audience is software engineers who are tuning their
 use of SQLite for peak performance in demanding environments.
 Nothing in this document is required knowledge for using SQLite.  The
@@ -150,14 +153,18 @@ be useful to engineers who are tuning SQLite to comply with special
 requirements or to run under unusual circumstances.</p>
 
 <a name="features"></a>
-<h2>1.0 Features</h2>
+<h2>1.0 特性
+<br />1.0 Features</h2>
 
-<p>The SQLite core and its memory allocation subsystem provides the 
+<p>SQLite核心及其内存分配子系统提供了下列能力：
+<br />The SQLite core and its memory allocation subsystem provides the 
 following capabilities:</p>
 
 <ul>
 <li><p>
-<b>Robust against allocation failures.</b>
+<b>对于分配失败的鲁棒性</b>。如果内存分配遇到失败（也就是说如果malloc()或realloc()返回NULL），那么SQLite能够优雅的恢复。SQLite会首先尝试从失效的缓存页来释放内存，然后重新执行分配请求。
+如果这也失败了，那么SQLite要么是停止正在做的内容然后返回一个<a href="c3ref/c_abort.html">SQLITE_NOMEM</a>错误码给应用程序，要么不申请内存继续执行。
+<br /><b>Robust against allocation failures.</b>
 If a memory allocation ever fails (that is to say, 
 if malloc() or realloc() ever return NULL)
 then SQLite will recover gracefully.   SQLite will first attempt
@@ -170,6 +177,8 @@ make do without the requested memory.
 </p></li>
 
 <li><p>
+<b>没有内存泄露。</b>应用程序要保证销毁每一个分配的对象（例如，应用程序必须在每个<a href="c3ref/sqlite3.html">数据库连接</a>上使用<a href="c3ref/close.html">sqlite3_close()</a>，在每个<a href="c3ref/stmt.html">预编译语句</a>上使用<a href="c3ref/finalize.html">sqlite3_finalize()</a>）。只要应用程序配合，那么SQLite就永远不会发生内存泄露。即使在面对内存分配失败或者其他系统错误时也不会发生。
+<br />
 <b>No memory leaks.</b>
 The application is responsible for destroying any objects it allocates.
 (For example, the application must use <a href="c3ref/finalize.html">sqlite3_finalize()</a> on 
@@ -181,6 +190,8 @@ errors.
 </p></li>
 
 <li><p>
+<b>内存使用限制</b><a href="c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64()</a>机制允许应用程序设置内存使用限制来保证SQLite在限制以下运行。SQLite通过重用缓存内存而不是分配新内存来处理这个软限制。
+<br />
 <b>Memory usage limits.</b>
 The <a href="c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64()</a> mechanism allows the application to
 set a memory usage limit that SQLite strives to stay below.  SQLite
@@ -189,6 +200,8 @@ memory as it approaches the soft limit.
 </p></li>
 
 <li><p>
+<b>零分配选项</b>应用程序可以在开始时为SQLite提供若干内存空间，然后SQLite会使用提供的这些内存来完成内存分配，而不再调用系统的malloc()或free()。
+<br />
 <b>Zero-malloc option</b>
 The application can provide SQLite with several buffers of bulk memory
 at startup and SQLite will then use those provided buffers for all of
@@ -196,6 +209,8 @@ its memory allocation needs and never call system malloc() or free().
 </p></li>
 
 <li><p>
+<b>应用提供的内存分配器</b>应用可以在开始时为SQLite指定一个内存分配器。SQLite会使用指定的内存分配器来替代系统的malloc()和free()。
+<br />
 <b>Application-supplied memory allocators.</b>
 The application can provide SQLite with pointers to alternative 
 memory allocators at start-time.  The alternative memory allocator
@@ -203,6 +218,8 @@ will be used in place of system malloc() and free().
 </p></li>
 
 <li><p>
+<b>故障与碎片的考验</b>SQLite可以配置为服从下面的某一使用限制，这可以保证永远不会出现内存分配失败或堆碎片。这个属性对于长时间运行、高可靠性的嵌入式系统来说非常重要，因为这种环境下，内存分配错误可能会导致整个系统的错误。
+<br />
 <b>Proof against breakdown and fragmentation.</b>
 SQLite can be configured so that, subject to certain usage constraints
 detailed below, it is guaranteed to never fail a memory allocation
@@ -213,12 +230,16 @@ to an overall system failure.
 </p></li>
 
 <li><p>
+<b>内存使用统计</b>应用可以看到适用了多少内存，也可以在内存使用达到或超过设计的边界时及时发现。
+<br />
 <b>Memory usage statistics.</b>
 Applications can see how much memory they are using and detect when
 memory usage is approaching or exceeding design boundaries.
 </p></li>
 
 <li><p>
+<b>最少的分配器调用</b>系统的malloc()和free()实现在许多系统中是非常低效的。SQLite努力在整个处理过程中减少malloc()和free()的调用次数。
+<br />
 <b>Minimal calls to the allocator.</b>
 The system malloc() and free() implementations are inefficient
 on many systems.  SQLite strives to reduce overall processing time
@@ -226,6 +247,8 @@ by minimizing its use of malloc() and free().
 </p></li>
 
 <li><p>
+<b>开放使用</b>SQLite的可插拔扩展或者甚至应用程序本身都可以通过<a href="c3ref/free.html">sqlite3_malloc()</a>、<a href="c3ref/free.html">sqlite3_realloc()</a> 和 <a href="c3ref/free.html">sqlite3_free()</a>接口来访问SQLite使用的底层的内存分配程序。
+<br />
 <b>Open access.</b>
 Pluggable SQLite extensions or even the application itself can 
 access to the same underlying memory allocation
@@ -236,9 +259,11 @@ routines used by SQLite through the
 </ul>
 
 <a name="testing"></a>
-<h2>2.0 Testing</h2>
+<h2>2.0 测试
+<br />2.0 Testing</h2>
 
-<p>Over
+<p>在SQLite源码树中超过75%的代码是纯粹用于<a href="testing.html">测试和验证</a>的。对于SQLite，可靠性是非常重要的。在测试基础框架中的这些任务是用来确保SQLite不会滥用动态内存分配的、不会发生内存泄露，以及能对内存分配失败做出正确处理。
+<br />Over
 75% of the code in the SQLite source tree is devoted purely to 
 <a href="testing.html">testing and verification</a>.  Reliability is important to SQLite.
 Among the tasks of the test infrastructure is to ensure that
@@ -246,7 +271,8 @@ SQLite does not misuse dynamically allocated memory, that SQLite
 does not leak memory, and that SQLite responds
 correctly to a dynamic memory allocation failure.</p>
 
-<p>The test infrastructure verifies that SQLite does not misuse
+<p>测试基础框架通过使用定制的仪表化的内存分配器来验证SQLite是否滥用动态内存分配。仪表化内存分配器可以在编译期使用<a href="compile.html#memdebug">SQLITE_MEMDEBUG</a>选项来启用。仪表化内存分配器要比默认的内存分配器慢的多，所以在生产环境不推荐使用这个。但是在测试期间开启仪表化内存分配器可以完成下面的这些检查：
+<br />The test infrastructure verifies that SQLite does not misuse
 dynamically allocated memory by using a specially instrumented
 memory allocator.  The instrumented memory allocator is enabled
 at compile-time using the <a href="compile.html#memdebug">SQLITE_MEMDEBUG</a> option.  The instrumented
@@ -256,28 +282,33 @@ enabled during testing,
 the instrumented memory allocator performs the following checks:</p>
 
 <ul>
-<li><p><b>Bounds checking.</b>
+<li><p><b>边界检查。</b>
+<br /><b>Bounds checking.</b>仪表化内存分配器会在每次分配的内存的两端都放置哨兵，以此验证SQLite中不会写入超过分配边界的内存。
 The instrumented memory allocator places sentinel values at both ends
 of each memory allocation to verify that nothing within SQLite writes
 outside the bounds of the allocation.</p></li>
 
-<li><p><b>Use of memory after freeing.</b>
+<li><p><b>使用释放后的内存。</b>当每块内存释放后，每个字节都会被覆写上一个无意义的位图。这有助于确保在内存释放后不会再被使用。
+<br /><b>Use of memory after freeing.</b>
 When each block of memory is freed, every byte is overwritten with a
 nonsense bit pattern.  This helps to ensure that no memory is ever
 used after having been freed.</p></li>
 
-<li><p><b>Freeing memory not obtained from malloc.</b>
+<li><p><b>非malloc获取的内存的释放。</b>使用仪表化内存分配器分配的每块内存都包含一个哨兵，用来验证每次释放的内存都是来自于之前的malloc。
+<br /><b>Freeing memory not obtained from malloc.</b>
 Each memory allocation from the instrumented memory allocator contains
 sentinels used to verify that every allocation freed came
 from prior malloc.</p></li>
 
-<li><p><b>Uninitialized memory.</b>
+<li><p><b>未初始化的内存。</b>仪表化内存分配器会将每块分配的内存初始化为无意义的位图，这有助于确保用户不会去假设分配出来的内存的内容。
+<br /><b>Uninitialized memory.</b>
 The instrumented memory allocator initializes each memory allocation
 to a nonsense bit pattern to help ensure that the user makes no
 assumptions about the content of allocation memory.</p></li>
 </ul>
 
-<p>Regardless of whether or not the instrumented memory allocator is
+<p>不管是否使用了仪表化内存分配器，SQLite都会追踪看使用了多少内存。有上百个用于测试SQLite的测试脚本。在每个脚本的结尾时，所有的对象都被销毁了，会有一个测试来确保所有的内存都被释放了。就是这样进行内存泄露探测的。注意，内存泄露探测在任何时候都是强制执行的，在测试构建期间，在生产构建期间都有。不管何时，只要有一个开发者运行了任何一个测试脚本，内存泄露检查都会执行。因此，开发中产生的内存泄露可以很快的被发现并修复。
+<br />Regardless of whether or not the instrumented memory allocator is
 used, SQLite keeps track of how much memory is currently checked out.
 There are hundreds of test scripts used for testing SQLite.  At the
 end of each script, all objects are destroyed and a test is made to
@@ -289,7 +320,8 @@ detection is active.  Hence memory leaks that do arise during development
 are quickly detected and fixed.</p>
 
 <a name="oomtesting"></a>
-<p>The response of SQLite to out-of-memory (OOM) errors is tested using
+<p>SQLite使用了一个专用的内存分配器夹层模拟内存错误来测试内存溢出（OOM）错误的响应。这个夹层插入在内存分配器和SQLite其它部分之间。对于大多数的分配请求这个夹层都会直接将底层分配器分配的内存直接传递回请求者。但是，这个夹层可以设置为在第N次内存分配的时候发生失败。在运行一个OOM测试时，夹层会设置为在第一次分配时发生失败。然后会运行一些测试脚本来确认分配失败是否被正确的捕获并处理了。然后夹层会设置为在第二次分配时失败，再重复运行测试脚本。内存分配的失败点不断的向前每次一步的移动，直到整个测试流程都运行完成，并且没有触发内存分配错误。整个测试过程会运行两次。第一次中，夹层设置为只在第N次分配时失败。第二次中，设置为第N次及其后续的所有分配都会失败。
+<br />The response of SQLite to out-of-memory (OOM) errors is tested using
 a specialized memory allocator overlay that can simulate memory failures.
 The overlay is a layer that is inserted in between the memory allocator
 and the rest of SQLite.  The overlay passes most memory allocation
@@ -306,7 +338,9 @@ test sequence run twice.  On the first pass, the
 overlay is set to fail only the Nth allocation.  On the second pass,
 the overlay is set to fail the Nth and all subsequent allocations.</p>
 
-<p>Note that the memory leak detection logic continues to work even
+<p>注意，在使用OOM夹层进行测试时内存泄露检查逻辑也一直在执行的。这用来验证SQLite即使遇到了内存分配错误也不会发生内存泄露。
+同样注意，OOM夹层可以与任何底层内存分配器配合适用，包活用来检测内存分配滥用的仪表化内存分配器。通过这种方法，可以验证OOM错误不会引入其它类型的内存使用错误。
+<br />Note that the memory leak detection logic continues to work even
 when the OOM overlay is being used.  This verifies that SQLite
 does not leak memory even when it encounters memory allocation errors.
 Note also that the OOM overlay can work with any underlying memory
@@ -314,7 +348,8 @@ allocator, including the instrumented memory allocator that checks
 for memory allocation misuse.  In this way it is verified that 
 OOM errors do not induce other kinds of memory usage errors.</p>
 
-<p>Finally, we observe that the instrumented memory allocator and the
+<p>最终，仪表化内存分配器和内存泄露探测器会在整个SQLite测试套件中运行，<a href="testing.html#tcl">TCL 测试套件</a>提供了超过99%的的语句测试覆盖率，<a href="th3.html">TH3</a>测试达到了<a href="testing.html#coverage">100% 分支测试覆盖率</a>，这些测试中都保证了没有内存泄露发生。这些测试和检测强有力的证明了在SQLite中的任何地方都正确的使用了内存分配器。
+<br />Finally, we observe that the instrumented memory allocator and the
 memory leak detector both work over the entire SQLite test suite and
 the <a href="testing.html#tcl">TCL test suite</a> provides over 99% statement test coverage and that
 the <a href="th3.html">TH3</a> test harness provides <a href="testing.html#coverage">100% branch test coverage</a>
@@ -323,9 +358,12 @@ strong evidence that dynamic memory allocation is used correctly
 everywhere within SQLite.</p>
 
 <a name="config"></a>
-<h2>3.0 Configuration</h2>
+<h2>3.0 配置
+<br />3.0 Configuration</h2>
 
-<p>The default memory allocation settings in SQLite are appropriate
+<p>SQLite中的默认内存分配设置适合于大多数的应用。但是一些应用程序由于非常特殊的严格需求限制，可能需要调整配置以便SQLite能更加匹配他们的需求。
+在编译时和运行时都有配置选项可以适用。
+<br />The default memory allocation settings in SQLite are appropriate
 for most applications.  However, applications with unusual or particularly
 strict requirements may want to adjust the configuration to more closely
 align SQLite to their needs.
@@ -333,17 +371,21 @@ Both compile-time and start-time configuration options are available.</p>
 
 <a name="altalloc"></a>
 
-<h3>3.1 Alternative low-level memory allocators</h3>
+<h3>3.1 切换低层内存分配器
+<br />3.1 Alternative low-level memory allocators</h3>
 
-<p>The SQLite source code includes several different memory allocation
+<p>SQLite源码中包含了几个不同的内存分配模块，可以再编译期进行选择，或者在开始时进行限定。
+<br />The SQLite source code includes several different memory allocation
 modules that can be selected at compile-time, or to a limited extent
 at start-time.</p>
 
 <a name="defaultalloc"></a>
 
-<h4>3.1.1 The default memory allocator</h4>
+<h4>3.1.1 默认内存分配器
+<br />3.1.1 The default memory allocator</h4>
 
-<p>By default, SQLite uses the malloc(), realloc(), and free() routines
+<p>默认情况，SQLite适用标准C库中的malloc()、realloc()和free()方法来进行内存分配。使用了一个很薄的分装将这些函数包装了一下，然后提供了一个"memsize()" 函数来返回已经分配的大小。memsize()函数需要保存未释放内存的字节数的精确计数。memsize()需要知道每次内存释放的时候到底有多少字节的内存释放了。默认的分配器通过在每次malloc()请求的时候多分配8个字节来记录本次分配的字节数来实现memsize()。
+<br />By default, SQLite uses the malloc(), realloc(), and free() routines
 from the standard C library for its memory allocation needs.  These routines
 are surrounded by a thin wrapper that also provides a "memsize()" function
 that will return the size of an existing allocation.  The memsize() function
@@ -353,15 +395,18 @@ count when an allocation is freed.  The default allocator implements
 memsize() by always allocating 8 extra bytes on each malloc() request and
 storing the size of the allocation in that 8-byte header.</p>
 
-<p>The default memory allocator is recommended for most applications.
+<p>在多数应用中都推荐适用默认的内存分配器。如果你没有强制使用其它内存分配器，那么就会使用默认的内存分配器。
+<br />The default memory allocator is recommended for most applications.
 If you do not have a compelling need to use an alternative memory
 allocator, then use the default.</p>
 
 <a name="memdebug"></a>
 
-<h4>3.1.2 The debugging memory allocator</h4>
+<h4>3.1.2 调试内存分配器
+<br />3.1.2 The debugging memory allocator</h4>
 
-<p>If SQLite is compiled with the <a href="compile.html#memdebug">SQLITE_MEMDEBUG</a> compile-time option,
+<p>如果适用<a href="compile.html#memdebug">SQLITE_MEMDEBUG</a>编译选项来编译SQLite，那么会对系统的malloc()、relloc()和free()进行一次很重的封装。这个重分装会在每次分配时会多分配100字节的额外空间。这些额外空间用于在最终返回给SQLite内核的内存两端放置哨兵值。当释放内存时，会检查这额哨兵值，以确保SQLite核心在内存的两端都没有访问过界。当适用GLIBC系统库时，这个重封装还会适用GNU的backtrace()函数来检查栈和原始调用malloc()的函数。当运行SQLite测试套件时，这个重封装还会记录当前的测试用例名字。后两个特性有助于追踪测试套件发现的内存泄露的来源。
+<br />If SQLite is compiled with the <a href="compile.html#memdebug">SQLITE_MEMDEBUG</a> compile-time option,
 then a different, heavy wrapper is used around system malloc(), realloc(), 
 and free().
 The heavy wrapper allocates around 100 bytes of extra space
@@ -376,7 +421,8 @@ running the SQLite test suite, the heavy wrapper also records the name of
 the current test case.  These latter two features are useful for
 tracking down the source of memory leaks detected by the test suite.</p>
 
-<p>The heavy wrapper that is used when <a href="compile.html#memdebug">SQLITE_MEMDEBUG</a> is set also
+<p>当设置了<a href="compile.html#memdebug">SQLITE_MEMDEBUG</a>后使用的重封装同样可以确保每次新分配的内存在返回给调用者之前全都填入了无效的数据。并且一旦要释放内存时，会再一次填入无效数据。这两个操作有助于确保SQLite核心不会对新分配的内存状态做出假设，也不会再内存释放后再次使用这段内存。
+<br />The heavy wrapper that is used when <a href="compile.html#memdebug">SQLITE_MEMDEBUG</a> is set also
 makes sure each new allocation is filled with nonsense data prior to
 returning the allocation to the caller.  And as soon as an allocation
 is free, it is again filled with nonsense data.  These two actions help
@@ -384,16 +430,19 @@ to ensure that the SQLite core does not make assumptions about the state
 of newly allocated memory and that memory allocations are not used after
 they have been freed.</p>
 
-<p>The heavy wrapper employed by <a href="compile.html#memdebug">SQLITE_MEMDEBUG</a> is intended for use
+<p><a href="compile.html#memdebug">SQLITE_MEMDEBUG</a>中适用的重封装只能在测试、分析和调试SQLite的时候使用。
+<br />The heavy wrapper employed by <a href="compile.html#memdebug">SQLITE_MEMDEBUG</a> is intended for use
 only during testing, analysis, and debugging of SQLite.  The heavy wrapper
 has a significant performance and memory overhead and probably should not
 be used in production.</p>
 
 <a name="memsys5"></a>
 
-<h4>3.1.3 Zero-malloc memory allocator</h4>
+<h4>3.1.3 零分配内存分配器
+<br />3.1.3 Zero-malloc memory allocator</h4>
 
-<p>When SQLite is compiled with the <a href="compile.html#enable_memsys5">SQLITE_ENABLE_MEMSYS5</a> option, an
+<p>当使用<a href="compile.html#enable_memsys5">SQLITE_ENABLE_MEMSYS5</a>选项编译SQLite时，会在构建是包含一个不使用malloc()的内存分配器。SQLite开发者使用“memsys5”来引用这个内存分配器。即使在构建中包含了这个分配器，默认情况也是禁用的。要想启用memsys5，应用程序必须在启动时执行下面的SQLite接口：
+<br />When SQLite is compiled with the <a href="compile.html#enable_memsys5">SQLITE_ENABLE_MEMSYS5</a> option, an
 alternative memory allocator that does not use malloc() is included in the
 build.  The SQLite developers refer to this alternative memory allocator
 as "memsys5".  Even when it is included in the build, memsys5 is 
@@ -405,7 +454,8 @@ interface at start-time:</p>
 <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigheap">SQLITE_CONFIG_HEAP</a>, pBuf, szBuf, mnReq);
 </pre></blockquote>
 
-<p>In the call above, pBuf is a pointer to a large, contiguous chunk
+<p>在上面的调用中，pBuf指针指向的是用来满足SQLite所有内存分配需求的一个大的、连续的内存空间。pBuf可以指向一个静态数组，也可以是从应用特有的机制中获取的内存。szBuf是一个整数，表示pBuf指向的内存空间的总字节数。mnReq也是一个整数，用来指定一次分配的最小尺寸。每次调用<a href="c3ref/free.html">sqlite3_malloc(N)</a>时，如果N小于mnReq，那么会被填补到mnReq。mnReq值必须是2的幂。稍后我们会看到，减小<b>n</b>的值和所需的最小内存在<a href="malloc.html#nofrag">Robson证明</a>中的重要性。
+<br />In the call above, pBuf is a pointer to a large, contiguous chunk
 of memory space that SQLite will use to satisfy all of its memory
 allocation needs.   pBuf might point to a static array or it might
 be memory obtained from some other application-specific mechanism.
@@ -417,12 +467,14 @@ a power of two.  We shall see later that the mnReq parameter is
 important in reducing the value of <b>n</b> and hence the minimum memory
 size requirement in the <a href="malloc.html#nofrag">Robson proof</a>.</p>
 
-<p>The memsys5 allocator is designed for use on embedded systems, 
+<p>memsys5分配器是为嵌入式系统设计的，不过也没有阻止在工作站中使用。szBuf值通常位于几百KB到几十MB之间，这取决于系统需求和内存预算。所有内存分配请求的尺寸都会被增加到2的幂，
+<br />The memsys5 allocator is designed for use on embedded systems, 
 though there is nothing to prevent its use on workstations.
 The szBuf is typically between a few hundred kilobytes up to a few
 dozen megabytes, depending on system requirements and memory budget.</p>
 
-<p>The algorithm used by memsys5 can be called "power-of-two,
+<p>memsys5中使用的算法叫做“2的幂，最先适合”。然后会为其分配一个pBuf中第一个大小满足的槽。使用伙伴系统来合并相邻的空闲内存块。当使用恰当时，这个算法在数学上保证了碎片化和失败的发生。<a href="#nofrag">下面</a>有详细介绍。
+<br />The algorithm used by memsys5 can be called "power-of-two,
 first-fit".  The sizes of all memory allocation 
 requests are rounded up to a power of two and the request is satisfied
 by the first free slot in pBuf that is large enough.  Adjacent freed
@@ -432,14 +484,17 @@ breakdown, as described further <a href="#nofrag">below</a>.</p>
 
 <a name="memsysx"></a>
 
-<h4>3.1.4 Experimental memory allocators</h4>
+<h4>3.1.4 实验内存分配器
+<br />3.1.4 Experimental memory allocators</h4>
 
-<p>The name "memsys5" used for the zero-malloc memory allocator implies
+<p>使用“memsys5”来命名零分配内存分配器也就意味着还有若干给附加的内存分配器可以使用，实际上确实是这样。默认的内存分配器是“memsys1”。调试内存分配器是“memsys2”。这些上面已经介绍了。
+<br />The name "memsys5" used for the zero-malloc memory allocator implies
 that there are several additional memory allocators available, and indeed
 there are.  The default memory allocator is "memsys1".  The debugging
 memory allocator is "memsys2".  Those have already been covered.</p>
 
-<p>If SQLite is compiled with <a href="compile.html#enable_memsys3">SQLITE_ENABLE_MEMSYS3</a> than another
+<p>如果使用<a href="compile.html#enable_memsys3">SQLITE_ENABLE_MEMSYS3</a>来编译SQLite，那么会使用另一个与memsys5类似的零分配内存分配器。memsys3分配器与memsys5类似，也必须通过调用<a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigheap">SQLITE_CONFIG_HEAP</a>,...)来激活。memsys3适用一个内存缓冲区作为所有内存分配的来源。memsys3与memsys5的不同之处在于memsys3使用了不同的内存分配算法，这个算法在实际中似乎工作的良好，但是这个无法从数学上保证内存碎片和失败的发生。memsys3是memsys5的前任。SQLite开发者目前相信memsys5要比memsys3优秀，所以所有需要零分配内存分配器的应用程序应当首先考虑适用memsys5.memsys3只是一个实现性的、过时的系统，很可能在未来的SQLite发行版中被从源码树中移除。
+<br />If SQLite is compiled with <a href="compile.html#enable_memsys3">SQLITE_ENABLE_MEMSYS3</a> than another
 zero-malloc memory allocator, similar to memsys5, is included in the
 source tree.  The memsys3 allocator, like memsys5, must be activated
 by a call to <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigheap">SQLITE_CONFIG_HEAP</a>,...).  Memsys3
@@ -455,7 +510,8 @@ allocator should use memsys5 in preference to memsys3.  Memsys3 is
 considered both experimental and deprecated and will likely be removed 
 from the source tree in a future release of SQLite.</p>
 
-<p>Code for memsys4 is still in the SQLite source tree (as of this writing - 
+<p>memsys4的代码还在SQLite源码树中（在写本文之时——<a href="releaselog/3_6_1.html"> 3.6.1 版</a>），但是，这个分配器在最近的几版中已经不再维护了，甚至可能已经无法运行了（更新：memsys4在<a href="releaselog/3_6_5.html"> 3.6.5 版</a>中已经移除了）。memsys4使用mmap()来获取内存，适用madvise()来将不用的页还给操作系统。所以这可能会被其它进程重用。memsys4的内容目前已经抛弃了，所以在不远的未来memsys4模块很可能会从源码树上移除。
+<br />Code for memsys4 is still in the SQLite source tree (as of this writing - 
 SQLite <a href="releaselog/3_6_1.html">version 3.6.1</a>), but it has not been maintained for several release
 cycles and probably does not work.  (Update: memsys4 was removed as
 of <a href="releaselog/3_6_5.html">version 3.6.5</a>) Memsys4 was an attempt to use mmap()
@@ -464,7 +520,8 @@ back to the operating system so that they could be reused by other
 processes.  The work on memsys4 has been abandoned and the memsys4 module
 will likely be removed from the source tree in the near future.</p>
 
-<p>Memsys6 uses system malloc() and free() to obtain the memory it needs.
+<p>memsys6使用系统的malloc()和free()来获取所需的内存。memsys6类似一个聚合器。memsys6只会调用系统的malloc()获取大块的内存。然后把这些大内存再次细分以满足来自SQLite内核的多次小内存分配请求。memsys6主要用于那些malloc()调用特别低效的系统。memsys6的主要目的是想减少malloc()的调用次数。
+<br />Memsys6 uses system malloc() and free() to obtain the memory it needs.
 Memsys6 serves as an aggregator.  Memsys6 only calls system malloc() to obtain
 large allocations.  It then subdivides those large allocations to services 
 multiple smaller memory allocation requests coming from the SQLite core.
@@ -472,63 +529,75 @@ Memsys6 is intended for use in systems where
 system malloc() is particularly inefficient.  The idea behind memsys6 is
 to reduce the number of calls to system malloc() by a factor of 10 or more.</p>
 
-<p>Memsys6 is made available by compiling SQLite with the SQLITE_ENABLE_MEMSYS6
+<p>要想启用memsys6，就需要适用SQLITE_ENABLE_MEMSYS6编译选项来编译SQLite，并在启动时调用：
+<br />Memsys6 is made available by compiling SQLite with the SQLITE_ENABLE_MEMSYS6
 compile-time option and then at start-time invoking:</p>
 
 <blockquote><pre>
 <a href="c3ref/config.html">sqlite3_config</a>(SQLITE_CONFIG_CHUNKALLOC);
 </pre></blockquote>
 
-<p>Memsys6 was added in SQLite <a href="releaselog/3_6_1.html">version 3.6.1</a>.
+<p>memsys6是在SQLite<a href="releaselog/3_6_1.html"> 3.6.1 版</a>加入的。目前还是非常实验性的。其未来还很不确定，还有可能在后续的版本中移除。更新：从<a href="releaselog/3_6_5.html"> 3.6.5 版</a>开始已经移除了memsys6。
+<br />Memsys6 was added in SQLite <a href="releaselog/3_6_1.html">version 3.6.1</a>.
 It is very experimental.  Its future is uncertain and it may be removed
 in a subsequent release.  Update:  Memsys6 was removed as of 
 <a href="releaselog/3_6_5.html">version 3.6.5</a>.</p>
 
-<p>Other experimental memory allocators might be added in future releases
+<p>在未来的SQLite发行版中还可能加入其他实验性的内存分配器。预计可能会被命名为memsys7、memsys8等等。
+<br />Other experimental memory allocators might be added in future releases
 of SQLite.  One may anticipate that these will be called memsys7, memsys8,
 and so forth.</p>
 
 <a name="appalloc"></a>
-<h4>3.1.5 Application-defined memory allocators</h4>
+<h4>3.1.5 应用程序定义的内存分配器
+<br />3.1.5 Application-defined memory allocators</h4>
 
-<p>New memory allocators do not have to be part of the SQLite source tree
+<p>新的内存分配器不需要一定是SQLite源码树的一部分，也不需要<a href="amalgamation.html">合并</a>到sqlite3.c中。每个应用程序可以在启动时为SQLite提供自己的内存分配器。
+<br />New memory allocators do not have to be part of the SQLite source tree
 nor included in the sqlite3.c <a href="amalgamation.html">amalgamation</a>.  Individual applications can
 supply their own memory allocators to SQLite at start-time.</p>
 
-<p>To cause SQLite to use a new memory allocator, the application
+<p>想要使SQLite使用新的内存分配器，应用程序只需要简单的调用：
+<br />To cause SQLite to use a new memory allocator, the application
 simply calls:</p>
 
 <blockquote><pre>
 <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a>, pMem);
 </pre></blockquote>
 
-<p>In the call above, pMem is a pointer to an <a href="c3ref/mem_methods.html">sqlite3_mem_methods</a> object
+<p>在上面的调用中，pMem是一个指向<a href="c3ref/mem_methods.html">sqlite3_mem_methods</a>对象的指针，这个对象定义了用户指定的内存分配器的接口。<a href="c3ref/mem_methods.html">sqlite3_mem_methods</a>对象实际上只是一个结构体，其中包含了各种内存分配原始方法的指针。
+<br />In the call above, pMem is a pointer to an <a href="c3ref/mem_methods.html">sqlite3_mem_methods</a> object
 that defines the interface to the application-specific memory allocator.
 The <a href="c3ref/mem_methods.html">sqlite3_mem_methods</a> object is really just a structure containing
 pointers to functions to implement the various memory allocation primitives.
 </p>
 
-<p>In a multi-threaded application, access to the <a href="c3ref/mem_methods.html">sqlite3_mem_methods</a>
+<p>在多线程应用中，只有启用了<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a>选项，<a href="c3ref/mem_methods.html">sqlite3_mem_methods</a>才是串行的。如果禁用了<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a>，那么<a href="c3ref/mem_methods.html">sqlite3_mem_methods</a>中的方法就需要自行关注串行化的需求。
+<br />In a multi-threaded application, access to the <a href="c3ref/mem_methods.html">sqlite3_mem_methods</a>
 is serialized if and only if <a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a> is enabled.
 If <a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a> is disabled then the methods in
 <a href="c3ref/mem_methods.html">sqlite3_mem_methods</a> must take care of their own serialization needs.</p>
 
 <a name="overlayalloc"></a>
-<h4>3.1.6 Memory allocator overlays</h4>
+<h4>3.1.6 内存分配夹层
+<br />3.1.6 Memory allocator overlays</h4>
 
-<p>An application can insert layers or "overlays" in between the
+<p>应用程序可以在SQLite内核与底层内存分配器之间插入一个夹层。例如SQLite中的<a href="#oomtesting">内存溢出测试逻辑</a>使用了一个夹层唉模拟内存分配失败。
+<br />An application can insert layers or "overlays" in between the
 SQLite core and the underlying memory allocator.
 For example, the <a href="#oomtesting">out-of-memory test logic</a>
 for SQLite uses an overlay that can simulate memory allocation
 failures.</p>
 
-<p>An overlay can be created by using the</p>
+<p>夹层可以适用下面的方法来创建：
+<br />An overlay can be created by using the</p>
 
 <blockquote><pre>
 <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfiggetmalloc">SQLITE_CONFIG_GETMALLOC</a>, pOldMem);
 </pre></blockquote>
 
-<p>interface to obtain pointers to the existing memory allocator.
+<p>这个接口获取现有内存分配器的指针，夹层会保留现有的分配器，并用其来进行实际的内存分配。这样夹层就使用上面所说的<a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a>,...)方法插入到了现有的内存分配器中。
+<br />interface to obtain pointers to the existing memory allocator.
 The existing allocator is saved by the overlay and is used as
 a fallback to do real memory allocation.  Then the overlay is
 inserted in place of the existing memory allocator using
@@ -536,14 +605,17 @@ the <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_cover
 <a href="#appalloc">above</a>.
 
 <a name="stuballoc"></a>
-<h4>3.1.7 No-op memory allocator stub</h4>
+<h4>3.1.7 空操作内存分配器
+<br />3.1.7 No-op memory allocator stub</h4>
 
-<p>If SQLite is compiled with the <a href="compile.html#zero_malloc">SQLITE_ZERO_MALLOC</a> option, then
+<p>如果使用<a href="compile.html#zero_malloc">SQLITE_ZERO_MALLOC</a>选项编译SQLite，那么忽略<a href="malloc.html#defaultalloc">默认内存分配器</a>，替换为一个不分配任何内存的内存分配器。这个内存分配器上的任何调用都会回馈一个没有内存可用的错误。
+<br />If SQLite is compiled with the <a href="compile.html#zero_malloc">SQLITE_ZERO_MALLOC</a> option, then
 the <a href="malloc.html#defaultalloc">default memory allocator</a> is omitted and replaced by a stub
 memory allocator that never allocates any memory.  Any calls to the
 stub memory allocator will report back that no memory is available.</p>
 
-<p>The no-op memory allocator is not useful by itself.  It exists only
+<p>空操作内存分配器本身没有什么用，只是当一个系统的标准库中没有malloc()、free()和realloc()函数的时候作为一个占位符。使用<a href="compile.html#zero_malloc">SQLITE_ZERO_MALLOC</a>编译的应用程序需要在开始使用SQLite前先使用<a href="c3ref/config.html">sqlite3_config()</a>加上 <a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a> 或 <a href="c3ref/c_config_covering_index_scan.html#sqliteconfigheap">SQLITE_CONFIG_HEAP</a>来指定一个新的内存分配器。
+<br />The no-op memory allocator is not useful by itself.  It exists only
 as a placeholder so that SQLite has a memory allocator to link against
 on systems that may not have malloc(), free(), or realloc() in their
 standard library.
@@ -554,34 +626,40 @@ before beginning to use SQLite.</p>
 
 <a name="scratch"></a>
 
-<h3>3.2 Scratch memory</h3>
+<h3>3.2 临时内存
+<br />3.2 Scratch memory</h3>
 
-<p>SQLite occasionally needs a large chunk of "scratch" memory to
+<p>SQLite偶尔需要很大一块儿“临时”内存来执行一些事务计算。例如，在平衡B-Tree的时候使用临时内存来作为临时存储。这些临时内存分配通常在10KB大小，并且是很短暂的——仅仅维持在一个短生命期的函数调用期间。
+<br />SQLite occasionally needs a large chunk of "scratch" memory to
 perform some transient calculation.  Scratch memory is used, for example,
 as temporary storage when rebalancing a B-Tree.  These scratch memory
 allocations are typically about 10 kilobytes in size and are
 transient - lasting
 only for the duration of a single, short-lived function call.</p>
 
-<p>In older versions of SQLite, the scratch memory was obtained from
+<p>在老版本的SQLite中，临时内存是从处理器栈中获取的。这在拥有大栈的工作站上能运行的很好，但是在一个处理器栈较小（通常4KB或8KB）的嵌入式系统上，从栈中拉取一个大缓冲区就会导致问题。所以SQLite修改为从堆上分配临时内存了。
+<br />In older versions of SQLite, the scratch memory was obtained from
 the processor stack.  That works great on workstations with a large stack.
 But pulling large buffers from the stack 
 caused problems on embedded systems with a 
 small processor stack (typically 4K or 8K).  And so SQLite was modified
 to allocate scratch memory from the heap.</p>
 
-<p>However, doing occasional large transient allocations from the heap can
+<p>但是，在嵌入式系统中，从堆上分配临时的大内存会导致内存碎片化。对于这种环境，就需要为临时内存创建一个单独的内存分配系统。
+<br />However, doing occasional large transient allocations from the heap can
 lead to memory fragmentation in embedded systems.  To work around this
 problem, a separate memory allocation system for scratch memory has been
 created.</p>
 
-<p>The scratch memory allocator is set up as follows:</p>
+<p>临时内存分配器使用下面的函数来设置：
+<br />The scratch memory allocator is set up as follows:</p>
 
 <blockquote><pre>
 <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigscratch">SQLITE_CONFIG_SCRATCH</a>, pBuf, sz, N);
 </pre></blockquote>
 
-<p>The pBuf parameter is a pointer to a contiguous range of bytes that
+<p>参数pBuf执行一段连续的字节，SQLite会使用其来完成所有的临时内存分配。这个缓冲区必须至少sz*N字节大小。参数sz是每个临时内存的最大尺寸。N是同时能分配的临时内存的最多个数。参数sz应当大约是最大数据库页的6倍。N应当是系统上运行的线程数的二倍。因为一个线程不会同时请求两个以上的临时内存。所以只要不会超过N个线程，那么就总有可用的临时内存。
+<br />The pBuf parameter is a pointer to a contiguous range of bytes that
 SQLite will use for all scratch memory allocations.  The buffer must be
 at least sz*N bytes in size.  The "sz" parameter
 is the maximum size of each scratch allocation.  N is the maximum 
@@ -592,26 +670,30 @@ ever request more than two scratch allocation at a time so if there
 are never more than N threads, then there will always be enough scratch
 memory available.</p>
 
-<p>If the scratch memory setup does not define enough memory, then
+<p>如果临时内存没有定义足够的内存，那么SQLite会改为使用标准的内存分配器来完成临时内存分配。默认设置是sz=0，N=0，所以默认是使用标准内存分配器来完成的。
+<br />If the scratch memory setup does not define enough memory, then
 SQLite falls back to using the regular memory allocator for its scratch
 memory allocations.  The default setup is sz=0 and N=0 so the use
 of the regular memory allocator is the default behavior.</p>
 
 <a name="pagecache"></a>
 
-<h3>3.3 Page cache memory</h3>
+<h3>3.3 页缓存内存
+<br />3.3 Page cache memory</h3>
 
-<p>In most applications, the database page cache subsystem within 
+<p>在多数应用中，SQLite中的数据库页缓存子系统对动态分配内存的使用要多于其它部分的总和。数据库页缓存消耗的内存是SQLite中其它部分总和的十倍是很正常的事情。
+<br />In most applications, the database page cache subsystem within 
 SQLite uses more dynamically allocated memory than all other parts
 of SQLite combined.  It is not unusual to see the database page cache
 consumes over 10 times more memory than the rest of SQLite combined.</p>
 
-<p>SQLite can be configured to make page cache memory allocations from
+<p>SQLite可以配置成从一个独立的、槽大小固定的内存池来分配页缓存内存。这样有两个优点：
+<br />SQLite can be configured to make page cache memory allocations from
 a separate and distinct memory pool of fixed-size
 slots.  This can have two advantages:</p>
 
 <ul>
-<li><p>
+<li><p>由于分配的都是同样大小的内存，所以内存分配器可以运行的更快。分配器不需要合并相邻的空闲内存，也不需要搜索大小合适的槽。所有未使用的槽都可以存储在一个链表中，分配时只需要从链表头部取出一个即可，释放的时候只需要简单的加入到链表中就可以了。
 Because allocations are all the same size, the memory allocator can
 operate much faster.  The allocator need not bother with coalescing 
 adjacent free slots or searching for a slot
@@ -620,7 +702,7 @@ a linked list.  Allocating consists of removing the first entry from the
 list.  Deallocating is simply adding an entry to the beginning of the list.
 </p></li>
 
-<li><p>
+<li><p>因为只有一个内存分配尺寸，所以在<a href="malloc.html#nofrag">Robson 证明</a>中的参数<b>n</b>是1，分配器所需的最大内存空间(<b>N</b>) 就正好等于使用的最大内存 (<b>M</b>)。不需要为碎片化增加额外的内存，这就降低了内存的需求。这对于页缓存内存是特别重要的，因为页缓存是SQLite中最大的内存消耗组件。
 With a single allocation size, the <b>n</b> parameter in the
 <a href="malloc.html#nofrag">Robson proof</a> is 1, and the total memory space required by the allocator
 (<b>N</b>) is exactly equal to maximum memory used (<b>M</b>).  
@@ -631,28 +713,33 @@ of the memory needs of SQLite.
 </p></li>
 </ul>
 
-<p>The page-cache memory allocator is disabled by default.
+<p>页缓存内存分配器默认是禁用的，应用程序可以在启动时执行下面的函数来启用：
+<br />The page-cache memory allocator is disabled by default.
 An application can enable it at start-time as follows:</p>
 
 <blockquote><pre>
 <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigpagecache">SQLITE_CONFIG_PAGECACHE</a>, pBuf, sz, N);
 </pre></blockquote>
 
-<p>The pBuf parameter is a pointer to a contiguous range of bytes that
+<p>参数pBuf指向一段连续的字节，SQLite使用这段内存来完成页缓存内存分配。缓冲区至少需要sz*N字节大小。参数“sz”是每个页缓存分配的大小。N是最多可以分配的页的数量。
+<br />The pBuf parameter is a pointer to a contiguous range of bytes that
 SQLite will use for page-cache memory allocations.  The buffer must be
 at least sz*N bytes in size.  The "sz" parameter
 is the size of each page-cache allocation.  N is the maximum 
 number of available allocations.</p>
 
-<p>If SQLite needs a page-cache entry that is larger than "sz" bytes or
+<p>如果SQLite所需的页缓存大小超过“sz”字节或者需要超过N个页缓存，那么就会回退到使用普通内存分配器。
+<br />If SQLite needs a page-cache entry that is larger than "sz" bytes or
 if it needs more than N entries, it falls back to using the
 general-purpose memory allocator.</p>
 
 <a name="lookaside"></a>
 
-<h3>3.4 Lookaside memory allocator</h3>
+<h3>3.4 辅助内存分配器
+<br />3.4 Lookaside memory allocator</h3>
 
-<p>SQLite <a href="c3ref/sqlite3.html">database connections</a> make many
+<p>SQLite的<a href="c3ref/sqlite3.html">数据库连接</a>需要许多很小的生命期又很短的内存分配。这通常发生在使用<a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>编译SQL语句时，也包括一些使用<a href="c3ref/step.html">sqlite3_step()</a>运行<a href="c3ref/stmt.html">预编译语句</a>的时候。这些小内存用来持有一些类似表名、列名、解析树节点、每个查询结果值和B-Tree游标对象等内容。结果就是大量的调用malloc()和free()——这么多的malloc()和free()调用会占用很大的一部分分配给SQLite的CPU事件。
+<br />SQLite <a href="c3ref/sqlite3.html">database connections</a> make many
 small and short-lived memory allocations.
 This occurs most commonly when compiling SQL statements using
 <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a> but also to a lesser extent when running
@@ -664,7 +751,8 @@ many calls to malloc() and free() - so many calls that malloc() and
 free() end up using a significant fraction of the CPU time assigned
 to SQLite.</p>
 
-<p>SQLite <a href="releaselog/3_6_1.html">version 3.6.1</a> introduced the lookaside memory allocator to
+<p>SQLite<a href="releaselog/3_6_1.html"> 3.6.1 版</a>引入了辅助内存分配器来帮助减少内存分配的负载。在辅助分配器中，每个<a href="c3ref/sqlite3.html">数据库连接</a>会预分配一个较大的内存块儿（通常大概是50KB到100KB），然后将这个内存块分割成50B到200B大小的小尺寸固定大小的“槽”。这就成为了辅助内存池。在这之后，<a href="c3ref/sqlite3.html">数据库连接</a>相关的内存分配操作，只要不是特别大的内存，都会优先使用辅助内存池中合适的槽，而不是调用通用的内存分配器。较大的内存分配依然使用通用内存分配器，当然当辅助内存池的槽都已经使用了也需要使用通用内存分配器。不过在多数情况下，内存分配的都是很小的且数量有限的内存，这些新内存申请都适合于辅助内存池。
+<br />SQLite <a href="releaselog/3_6_1.html">version 3.6.1</a> introduced the lookaside memory allocator to
 help reduce the memory allocation load.  In the lookaside allocator,
 each <a href="c3ref/sqlite3.html">database connection</a> preallocates a single large chunk of memory
 (typically in the range of 50 to 100 kilobytes) and divides that chunk
@@ -680,7 +768,8 @@ allocations are small enough and there are few enough outstanding that
 the new memory requests can be satisfied from the lookaside
 pool.</p>
 
-<p>Because lookaside allocations are always the same size, the allocation
+<p>由于辅助分配器的尺寸总是相同的，所以分配和回收算法都可以很快的运行。也不需要合并相邻的空闲槽或者搜索合适大小的槽。每个<a href="c3ref/sqlite3.html">数据库连接</a>维护一个未使用槽的链表。分配请求就是简单的从链表中取出第一个元素。回收就是简单的将一个元素放入到链表中。此外，每个<a href="c3ref/sqlite3.html">数据库连接</a>都假设已经运行在单线程下（已经放置了互斥锁来保证这一点）所以不需要再增加互斥锁来将对辅助槽空闲列表的访问串行化。因此，辅助内存分配和回收会非常的快速。在Linux和Mac OS X工作站上的速度测试中，根据配置给辅助分配器的不同工作量，SQLite整体的性能提升了高达10%到15%。
+<br />Because lookaside allocations are always the same size, the allocation
 and deallocation algorithms are very quick.  There is no
 need to coalesce adjacent free slots or search for a slot
 of a particular size.  Each <a href="c3ref/sqlite3.html">database connection</a> maintains a singly-linked
@@ -697,7 +786,8 @@ Linux and Mac OS X workstations, SQLite has shown overall performance
 improvements as high as 10% and 15%, depending on the workload how
 lookaside is configured.</p>
 
-<p>The size of the lookaside memory pool has a global default value
+<p>辅助内存池的大小有一个全局的默认值，不过也可以一个连接一个连接的设置。修改辅助内存池的默认大小需要在开始时使用下面的接口：
+<br />The size of the lookaside memory pool has a global default value
 but can also be configured on a connection-by-connection basis.
 To change the default size of the lookaside memory pool use the 
 following interface at start-time:</p>
@@ -706,7 +796,8 @@ following interface at start-time:</p>
 <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfiglookaside">SQLITE_CONFIG_LOOKASIDE</a>, sz, cnt);
 </pre></blockquote>
 
-<p>The "sz" parameter is the size in bytes of each lookaside slot.
+<p>参数“sz”是每个辅助内存槽的大小，默认是100字节。参数“cnt”是每个数据库连接的辅助内存槽的总数。默认是500个。为每个<a href="c3ref/sqlite3.html">数据库连接</a>的辅助内存分配器分配的总内存空间就是sz*cnt字节。因此，每个数据库连接分配的辅助内存池的默认大小是50KB（注意，这个默认值是针对SQLite <a href="releaselog/3_6_1.html"> 3.6.1 版</a>的，在未来的发型版中可能会做出修改）。
+<br />The "sz" parameter is the size in bytes of each lookaside slot.
 The default is 100 bytes.  The "cnt" parameter is
 the total number of lookaside memory slots per database connection.
 The default value is 500 slots. The total amount
@@ -717,21 +808,24 @@ connection is 50 kilobytes by default.
 to changes in future releases.)
 </p>
 
-<p>The lookaside pool can be changed for an individual
+<p>辅助内存池可以针对某个<a href="c3ref/sqlite3.html">数据库连接</a>“db”使用下面的接口进行修改：
+<br />The lookaside pool can be changed for an individual
 <a href="c3ref/sqlite3.html">database connection</a> "db" using this call:</p>
 
 <blockquote><pre>
 <a href="c3ref/db_config.html">sqlite3_db_config</a>(db, <a href="c3ref/c_dbconfig_enable_fkey.html">SQLITE_DBCONFIG_LOOKASIDE</a>, pBuf, sz, cnt);
 </pre></blockquote>
 
-<p>The "pBuf" parameter is a pointer to memory space that will be
+<p>参数“pBuf”指向的是用于辅助内存池的内存空间。如果pBuf是NULL，那么SQLite会使用<a href="c3ref/free.html">sqlite3_malloc()</a>来获取内存池所需的空间。参数“sz”和“cnt”分别是每个辅助内存槽的大小和槽的总数。如果pBuf不是NULL，那么其指定的内存空间不能小于sz*cnt字节。
+<br />The "pBuf" parameter is a pointer to memory space that will be
 used for the lookaside memory pool.  If pBuf is NULL, then SQLite
 will obtain its own space for the memory pool using <a href="c3ref/free.html">sqlite3_malloc()</a>.
 The "sz" and "cnt" parameters are the size of each lookaside slot
 and the number of slots, respectively.  If pBuf is not NULL, then it
 must point to at least sz*cnt bytes of memory.</p>
 
-<p>The lookaside configuration can only be changed while there are
+<p>只有当数据库连接没有使用辅助内存分配的时候才能修改辅助内存的配置。因此，应当在使用<a href="c3ref/open.html">sqlite3_open()</a>（或其它等价方法）创建出数据库连接之后，在连接上执行任何SQL语句之前就立即进行配置。
+<br />The lookaside configuration can only be changed while there are
 no outstanding lookaside allocations for the database connection.
 Hence, the configuration should be set immediately after creating the 
 database connection using <a href="c3ref/open.html">sqlite3_open()</a> (or equivalent) and before
@@ -739,9 +833,11 @@ evaluating any SQL statements on the connection.</p>
 
 <a name="memstatus"></a>
 
-<h3>3.5 Memory status</h3>
+<h3>3.5 内存状态
+<br />3.5 Memory status</h3>
 
-<p>By default, SQLite keeps statistics on its memory usage.  These
+<p>默认情况，SQLite会维护内存使用的统计。这个统计有助于确定应用程序真正所需的内存数量。这个统计同样可以用在高可靠性的系统中，可以用来判断内存使用是否接近或者超过了<a href="malloc.html#nofrag">Robson 证明</a>中的限制，因而导致内存分配子系统容易发生故障。
+<br />By default, SQLite keeps statistics on its memory usage.  These
 statistics are useful in helping to determine how much memory an
 application really needs.  The statistics can also be used in
 high-reliability system to determine
@@ -749,7 +845,8 @@ if the memory usage is coming close to or exceeding the limits
 of the <a href="malloc.html#nofrag">Robson proof</a> and hence that the memory allocation subsystem is 
 liable to breakdown.</p>
 
-<p>Most memory statistics are global, and therefore the tracking of
+<p>大多数的内存统计都是全局的，因此对统计的查询必须使用互斥锁来进行串行化。统计默认是开启的，但是可以使用一个选项来关闭统计。关闭内存统计以后，SQLite可以避免在每次内存分配和释放的时候都获取和释放互斥锁。这个设置在一些互斥操作代价较高的系统上带来的效果是显著的。如果想禁用内存统计，可以再开始时使用下面的接口：
+<br />Most memory statistics are global, and therefore the tracking of
 statistics must be serialized with a mutex.  Statistics are turned 
 on by default, but an option exists to disable them.  By disabling 
 memory statistics,
@@ -762,17 +859,20 @@ following interface is used at start-time:</p>
 <a href="c3ref/config.html">sqlite3_config</a>(<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a>, onoff);
 </pre></blockquote>
 
-<p>The "onoff" parameter is true to enable the tracking of memory
+<p>参数“onoff”为true时表示开启内存统计，为false时表示禁用内存统计。
+<br />The "onoff" parameter is true to enable the tracking of memory
 statistics and false to disable statistics tracking.</p>
 
-<p>Assuming statistics are enabled, the following routine can be used
+<p>如果开启了统计，那么可以使用下面的函数来访问统计数据：
+<br />Assuming statistics are enabled, the following routine can be used
 to access them:</p>
 
 <blockquote><pre>
 <a href="c3ref/status.html">sqlite3_status</a>(<a href="c3ref/c_status_malloc_count.html#sqlitestatusmemoryused">verb</a>, &amp;current, &amp;highwater, resetflag);
 </pre></blockquote>
 
-<p>The "verb" argument determines what statistic is accessed.
+<p>参数“verb”决定访问哪个统计。定义有各种<a href="c3ref/c_status_malloc_count.html#sqlitestatusmemoryused">统计项</a>。这个列表会随着<a href="c3ref/status.html">sqlite3_status()</a>接口的成熟而增长。选中参数的的当前值会写入整数“current”中，而历史最高值会写入整数”highwater“中。如果resetflag设置为true，那么high-water标志会在调用返回后重置为当前值。
+<br />The "verb" argument determines what statistic is accessed.
 There are <a href="c3ref/c_status_malloc_count.html#sqlitestatusmemoryused">various verbs</a> defined.  The
 list is expected to grow as the <a href="c3ref/status.html">sqlite3_status()</a> interface matures.
 The current value the selected parameter is written into integer 
@@ -781,29 +881,34 @@ is written into integer "highwater".  If resetflag is true, then
 the high-water mark is reset down to the current value after the call
 returns.</p>
 
-<p>A different interface is used to find statistics associated with a
+<p>另有一个接口用来访问某个<a href="c3ref/sqlite3.html">数据库连接</a>相关的统计：
+<br />A different interface is used to find statistics associated with a
 single <a href="c3ref/sqlite3.html">database connection</a>:</p>
 
 <blockquote><pre>
 <a href="c3ref/db_status.html">sqlite3_db_status</a>(db, <a href="c3ref/c_dbstatus_options.html#sqlitedbstatuslookasideused">verb</a>, &amp;current, &amp;highwater, resetflag);
 </pre></blockquote>
 
-<p>This interface is similar except that it takes a pointer to
+<p>这个接口的参数是类似的，只是多了一个指向<a href="c3ref/sqlite3.html">数据库连接</a>的指针，而返回的统计是关于这个对象的而不是整个SQLite库的。目前<a href="c3ref/db_status.html">sqlite3_db_status()</a>接口只支持一个类型<a href="c3ref/c_dbstatus_options.html#sqlitedbstatuslookasideused">SQLITE_DBSTATUS_LOOKASIDE_USED</a>，不过在未来可能会加入更多的类型。
+<br />This interface is similar except that it takes a pointer to
 a <a href="c3ref/sqlite3.html">database connection</a> as its first argument and returns statistics about
 that one object rather than about the entire SQLite library.
 The <a href="c3ref/db_status.html">sqlite3_db_status()</a> interface currently only recognizes a
 single verb <a href="c3ref/c_dbstatus_options.html#sqlitedbstatuslookasideused">SQLITE_DBSTATUS_LOOKASIDE_USED</a>, though additional verbs
 may be added in the future.</p>
 
-<p>The per-connection statistics do not use global variables and hence
+<p>每个连接的统计没有使用全局变量，因此在访问和更新的时候不需要互斥锁。所以即使<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a>设置为关闭，每个连接上的统计还是会继续进行的。
+<br />The per-connection statistics do not use global variables and hence
 do not require mutexes to update or access.  Consequently the
 per-connection statistics continue to function even if
 <a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a> is turned off.</p>
 
 <a name="heaplimit"></a>
-<h3>3.6 Setting memory usage limits</h3>
+<h3>3.6 设置内存使用限制
+<br />3.6 Setting memory usage limits</h3>
 
-<p>The <a href="c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64()</a> interface can be used to set an
+<p><a href="c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64()</a>接口可以用来设置SQLite中的通用内存分配器可以分配的内存总数的上限。如果试图分配超过这个弱限制数量的内存，那么SQlite会首先尝试释放缓存内存，然后再执行分配请求。只有启用了<a href="malloc.html#memstatus">内存统计</a>，这个堆内存的弱限制才能生效。如果编译时使用了<a href="compile.html#enable_memory_management">SQLITE_ENABLE_MEMORY_MANAGEMENT</a>选项，那么这可以运行的更好。
+<br />The <a href="c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64()</a> interface can be used to set an
 upper bound on the total amount of outstanding memory that the
 general-purpose memory allocator for SQLite will allow to be outstanding
 at one time.  If attempts are made to allocate more memory that specified
@@ -814,13 +919,15 @@ it works best
 if the SQLite library is compiled with the <a href="compile.html#enable_memory_management">SQLITE_ENABLE_MEMORY_MANAGEMENT</a>
 compile-time option.</p>
 
-<p>The soft heap limit is "soft" in this sense:  If SQLite is not able
+<p>这个弱堆限制之所以叫“弱”限制，是应为：如果SQLite无法释放足够的空间来保持在这个限制以下，那么就会越过这个限制，并继续分配内存。这么做的理论基础是分配额外的内存要比彻底失败好。
+<br />The soft heap limit is "soft" in this sense:  If SQLite is not able
 to free up enough auxiliary memory to stay below the limit, it goes
 ahead and allocations the extra memory and exceeds its limit.  This occurs
 under the theory that it is better to use additional memory than to fail
 outright.</p>
 
-<p>As of SQLite version 3.6.1, the soft heap limit only applies to the
+<p>从SQLite 3.6.1版开始、这个弱堆限制只适用于通用内存分配器。这个限制并不能影响<a href="malloc.html#scratch">临时内存分配器</a>、<a href="malloc.html#pagecache">页缓存内存分配器</a> 和 <a href="malloc.html#lookaside">辅助内存分配器</a>。这个缺点很可能会在未来的发行版中进行解决。
+<br />As of SQLite version 3.6.1, the soft heap limit only applies to the
 general-purpose memory allocator.  The soft heap limit does not know
 about or interact with the <a href="malloc.html#scratch">scratch memory allocator</a>, 
 the <a href="malloc.html#pagecache">pagecache memory allocator</a>, or the <a href="malloc.html#lookaside">lookaside memory allocator</a>.
@@ -828,9 +935,11 @@ This deficiency will likely be addressed in a future release.</p>
 
 <a name="nofrag"></a>
 
-<h2>4.0 Mathematical Guarantees Against Memory Allocation Failures</h2>
+<h2>4.0 防止内存分配失败的数学保证
+<br />4.0 Mathematical Guarantees Against Memory Allocation Failures</h2>
 
-<p>The problem of dynamic memory allocation, and specifically the
+<p>对于动态内存分配的问题，特别是内存分配失败的问题，J. M. Robson已经进行了研究，研究结果发表在这里：
+<br />The problem of dynamic memory allocation, and specifically the
 problem of a memory allocator breakdown, has been studied by
 J. M. Robson and the results published as:</p>
 
@@ -841,37 +950,43 @@ Computing Machinery</i>, Volume 21, Number 8, July 1974,
 pages 491-499.
 </blockquote>
 
-<p>Let us use the following notation (similar but not identical to
+<p>让我们使用下面的这些符号（与Robson的符号类似，但不完全相同）：
+<br />Let us use the following notation (similar but not identical to
 Robson's notation):</p>
 
 <blockquote>
 <table cellpadding="10" border="0">
 <tr><td valign="top"><b>N</b></td>
 <td valign="top">
-The amount of raw memory needed by the memory allocation system
+内存分配系统为了保证不出现内存分配失败所需的原始内存数量。
+<br />The amount of raw memory needed by the memory allocation system
 in order to guarantee that no memory allocation will ever fail.
 </td></tr>
 <tr><td valign="top"><b>M</b></td>
 <td valign="top">
-The maximum amount of memory that the application ever has checked out
+应用程序任意时刻所需的最大内存数量。
+<br />The maximum amount of memory that the application ever has checked out
 at any point in time.
 </td></tr>
 <tr><td valign="top"><b>n</b></td>
 <td valign="top">
-The ratio of the largest memory allocation to the smallest.  We assume
+分配的最大内存和最小内存的比值。我们假设每次内存分配的大小都是最小内存分配大小的整数倍。
+<br />The ratio of the largest memory allocation to the smallest.  We assume
 that every memory allocation size is an integer multiple of the smallest memory
 allocation size.
 </td></tr>
 </table>
 </blockquote>
 
-<p>Robson proves the following result:</p>
+<p>Robson证明了下面的结果：
+<br />Robson proves the following result:</p>
 
 <blockquote>
 <b>N</b> = <b>M</b>*(1 + (log<sub>2</sub> <b>n</b>)/2) - <b>n</b> + 1
 </blockquote>
 
-<p>Colloquially, the Robson proof shows that in order to guarantee
+<p>通俗的讲，Robson的证明表示，为了保证不出现内存分配失败的操作，任何内存分配器都必须使用一个大小为<b>N</b>的内存池，这个值超过了曾经使用过的内存总数最大值<b>M</b>乘以一个依赖于最大、最小分配尺寸比例<b>n</b>的数字。也就是说，除非所有的内存分配都是完全相同的大小（<b>n</b>=1），否则，系统所需的内存数会多于某一时刻使用的总内存数。此外，我们可以看到，所需的额外内存会随着最大、最小分配比例的增加而快速增长。，因此，就应该尽可能的保证所有分配的大小都接近于相同的大小。
+<br />Colloquially, the Robson proof shows that in order to guarantee
 breakdown-free operation, any memory allocator must use a memory pool
 of size <b>N</b> which exceeds the maximum amount of memory ever
 used <b>M</b> by a multiplier that depends on <b>n</b>, 
@@ -883,7 +998,8 @@ memory required grows rapidly as the ratio of largest to smallest
 allocations increases, and so there is strong incentive to keep all
 allocations as near to the same size as possible.</p>
 
-<p>Robson's proof is constructive. 
+<p>Robson的证明是推导出来的。他提出了一个算法来计算一个分配和释放操作的序列，这个序列会因为内存碎片的原因而导致内存分配失败（可用内存数量小于<b>N</b>）。同时，Robson展示了一个叫做“2的幂，最先适合（power-of-two first-fit）”的内存分配器（例如<a href="malloc.html#memsys5">memsys5</a>的实现）只要提供的可用内存大于等于<b>N</b>，那么就永远不会出现内存分配失败。
+<br />Robson's proof is constructive. 
 He provides an algorithm for computing a sequence of allocation
 and deallocation operations that will lead to an allocation failure due to
 memory fragmentation if available memory is as much as one byte
@@ -892,7 +1008,9 @@ And, Robson shows that a power-of-two first-fit memory allocator
 (such as implemented by <a href="malloc.html#memsys5">memsys5</a>) will never fail a memory allocation
 provided that available memory is <b>N</b> or more bytes.</p>
 
-<p>The values <b>M</b> and <b>n</b> are properties of the application.
+<p><b>M</b> 和 <b>n</b>是应用程序的属性。如果构造一个<b>M</b> 和 <b>n</b>都是已知的应用程序（或者至少知道上限），并且如果应用程序使用了<a href="malloc.html#memsys5">memsys5</a>内存分配器，还使用<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigheap">SQLITE_CONFIG_HEAP</a>
+提供了<b>N</b>字节的可用内存，那么Robson证明了在应用中永远不会发生内存泄露。换句话说，应用程序开发正可以选择一个值<b>N</b>来保证任何SQLite接口调用都不会返回<a href="c3ref/c_abort.html">SQLITE_NOMEM</a>。内存池永远不会碎片化到无法满足新的内存分配。这对于那些软件错误可能会导致硬件损坏或者丢失关键数据的应用来说是非常重要的。
+<br />The values <b>M</b> and <b>n</b> are properties of the application.
 If an application is constructed in such a way that both <b>M</b> and
 <b>n</b> are known, or at least have known upper bounds, and if the
 application uses
@@ -908,24 +1026,32 @@ This is an important property for
 applications where a software fault could cause injury, physical harm, or
 loss of irreplaceable data.</p>
 
-<h3>4.1 Computing and controlling parameters <b>M</b> and <b>n</b></h3>
+<h3>4.1 计算并控制参数<b>M</b> 和 <b>n</b>
+<br />4.1 Computing and controlling parameters <b>M</b> and <b>n</b></h3>
 
-<p>The Robson proof applies separately to each of the memory allocators
+<p>Robson 证明适用于SQLite中所使用的每个内存分配器：
+<br />The Robson proof applies separately to each of the memory allocators
 used by SQLite:</p>
 
 <ul>
-<li>The general-purpose memory allocator (<a href="malloc.html#memsys5">memsys5</a>).</li>
-<li>The <a href="malloc.html#scratch">scratch memory allocator</a>.</li>
-<li>The <a href="malloc.html#pagecache">pagecache memory allocator</a>.</li>
-<li>The <a href="malloc.html#lookaside">lookaside memory allocator</a>.</li>
+<li>通用内存分配器（<a href="malloc.html#memsys5">memsys5</a>）。
+<br />The general-purpose memory allocator (<a href="malloc.html#memsys5">memsys5</a>).</li>
+<li><a href="malloc.html#scratch">临时内存分配器</a>。
+<br />The <a href="malloc.html#scratch">scratch memory allocator</a>.</li>
+<li> <a href="malloc.html#pagecache">页缓存内存分配器</a>。
+<br />The <a href="malloc.html#pagecache">pagecache memory allocator</a>.</li>
+<li><a href="malloc.html#lookaside">辅助内存分配器</a>。
+<br />The <a href="malloc.html#lookaside">lookaside memory allocator</a>.</li>
 </ul>
 
-<p>For allocators other than <a href="malloc.html#memsys5">memsys5</a>,
+<p>对于除了<a href="malloc.html#memsys5">memsys5</a>以外的分配器，所有内存分配都是相同的大小。因此，<b>n</b>=1从而 <b>N</b>=<b>M</b>。也就是说，内存池的大小不需要大于某一时刻所需的内存总量的最大值。
+<br />For allocators other than <a href="malloc.html#memsys5">memsys5</a>,
 all memory allocations are of the same size.  Hence, <b>n</b>=1
 and therefore <b>N</b>=<b>M</b>.  In other words, the memory pool need
 be no larger than the largest amount of memory in use at any given moment.</p>
 
-<p>SQLite guarantees that no thread will ever use more than two
+<p>SQLite保证了不会出现一个线程同时使用两个以上的临时内存槽。所以如果一个应用程序分配的临时内存槽数是其线程数的二倍，并且假设每个槽都足够大，那么临时内存分配器就永远不会溢出。临时内存分配器的大小上限是最大页尺寸的六倍。因此很容易保证临时内存分配器不会发生失败操作。
+<br />SQLite guarantees that no thread will ever use more than two
 scratch memory slots at one time.  So if an application allocates twice as many
 scratch memory slots as there are threads, and assuming the size of
 each slot is large enough, there is never a chance of overflowing the
@@ -933,13 +1059,15 @@ scratch memory allocator.  An upper bound on the size of scratch memory
 allocations is six times the largest page size.  It is easy, therefore,
 to guarantee breakdown-free operation of the scratch memory allocator.</p>
 
-<p>The usage of pagecache memory is somewhat harder to control in
+<p>在SQLite 3.6.1 中，页缓存内存的使用有点儿难以控制，不过在后续的发型版中规划的机制会使控制页缓存内存变得更加容易。在引进这个新机制之前，控制页缓存内存的唯一办法就是使用<a href="pragma.html#pragma_cache_size">cache_size pragma</a>。
+<br />The usage of pagecache memory is somewhat harder to control in
 SQLite version 3.6.1, though mechanisms are planned for subsequent
 releases that will make controlling pagecache memory much easier.
 Prior to the introduction of these new mechanisms, the only way
 to control pagecache memory is using the <a href="pragma.html#pragma_cache_size">cache_size pragma</a>.</p>
 
-<p>Safety-critical applications will usually want to modify the
+<p>安全攸关的应用程序通常想要修改默认的辅助内存配置，以便当<a href="c3ref/open.html">sqlite3_open()</a>中分配初始辅助内存缓冲时，最终分配的内存因参数<b>n</b>太大而不够大。为了保证<b>n</b>在控制之下，最好是去保证最大的内存分配低于2或4KB。因此，一个合理的辅助内存分配器的默认设置可能是下面所列的配置之一：
+<br />Safety-critical applications will usually want to modify the
 default lookaside memory configuration so that when the initial
 lookaside memory buffer is allocated during <a href="c3ref/open.html">sqlite3_open()</a> the
 resulting memory allocation is not so large as to force the <b>n</b>
@@ -955,14 +1083,16 @@ sqlite3_config(SQLITE_CONFIG_LOOKASIDE, 32, 64);  /* 2K */
 sqlite3_config(SQLITE_CONFIG_LOOKASIDE, 64, 64);  /* 4K */
 </pre></blockquote>
 
-<p>Another approach is to initially disable the lookaside memory
+<p>另一个在开始时禁用辅助内存分配器的方法是：
+<br />Another approach is to initially disable the lookaside memory
 allocator:</p>
 
 <blockquote><pre>
 sqlite3_config(SQLITE_CONFIG_LOOKASIDE, 0, 0);
 </pre></blockquote>
 
-<p>Then let the application maintain a separate pool of larger
+<p>让应用程序维护一个单独的大辅助内存缓冲池，这可以在<a href="c3ref/sqlite3.html">数据库连接</a>创建是分配给连接。通常情况下，应用程序只有一个<a href="c3ref/sqlite3.html">数据库连接</a>，因此辅助内存池可以只由一个大缓冲组成。
+<br />Then let the application maintain a separate pool of larger
 lookaside memory buffers that it can distribute to <a href="c3ref/sqlite3.html">database connections</a>
 as they are created.  In the common case, the application will only
 have a single <a href="c3ref/sqlite3.html">database connection</a> and so the lookaside memory pool
@@ -972,12 +1102,14 @@ can consist of a single large buffer.</p>
 sqlite3_db_config(db, SQLITE_DBCONFIG_LOOKASIDE, aStatic, 256, 500);
 </pre></blockquote>
 
-<p>The lookaside memory allocator is really intended as performance
+<p>辅助内存分配器实际上是为了性能优化而准备的，而不是为了防止内存分配失败的，所以在安全攸关的操作中禁用辅助内存分配器是完全合理的。
+<br />The lookaside memory allocator is really intended as performance
 optimization, not as a method for assuring breakdown-free memory allocation,
 so it is not unreasonable to completely disable the lookaside memory
 allocator for safety-critical operations.</p>
 
-<p>The general purpose memory allocator is the most difficult memory pool
+<p>通用内存分配器是最难管理的内存池，这是因为它能分配出各种尺寸。由于<b>n</b>是<b>M</b>上的一个乘数，所以我们期望尽可能的减小<b>n</b>。同时要尽量增大<a href="malloc.html#memsys5">memsys5</a>所能分配的最小内存的值。在多数应用中，<a href="malloc.html#lookaside">辅助内存分配器</a>能够处理小的分配，所以，将<a href="malloc.html#memsys5">memsys5</a>的最小分配尺寸设置为辅助分配器最大尺寸的2、4甚至8倍是完全合适的。所以，将最小分配尺寸设置为512是适合的。
+<br />The general purpose memory allocator is the most difficult memory pool
 to manage because it supports allocations of varying sizes.  Since 
 <b>n</b> is a multiplier on <b>M</b> we want to keep <b>n</b> as small
 as possible.  This argues for keeping the minimum allocation size for
@@ -987,24 +1119,33 @@ it is reasonable to set the minimum allocation size for <a href="malloc.html#mem
 2, 4 or even 8 times the maximum size of a lookaside allocation.  
 A minimum allocation size of 512 is a reasonable setting.</p>
 
-<p>Further to keeping <b>n</b> small, one desires to keep the size of
+<p>为了进一步的缩小<b>n</b>，我们期望最大内存分配值能在控制之下。通用内存分配器中的大请求主要由以下这几个来源：
+<br />Further to keeping <b>n</b> small, one desires to keep the size of
 the largest memory allocations under control.
 Large requests to the general-purpose memory allocator
 might come from several sources:</p>
 
 <ol>
-<li>SQL table rows that contain large strings or BLOBs.</li>
-<li>Complex SQL queries that compile down to large <a href="c3ref/stmt.html">prepared statements</a>.</li>
-<li>SQL parser objects used internally by <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>.</li>
-<li>Storage space for <a href="c3ref/sqlite3.html">database connection</a> objects.</li>
-<li>Scratch memory allocations that overflow into the general-purpose
+<li>SQL表中包含大字符串或者BLOB。
+<br />SQL table rows that contain large strings or BLOBs.</li>
+<li>复合SQL查询中编译出大的<a href="c3ref/stmt.html">预编译语句</a>。
+<br />Complex SQL queries that compile down to large <a href="c3ref/stmt.html">prepared statements</a>.</li>
+<li><a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>中使用的SQL解析对象。
+<br />SQL parser objects used internally by <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>.</li>
+<li><a href="c3ref/sqlite3.html">数据库连接</a>对象的存储空间。
+<br />Storage space for <a href="c3ref/sqlite3.html">database connection</a> objects.</li>
+<li>临时内存分配器溢出到通用内存分配器中的请求。
+<br />Scratch memory allocations that overflow into the general-purpose
     memory allocator.</li>
-<li>Page cache memory allocations that overflow into the general-purpose
+<li>页缓存内存分配器一出道通用内存分配器中的请求。
+<br />Page cache memory allocations that overflow into the general-purpose
     memory allocator.</li>
-<li>Lookaside buffer allocations for new <a href="c3ref/sqlite3.html">database connections</a>.</li>
+<li>为新<a href="c3ref/sqlite3.html">数据库连接</a>分配辅助内存分配器。
+<br />Lookaside buffer allocations for new <a href="c3ref/sqlite3.html">database connections</a>.</li>
 </ol>
 
-<p>The last three allocations can be controlled and/or eliminated by
+<p>通过按照上面所说的方式恰当的配置 <a href="malloc.html#scratch">临时内存分配器</a>、<a href="malloc.html#pagecache">页缓存内存分配器</a>和 <a href="malloc.html#lookaside">辅助内存分配器</a>可以使最后三种分配情况可以控制住或排除。<a href="c3ref/sqlite3.html">数据库连接</a>对象所需的存储空间取决于数据库文件的文件名长度，但是这在32位系统中很少能超过2KB（在64位系统中由于指针的尺寸增加了，所以需要更多的空间）。每个解析对象大约需要使用1。6KB的内存。因此，上面的第3到7项也很容易控制住，以保证最大内存分配尺寸在2KB以下。
+<br />The last three allocations can be controlled and/or eliminated by
 configuring the <a href="malloc.html#scratch">scratch memory allocator</a>, <a href="malloc.html#pagecache">pagecache memory allocator</a>,
 and <a href="malloc.html#lookaside">lookaside memory allocator</a> appropriately, as described above.
 The storage space required for <a href="c3ref/sqlite3.html">database connection</a> objects depends
@@ -1015,7 +1156,9 @@ Each parser object uses about 1.6KB of memory.  Thus, elements 3 through 7
 above can easily be controlled to keep the maximum memory allocation
 size below 2KB.</p>
 
-<p>If the application is designed to manage data in small pieces,
+<p>如果应用程序是设计用来管理小块儿数据的，那么数据库应当永远不会包含大的字符串或BLOB，因此上面的第一项就不需要考虑了。
+如果数据库包含了大字符串或者BLOB，那么需要使用<a href="c3ref/blob.html">增量 BLOB I/O</a>来读取，更新包含大字符串或BLOB的行时也应当使用<a href="c3ref/blob.html">增量 BLOB I/O</a>，而不是其他方法。否则，<a href="c3ref/step.html">sqlite3_step()</a>函数就需要将整个行读取到连续的内存中，这也就包含了至少一次大内存分配。
+<br />If the application is designed to manage data in small pieces,
 then the database should never contain any large strings or BLOBs
 and hence element 1 above should not be a factor.  If the database
 does contain large strings or BLOBs, they should be read using
@@ -1026,7 +1169,8 @@ than <a href="c3ref/blob.html">incremental BLOB I/O</a>.  Otherwise, the
 contiguous memory at some point, and that will involve at least
 one large memory allocation.</p>
 
-<p>The final source of large memory allocations is the space to hold
+<p>大内存分配的最后一个来源是用来保存编译复合SQL操作结果中的<a href="c3ref/stmt.html">预编译语句</a>的空间，SQLite开发者正在不断地努力减少这部分的内存需求。但是大的复合查询依然需要若干KB大小的<a href="c3ref/stmt.html">预编译语句</a>。唯一可以变通的方案是应用程序将复合SQL操作拆解为两个或多个小而简单的操作，这样能够分别包含在不同的<a href="c3ref/stmt.html">预编译语句</a>中。
+<br />The final source of large memory allocations is the space to hold
 the <a href="c3ref/stmt.html">prepared statements</a> that result from compiling complex SQL
 operations.  Ongoing work by the SQLite developers is reducing the
 amount of space required here.  But large and complex queries might
@@ -1035,12 +1179,14 @@ size.  The only workaround at the moment is for the application to
 break complex SQL operations up into two or more smaller and simpler 
 operations contained in separate <a href="c3ref/stmt.html">prepared statements</a>.</p>
 
-<p>All things considered, applications should normally be able to
+<p>考虑了所有情况后，应用程序通常能够将最大内存分配尺寸控制在2KB或4KB。这能使log<sub>2</sub>(<b>n</b>)的值是2或3.这能够将<b>N</b>限制在<b>M</b>的2到2.5倍大小。
+<br />All things considered, applications should normally be able to
 hold their maximum memory allocation size below 2K or 4K.  This
 gives a value for log<sub>2</sub>(<b>n</b>) of 2 or 3.  This will
 limit <b>N</b> to between 2 and 2.5 times <b>M</b>.</p>
 
-<p>The maximum amount of general-purpose memory needed by the application
+<p>应用中通用内存所需的最大数量是由应用同时打开的<a href="c3ref/sqlite3.html">数据库连接</a>和<a href="c3ref/stmt.html">预编译语句</a>数以及<a href="c3ref/stmt.html">预编译语句</a>的复杂性等因素来决定的。在给定的应用中，通常这些因素也是固定的，可以通过实验性的使用<a href="c3ref/c_status_malloc_count.html#sqlitestatusmemoryused">SQLITE_STATUS_MEMORY_USED</a>来得到。一个传统的应用可能只需要40KB的通用内存。这样<b>N</b>的值大约是100KB。
+<br />The maximum amount of general-purpose memory needed by the application
 is determined by such factors as how many simultaneous open 
 <a href="c3ref/sqlite3.html">database connection</a> and <a href="c3ref/stmt.html">prepared statement</a> objects the application
 uses, and on the complexity of the <a href="c3ref/stmt.html">prepared statements</a>.  For any
@@ -1049,9 +1195,13 @@ determined experimentally using <a href="c3ref/c_status_malloc_count.html#sqlite
 A typical application might only use about 40KB of general-purpose
 memory.  This gives a value of <b>N</b> of around 100KB.</p>
 
-<h3>4.2 Ductile failure</h3>
+<h3>4.2 延性破坏
+<br />4.2 Ductile failure</h3>
 
-<p>If the memory allocation subsystems within SQLite are configured
+<p>如果SQLite中的内存分配子系统配置为不会出现失败操作，但是实际内存使用超过了<a href="malloc.html#nofrag">Robson 证明</a>所设置限制，那么SQLite通常会继续正常的操作。<a href="malloc.html#scratch">临时内存分配器</a>、<a href="malloc.html#pagecache">页缓存内存分配器</a>和 <a href="malloc.html#lookaside">辅助内存分配器</a>全都自动故障切换到<a href="malloc.html#memsys5">memsys5</a>通用内存分配器上了。
+通常情况下，即使<b>M</b> 或 <b>n</b>超过了<a href="malloc.html#nofrag">Robson 证明</a>设定限制，<a href="malloc.html#memsys5">memsys5</a>内存分配器依然会继续执行而不会碎片化。
+<a href="malloc.html#nofrag">Robson 证明</a>中表示这种情况下有可能发生内存分配失败，但是这种失败需要一个特别卑劣的分配释放顺序才能发生——SQLite从来不会按照这个顺序执行。所以，在实际中可以超过Robson设定的限制，而不会产生错误的影响。
+<br />If the memory allocation subsystems within SQLite are configured
 for breakdown-free operation but the actual memory usage exceeds
 design limits set by the <a href="malloc.html#nofrag">Robson proof</a>, SQLite will usually continue 
 to operate normally.
@@ -1068,7 +1218,9 @@ SQLite has never been observed to follow.  So in practice it is usually
 the case that the limits imposed by Robson can be exceeded by a
 considerable margin with no ill effect.</p>
 
-<p>Nevertheless, application developers are admonished to monitor
+<p>不过，还是要劝告应用程序开发者去监控内存分配子系统的状态，当内存使用接近或超过Robson限制时发出一个警告。通过这种方法，应用程序能够在发生错误之前提供足够的警告。
+SQlite中的<a href="malloc.html#memstatus">内存统计</a>接口为应用提供了监控部分任务的所有所需的机制。
+<br />Nevertheless, application developers are admonished to monitor
 the state of the memory allocation subsystems and raise alarms when
 memory usage approaches or exceeds Robson limits.  In this way,
 the application will provide operators with abundant warning well
@@ -1078,9 +1230,11 @@ all the mechanism necessary to complete the monitoring portion of
 this task.</p>
 
 <a name="stability"></a>
-<h2>5.0 Stability Of Memory Interfaces</h2>
+<h2>5.0 内存接口的稳定性
+<br />5.0 Stability Of Memory Interfaces</h2>
 
-<p>As of this writing (circa SQLite version 3.6.1) all of the alternative
+<p>到写本文为止（大约是SQLite 3.6.1 版），SQLite中的所有可选的内存分配器以及操纵、控制和测量内存分配器的机制全部都是实验性的，并且可能会在后续的发行版中发生变化。程序中涉及到的这些接口都是非常精炼的，在一系列的约束下可以广泛的系统上运行。SQLite的开发者需要修改内存分配器接口的弹性，以便能最好的适合广泛的系统。
+<br />As of this writing (circa SQLite version 3.6.1) all of the alternative
 memory allocators and mechanisms for manipulating, controlling, and
 measuring memory allocation in SQLite are considered experimental and
 subject to change from one release to the next.  These interfaces are
@@ -1089,17 +1243,21 @@ under a range of constraints.  The SQLite developers need the flexibility
 to change the memory allocator interfaces in order to best meet the
 needs of a wide variety of systems.</p>
 
-<p>One may anticipate that the memory allocator interfaces will
+<p>一直期望是内存分配器接口能够最终稳定下来。当这个确认后会发出一个合适的通知。在这期间，使用这些接口的应用程序开发者需要准备好为了适应SQLite接口的改变而修改其应用程序。
+<br />One may anticipate that the memory allocator interfaces will
 eventually stabilize.  Appropriate notice will be given when that
 occurs.  In the meantime, applications developers who make use of
 these interfaces need to be prepared to modify their applications
 to accommodate changes in the SQLite interface.</p>
 
-<p><b>Update:</b> As of SQLite version 3.7.0, all of these interfaces
+<p><b>更新：</b>从SQLite 3.7.0 开始，所有的这些接口都是稳定的了。
+<br /><b>Update:</b> As of SQLite version 3.7.0, all of these interfaces
 are considered stable</p>
 
 <a name="summary"></a>
-<h2>6.0 Summary Of Memory Allocator Interfaces</h2>
+<h2>6.0 内存分配接口摘要
+<br />6.0 Summary Of Memory Allocator Interfaces</h2>
 
-<p><i>To be completed...</i></p>
+<p><i>待完成。。。</i>
+<br /><i>To be completed...</i></p>
 
