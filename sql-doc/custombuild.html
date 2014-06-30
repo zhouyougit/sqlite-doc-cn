@@ -133,14 +133,18 @@ a:visited { color: #734559 }
 
 
 <h1 align="center">
+SQLite的定制与移植
+<br />
 Custom Builds Of SQLite<br>
 or<br>
 Porting SQLite To New Operating Systems
 </h1>
 
-<h2>1.0 Introduction</h2>
+<h2>1.0 介绍
+<br />1.0 Introduction</h2>
 
-<p>For most applications, the recommended method for building
+<p>对于大多数应用程序来说，构建SQLite的推荐方法是使用<a href="amalgamation.html">混合</a>代码文件——<b>sqlite3.c</b>，以及相对应的头文件<b>sqlite3.h</b>。sqlite3.c源码文件可以无需修改任何编译选项在Unix、Windows、OS/2、Mac OS X等系统上编译。多数应用程序只需要简单的将sqlite3.c文件包含到应用程序的其它C代码文件中，然后一起编译，然后就可以得到一个配置良好、可以使用的SQLite了。
+<br />For most applications, the recommended method for building
 SQLite is to use <a href="amalgamation.html">the amalgamation</a> code
 file, <b>sqlite3.c</b>, and its corresponding header file
 <b>sqlite3.h</b>.  The sqlite3.c code file should compile and
@@ -150,14 +154,17 @@ the sqlite3.c file together with the other C code files that make
 up the application, compile them all together, and have working
 and well configured version of SQLite.</p>
 
-<blockquote><i>Most applications work great with SQLite in its
+<blockquote><i>
+大多数的应用程序无需使用任何特别的编译期配置，SQLite默认的配置就可以使其良好的工作了。大多数开发者完全可以彻底抛弃这篇文档，只要简单的使用<a href="amalgamation.html">混合代码</a>构建SQLite就可以了，这不需要任何专业的知识或者其它任何专门的操作。
+<br />Most applications work great with SQLite in its
 default configuration and with no special compile-time configuration.
 Most developers should be able to completely ignore this document
 and simply build SQLite from
 <a href="amalgamation.html">the amalgamation</a> without any
 special knowledge and without taking any special actions.</i></blockquote>
 
-<p>However, highly tuned and specialized
+<p>但是，高度特化和校调的应用程序可能会需要将SQLite一些内置的系统接口实现进行替换，以便更加符合应用的需求。在SQLite的设计中，在面对各种特定的项目的时候非常容易在编译期从新配置。SQLite的编译期配置包含下列这些内容：
+<br />However, highly tuned and specialized
 applications may want or need to replace some of
 SQLite's built-in system interfaces with alternative implementations
 more suitable for the needs of the application.  SQLite is designed
@@ -166,30 +173,37 @@ needs of individual projects.  Among the compile-time configuration
 options for SQLite are these:</p>
 
 <ul>
-<li><p> Replace the built-in mutex subsystem with an alternative
+<li><p> 将内置的互斥锁子系统替换为其它实现。
+<br />Replace the built-in mutex subsystem with an alternative
         implementation.  </p></li>
 
-<li><p> Completely disable all mutexing for use in single-threaded
+<li><p> 在单线程应用程序中，彻底禁用所有的互斥锁。
+<br />Completely disable all mutexing for use in single-threaded
         applications. </p></li>
 
-<li><p> Reconfigure the memory allocation subsystem to use a memory
+<li><p> 将内置的内存分配子系统替换为标准库中的malloc()以外的实现。
+<br />Reconfigure the memory allocation subsystem to use a memory
         allocator other the malloc() implementation from the standard
         library. </p></li>
 
-<li><p> Realign the memory allocation subsystem so that it never calls
+<li><p> 重组内存分配子系统，以便不再调用malloc()，而是使用启动时分配给SQLite的固定大小的内存缓冲区来满足所有的内存请求。
+<br />Realign the memory allocation subsystem so that it never calls
         malloc() at all but instead satisfies all memory requests using
         a fixed-size memory buffer assigned to SQLite at startup. </p></li>
 
-<li><p> Replace the interface to the file system with an alternative
+<li><p> 替换文件系统的接口。也就是说，重载SQLite提供的所有系统调用，以便使用一套完全不同的系统调用来访问磁盘。
+<br />Replace the interface to the file system with an alternative
         design.  In other words, override all of the system calls that
         SQLite makes in order to talk to the disk with a completely different
         set of system calls. </p></li>
 
-<li><p> Override other operating system interfaces such as calls to obtain
+<li><p> 重写其它操作系统接口，例如获取系统时间的调用。
+<br />Override other operating system interfaces such as calls to obtain
         Zulu or local time. </p></li>
 </ul>
 
-<p>Generally speaking, there are three separate subsystems within
+<p>通俗来讲，在SQLite中包含三个独立的子系统，它们都可以在编译期进行修改或重载。互斥锁子系统是用来在多线程访问共享资源时进行访问串行化的。内存分配子系统是用来为数据库缓存和SQLite对象分配所需的内存的。最后，<a href="c3ref/vfs.html">虚拟文件系统</a>是用来在SQLite和底层的操作系统的特定文件系统之间提供一套可移植的接口。我们将这三个子系统称作SQLite的“接口”子系统。
+<br />Generally speaking, there are three separate subsystems within
 SQLite that can be modified or overridden at compile-time.  The
 mutex subsystem is used to serialize access to SQLite resources that
 are shared among threads.  The memory allocation subsystem is used
@@ -199,7 +213,9 @@ used to provide a portable interface between SQLite and the underlying
 operating system and especially the file system.  We call these three
 subsystems the "interface" subsystems of SQLite.</p>
 
-<p>We emphasis that most applications are well-served by the 
+<p>我们再次强调，多数系统使用SQLite接口子系统的内置默认实现就可以很好的工作了。我们鼓励开发者使用内置的默认实现，而无需在构建SQLite时使用任何编译期的选项或者参数。
+但是，一些高度特化的应用程序可能可以从替换或者修改多个SQLite内置的接口子系统中获益。或者，如果使用SQLite的操作系统不是Unix（Linux、Mac OS X）、Windows（Win32、WinCE）或OS/2，那么内置的接口子系统都将无法工作，这时就需要应用程序来提供适用于目标平台的子系统实现了。
+<br />We emphasis that most applications are well-served by the 
 built-in default implementations of the SQLite interface subsystems.
 Developers are encouraged to use the
 default built-in implementations whenever possible
@@ -213,9 +229,11 @@ of the interface subsystems that come built into SQLite will work
 and the application will need to provide alternative implementations
 suitable for the target platform.</p>
 
-<h2>2.0 Configuring Or Replacing The Mutex Subsystem</h2>
+<h2>2.0 配置或替换互斥锁子系统
+<br />2.0 Configuring Or Replacing The Mutex Subsystem</h2>
 
-<p>In a multithreaded environment, SQLite uses mutexes to serialize
+<p>在多线程环境中，SQLite使用互斥锁来对共享资源的访问进行串行化。只有需要在多线程访问SQLite的应用程序才需要互斥锁子系统。对于单线程的应用或只会在单线程中调用SQLite的应用来说，完全可以使用下面选项重新编译SQLite来彻底禁用互斥体子系统：
+<br />In a multithreaded environment, SQLite uses mutexes to serialize
 access to shared resources.
 The mutex subsystem is only required for applications that access
 SQLite from multiple threads.  For single-threaded applications, or
@@ -227,12 +245,14 @@ option:</p>
 -DSQLITE_THREADSAFE=0
 </pre></blockquote>
 
-<p>Mutexes are cheap but they are not free, so performance will be better
+<p>互斥锁的开销很小，但并不是没有，所以当完全禁用了互斥锁后性能会得到提升。最终的封装库大小也会变的小一些。当这些是有意义的情况下，推荐在编译期禁用互斥锁。
+<br />Mutexes are cheap but they are not free, so performance will be better
 when mutexes are completely disabled.  The resulting library footprint
 will also be a little smaller.  Disabling the mutexes at compile-time
 is a recommended optimization for applications where it makes sense.</p>
 
-<p>When using SQLite as a shared library, an application can test to see
+<p>当把SQLite作为共享库使用时，应用程序可以使用<a href="c3ref/threadsafe.html">sqlite3_threadsafe()</a> API来测试看互斥锁是否禁用了。所有在运行时连接SQLite并且会在多线程环境下使用SQLite的应用程序都应该检查一下这个API，以确保不会意外连入一个禁用了互斥锁的SQLite库版本。当然，单线程应用不管SQLite是否配置为线程安全都可以正确的运行，不过如果使用禁用互斥锁的SQLite版本能够运行的稍微快一些。
+<br />When using SQLite as a shared library, an application can test to see
 whether or not mutexes have been disabled using the
 <a href="c3ref/threadsafe.html">sqlite3_threadsafe()</a> API.  Applications that link against SQLite at
 run-time and use SQLite from multiple threads should probably check this
@@ -242,7 +262,8 @@ applications will, of course, work correctly regardless of whether or
 not SQLite is configured to be threadsafe, though they will be a little
 bit faster when using versions of SQLite with mutexes disabled.</p>
 
-<p>SQLite mutexes can also be disabled at run-time using the
+<p>SQLite互斥锁也可以在运行时使用<a href="c3ref/config.html">sqlite3_config()</a>接口来禁用。应用程序可以执行下面接口来完全禁用所有互斥锁：
+<br />SQLite mutexes can also be disabled at run-time using the
 <a href="c3ref/config.html">sqlite3_config()</a> interface.  To completely disable all mutexing,
 the application can invoke:</p>
 
@@ -250,13 +271,15 @@ the application can invoke:</p>
 sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
 </pre></blockquote>
 
-<p>Disabling mutexes at run-time is not as effective as disabling them
+<p>在运行时禁用互斥锁并没有编译期禁用那么高效，这是因为SQLite在每个需要互斥锁的地方还必须做一个布尔值的判断来确认互斥锁是否禁用了。不过运行时禁用互斥锁依然可以带来性能提升。
+<br />Disabling mutexes at run-time is not as effective as disabling them
 at compile-time since SQLite still must do a test of a boolean variable
 to see if mutexes are enabled or disabled at each point where a mutex
 might be required.  But there is still a performance advantage for
 disabling mutexes at run-time.</p>
 
-<p>For multi-threaded applications that are careful about how they
+<p>对于多线程应用程序，需要关心它们是如何管理线程的。SQLite支持一个可选的运行时配置，是位于不使用任何互斥锁和默认的对所有内容使用互斥锁的中间状态。这个“中间态”互斥锁可以使用下面的方式来建立：
+<br />For multi-threaded applications that are careful about how they
 manage threads, SQLite supports an alternative run-time configuration
 that is half way between not using any mutexes and the default situation
 of mutexing everything in sight.  This in-the-middle mutex alignment can
@@ -267,7 +290,9 @@ sqlite3_config(SQLITE_CONFIG_MULTITHREAD);
 sqlite3_config(SQLITE_CONFIG_MEMSTATUS, 0);
 </pre></blockquote>
 
-<p>There are two separate configuration changes here which can
+<p>这里有两个独立的配置改动，二者可以一起使用也可以分开使用。<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmultithread">SQLITE_CONFIG_MULTITHREAD</a>设置可以禁用对<a href="c3ref/sqlite3.html">数据库连接</a>对象和<a href="c3ref/stmt.html">预编译语句</a>对象串行化访问所需的互斥锁。使用这个设置，应用程序就可以自由的在多线程环境下使用SQLite了，但是必须要确保不会出现两个以上线程访问同一个<a href="c3ref/sqlite3.html">数据库连接</a>，或者是同时访问同一个<a href="c3ref/sqlite3.html">数据库连接</a>相关联的多个<a href="c3ref/stmt.html">预编译语句</a>。两个线程可以同时访问SQLite，但是必须使用两个独立的<a href="c3ref/sqlite3.html">数据库连接</a>。
+第二个设置<a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a>可以禁用SQLite中统计所有内存分配请求的总内存数量的机制。这个设置可以取消每次<a href="c3ref/free.html">sqlite3_malloc()</a> 和 <a href="c3ref/free.html">sqlite3_free()</a>调用所需的互斥锁，这可以减少大量的互斥锁操作。但是禁用内存统计机制的结果是<a href="c3ref/memory_highwater.html">sqlite3_memory_used()</a>、<a href="c3ref/memory_highwater.html">sqlite3_memory_highwater()</a>和<a href="c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64()</a>接口都无法使用了。
+<br />There are two separate configuration changes here which can
 be used either togethr or separately. The
 <a href="c3ref/c_config_covering_index_scan.html#sqliteconfigmultithread">SQLITE_CONFIG_MULTITHREAD</a> setting disables the mutexes that
 serialize access to <a href="c3ref/sqlite3.html">database connection</a> objects and 
@@ -287,7 +312,8 @@ memory statistics mechanism is that the
 <a href="c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64()</a> interfaces cease to work.
 </p>
 
-<p>SQLite uses pthreads for its mutex implementation on Unix and
+<p>SQLite在Unix上使用pthread实现的互斥锁，并且SQLite中需要递归锁。大多数现代的pthread实现都支持递归锁，但并不是全部。对于不支持递归锁的系统来说，推荐应用程序只在单线程模式下运行。如果这不可能，SQLite提供了一个以pthread中的标准“快速”互斥锁为基础实现的递归锁。只要pthread_equal()是原子的，并且处理器有相干数据缓存，那么这个实现就可以正确的工作。这个可选的递归锁实现可以使用下面的编译器命令行开关来启用：
+<br />SQLite uses pthreads for its mutex implementation on Unix and
 SQLite requires a recursive mutex.  Most modern pthread implementations
 support recursive mutexes, but not all do.  For systems that do not
 support recursive mutexes, it is recommended that applications operate
@@ -303,7 +329,8 @@ compiler command-line switch:</p>
 -DSQLITE_HOMEGROWN_RECURSIVE_MUTEX=1
 </pre></blockquote>
 
-<p>When porting SQLite to a new operating system, it is usually necessary
+<p>当把SQLite移植到新的操作系统上时，通常需要使用一个新操作系统互斥锁原语构建的互斥锁子系统来完全替换内置的互斥锁子系统。这可以通过使用下面的选项编译SQLite来实现：
+<br />When porting SQLite to a new operating system, it is usually necessary
 to completely replace the built-in mutex subsystem with an alternative
 built around the mutex primitives of the new operating system.  This
 is accomplished by compiling SQLite with the following option:</p>
@@ -312,7 +339,8 @@ is accomplished by compiling SQLite with the following option:</p>
 -DSQLITE_MUTEX_APPDEF=1
 </pre></blockquote>
 
-<p>When SQLite is compiled with the SQLITE_MUTEX_APPDEF=1 option, it
+<p>当使用 SQLITE_MUTEX_APPDEF=1选项编译SQLite时，会完全忽略内置的<a href="c3ref/mutex_alloc.html">互斥锁原始函数</a>实现。但是SQLite库在需要的时候依然会调用这些函数，所以应用程序必须自己实现这些<a href="c3ref/mutex_alloc.html">互斥锁原始函数</a>，并将其与SQLite链接到一起。
+<br />When SQLite is compiled with the SQLITE_MUTEX_APPDEF=1 option, it
 completely omits the implementation of its 
 <a href="c3ref/mutex_alloc.html">mutex primitive functions</a>.  But the SQLite
 library still attempts to call these functions where necessary, so the
@@ -320,9 +348,11 @@ application must itself implement the
 <a href="c3ref/mutex_alloc.html">mutex primitive functions</a> and link them together
 with SQLite.</p>
 
-<h2>3.0 Configuring Or Replacing The Memory Allocation Subsystem</h2>
+<h2>3.0 配置或替换内存分配子模块
+<br />3.0 Configuring Or Replacing The Memory Allocation Subsystem</h2>
 
-<p>By default, SQLite obtains the memory it needs for objects and
+<p>默认情况，SQLite从标准库中的malloc()/free()实现来获取对象和缓存所需的内存。还有一个还处于实验状态的内存分配器，这个分配器可以使用在应用启动时分配给SQLite的一块儿固定大小的内存缓冲区来满足所有的内存分配请求。更多关于实验性内存分配器的内容将会在本文未来的版本中提供。
+<br />By default, SQLite obtains the memory it needs for objects and
 cache from the malloc()/free() implementation of the standard library.
 There is also on-going work with experimental memory allocators that
 satisfy all memory requests from a single fixed memory buffer handed
@@ -330,7 +360,8 @@ to SQLite at application start.  Additional information on these
 experimental memory allocators will be provided in a future revision
 of this document.</p>
 
-<p>SQLite supports the ability of an application to specify an alternative
+<p>SQLite能够支持应用程序在运行时指定一个可选的内存分配器。首先将实现内存分配的函数的指针填入到一个<a href="c3ref/mem_methods.html">sqlite3_mem_methods</a>对象的实例中，然后将这个对象使用<a href="c3ref/config.html">sqlite3_config()</a>接口注册到系统中。例如：
+<br />SQLite supports the ability of an application to specify an alternative
 memory allocator at run-time by filling in an instance of the
 <a href="c3ref/mem_methods.html">sqlite3_mem_methods</a> object with pointers to the routines of the
 alternative implementation then registering the new alternative
@@ -341,18 +372,22 @@ For example:</p>
 sqlite3_config(SQLITE_CONFIG_MALLOC, &my_malloc_implementation);
 </pre></blockquote>
 
-<p>SQLite makes a copy of the content of the <a href="c3ref/mem_methods.html">sqlite3_mem_methods</a> object
+<p>SQLite会将<a href="c3ref/mem_methods.html">sqlite3_mem_methods</a>的内容复制一份，所以在<a href="c3ref/config.html">sqlite3_config()</a>调用返回后就可以修改这个对象的内容了。
+<br />SQLite makes a copy of the content of the <a href="c3ref/mem_methods.html">sqlite3_mem_methods</a> object
 so the object can be modified after the <a href="c3ref/config.html">sqlite3_config()</a> call returns.</p>
 
-<h2>4.0 Adding New Virtual File Systems</h2>
+<h2>4.0 添加新的虚拟文件系统
+<br />4.0 Adding New Virtual File Systems</h2>
 
-<p>Since <a href="releaselog/3_5_0.html">version 3.5.0</a>, SQLite has supported an interface called the
+<p>从<a href="releaselog/3_5_0.html"> 3.5.0</a> 版开始，SQLite支持了一个叫做<a href="c3ref/vfs.html">虚拟文件系统</a> 或 "VFS"的接口。这个对象的名字取的有些不太恰当，因为这实际上是整个底层操作系统的接口，而不仅仅是文件系统。
+<br />Since <a href="releaselog/3_5_0.html">version 3.5.0</a>, SQLite has supported an interface called the
 <a href="c3ref/vfs.html">virtual file system</a> or "VFS".
 This object is somewhat misnamed since it
 is really an interface to the whole underlying operating system, not
 just the filesystem.</p>
 
-<p> One of the interesting features
+<p>VFS接口的一个有趣的特征是，SQLite可以同时支持多个VFS。当每个<a href="c3ref/sqlite3.html">数据库连接</a>使用<a href="c3ref/open.html">sqlite3_open_v2()</a>接口第一次打开时，需要选择一个VFS供其使用。但是如果一个进程包含多个<a href="c3ref/sqlite3.html">数据库连接</a>，那么每个连接可以选择不同的VFS。可以再运行时通过<a href="c3ref/vfs_find.html">sqlite3_vfs_register()</a>接口来添加VFS。
+<br /> One of the interesting features
 of the VFS interface is that SQLite can support multiple VFSes at the
 same time.  Each <a href="c3ref/sqlite3.html">database connection</a> has to choose a single VFS for its
 use when the connection is first opened using <a href="c3ref/open.html">sqlite3_open_v2()</a>.
@@ -360,25 +395,32 @@ But if a process contains multiple <a href="c3ref/sqlite3.html">database connect
 a different VFS.  VFSes can be added at run-time using the
 <a href="c3ref/vfs_find.html">sqlite3_vfs_register()</a> interface.</p>
 
-<p>The default builds for SQLite on Unix, Windows, and OS/2 include 
+<p>在Unix、Windows和OS/2上构建的SQLite都默认包含了适合目标平台的VFS。在其它平台上构建的SQLite则默认不包含VFS，不过应用程序可以再运行时注册一个或多个VFS。
+<br />The default builds for SQLite on Unix, Windows, and OS/2 include 
 a VFS appropriate for the target platform.  SQLite builds for other
 operating systems do not contain a VFS by default, but the application
 can register one or more at run-time.</p>
 
-<h2>5.0 Porting SQLite To A New Operating System</h2>
+<h2>5.0 将SQLite移植到新操作系统中
+<br />5.0 Porting SQLite To A New Operating System</h2>
 
-<p>In order to port SQLite to a new operating system - an operating
+<p>为了将SQLite移植到新的操作系统中（一个默认不支持的系统），应用程序需要提供：
+<br />In order to port SQLite to a new operating system - an operating
 system not supported by default - the application
 must provide...</p>
 
 <ul>
-<li> a working mutex subsystem (but only if it is multithreaded), </li>
-<li> a working memory allocation subsystem (assuming it lacks malloc()
+<li> 一个可用的互斥锁子系统（不过只有需要多线程的时候）
+<br />a working mutex subsystem (but only if it is multithreaded), </li>
+<li> 一个可用的内存分配子系统（假设其标准库中没有malloc()）
+<br />（a working memory allocation subsystem (assuming it lacks malloc()
 in its standard library), and</li>
-<li> a working VFS implementation.</li>
+<li> 一个可用的VFS实现
+<br />a working VFS implementation.</li>
 </ul>
 
-<p>All of these things can be provided in a single auxiliary C code file
+<p>所有的这些内容都可以在一个辅助的C源码文件中提供，并将其与已有的“sqlite3.c”源码文件链接在一起来生成一个在目标操作系统上可以运行的SQLite版本。除了互斥锁和内存分配子系统以及新的VFS以外，这个辅助C源码文件还需要包含下面两个接口的实现：
+<br />All of these things can be provided in a single auxiliary C code file
 and then linked with the stock "sqlite3.c" code file to generate a working
 SQLite build for the target operating system.  In addition to the
 alternative mutex and memory allocation subsystems and the new VFS,
@@ -390,7 +432,8 @@ following two routines:</p>
 <li> <a href="c3ref/initialize.html">sqlite3_os_end()</a> </li>
 </ul>
 
-<p>The "sqlite3.c" code file contains default implementations of a VFS
+<p>“sqlite3.c”源文件中包含了默认的VFS实现，以及适合Unix、Windows和OS/2的<a href="c3ref/initialize.html">sqlite3_initialize()</a> 与 <a href="c3ref/initialize.html">sqlite3_shutdown()</a>函数。要想在编译sqlite3.c时防止加载这些默认的组件，就需要添加一个编译期选项：
+<br />The "sqlite3.c" code file contains default implementations of a VFS
 and of the <a href="c3ref/initialize.html">sqlite3_initialize()</a> and <a href="c3ref/initialize.html">sqlite3_shutdown()</a> functions that
 are appropriate for Unix, Windows, and OS/2.
 To prevent one of these default components from being loaded when sqlite3.c
@@ -402,7 +445,9 @@ option:</p>
 </pre></blockquote>
 
 
-<p>The SQLite core will call <a href="c3ref/initialize.html">sqlite3_initialize()</a> early.  The auxiliary
+<p>SQLite内核会在提早调用<a href="c3ref/initialize.html">sqlite3_initialize()</a>。辅助C源文件可以包含sqlite3_initialize()的实现，这个函数可以注册合适的VFS，也可以初始化互斥锁系统（如果需要互斥锁）或者内存分配子系统所需的初始化工作。
+SQLite核心永远不会调用<a href="c3ref/initialize.html">sqlite3_shutdown()</a>，但是这是官方SQLite API的一部分，必须在使用-DSQLITE_OS_OTHER=1编译的时候提供。所以辅助C源文件需要提供这个函数。
+<br />The SQLite core will call <a href="c3ref/initialize.html">sqlite3_initialize()</a> early.  The auxiliary
 C code file can contain an implementation of sqlite3_initialize() that
 registers an appropriate VFS and also perhaps initializes an alternative
 mutex system (if mutexes are required) or does any memory allocation
