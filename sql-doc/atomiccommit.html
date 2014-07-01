@@ -807,11 +807,11 @@ the aborted transaction.</p>
 <br clear="both">
 <a name="delhotjrnl"></a>
 
-<h3>4.5 删除预留日志
+<h3>4.5 删除活跃日志
 <br />4.5 Deleting The Hot Journal</h3>
 <img src="images/ac/rollback-4.gif" align="right" hspace="15">
 
-<p>当回滚日志中的所有信息都已经写回数据库文件后（并写入同步到磁盘中以防止再一次遇到断电错误），预留回滚日志文件就可以删除了。
+<p>当回滚日志中的所有信息都已经写回数据库文件后（并写入同步到磁盘中以防止再一次遇到断电错误），活跃回滚日志文件就可以删除了。
 <br />After all information in the rollback journal has been
 played back into the database file (and flushed to disk in case
 we encounter yet another power failure), the hot rollback journal
@@ -991,7 +991,7 @@ This step corresponds to
 <a href="#section_3_11">step 3.11</a> in the single-file
 commit scenario where the rollback journal is deleted.</p>
 
-<p>如果在这个时候发生断电故常或者操作系统崩溃，在系统重启后，即使回滚日志都还在也不会进行回滚操作。与单文件场景的不同之处在于回滚日志的头部有主日志文件名。在重启之后，只有当回滚日志头中没有主日志文件名（单文件提交情况）或者包含主日志文件名且主日志存在这两种情况时才会认为是预留日志，并进行回滚操作。
+<p>如果在这个时候发生断电故常或者操作系统崩溃，在系统重启后，即使回滚日志都还在也不会进行回滚操作。与单文件场景的不同之处在于回滚日志的头部有主日志文件名。在重启之后，只有当回滚日志头中没有主日志文件名（单文件提交情况）或者包含主日志文件名且主日志存在这两种情况时才会认为是活跃日志，并进行回滚操作。
 <br />If a power failure or operating system crash occurs at this
 point, the transaction will not rollback when the system reboots
 even though there are rollback journals present.  The

@@ -234,7 +234,7 @@ to this rule.
 </p>
 
 <p>
-如果在事务中间发生崩溃或者断电，那么回滚日志会留在磁盘中。下一次另一个应用试图打开数据库文件时，会发现有遗留的回滚日志存在（这种情况下我们称之为“热日志”）并使用日志中的信息来将数据库状态恢复到未完成的事务执行之前。SQLite就是这样实现原子提交的。
+如果在事务中间发生崩溃或者断电，那么回滚日志会留在磁盘中。下一次另一个应用试图打开数据库文件时，会发现有遗留的回滚日志存在（这种情况下我们称之为“活跃日志”）并使用日志中的信息来将数据库状态恢复到未完成的事务执行之前。SQLite就是这样实现原子提交的。
 <br />If a crash or power loss occurs in the middle of a transaction,
 then the rollback journal file is left on disk.  The next time
 another application attempts to open the database file, it notices
