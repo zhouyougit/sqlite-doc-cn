@@ -130,10 +130,12 @@ a:visited { color: #734559 }
   
 
 
-<h1 align="center">An Asynchronous I/O Module For SQLite</h1>
+<h1 align="center">SQLite的一个异步I/O模块
+<br />An Asynchronous I/O Module For SQLite</h1>
 
 <hr>
-<p><font size=+1><b>NOTE:</b> 
+<p><font size=+1><b>注意：</b>当<a href="wal.html">WAL 模式</a>中<a href="pragma.html#pragma_synchronous">PRAGMA synchronous</a>设置为NORMAL的时候，在事务提交的时候不会调用fsync()，只有在执行<a href="wal.html#ckpt">checkpoint</a>操作的时候才会执行fsync()。使用<a href="wal.html">WAL 模式</a>很大程度的减少了对异步I/O模块的需求。因此，这个模块已经不再支持了。其源码还依然存在于SQLite源码树中，但是已经不是标准构建的组成部分了，也不再维护了。保留这篇文档只是为了历史参考。</font>
+<br /><font size=+1><b>NOTE:</b> 
 <a href="wal.html">WAL mode</a> with <a href="pragma.html#pragma_synchronous">PRAGMA synchronous</a> set to NORMAL avoids calls to
 fsync() during transaction commit and only invokes fsync() during
 a <a href="wal.html#ckpt">checkpoint</a> operation.  The use of <a href="wal.html">WAL mode</a> largely obviates the
@@ -142,7 +144,8 @@ supported.  The source code continues to exist in the SQLite source tree,
 but it is not a part of any standard build and is no longer maintained.
 This documentation is retained for historical reference.</font></p><hr>
 
-<p>Normally, when SQLite writes to a database file, it waits until the write
+<p>通常，当SQLite写入一个数据库时，在将控制权返回给调用的应用程序之前会等待文件系统写入操作的完成。因为等待文件系统相比CPU操作通常是非常缓慢的，这就会成为一个性能瓶颈。异步I/O后端是SQLite的一个扩展，它可以让SQLite在后端运行的一个独立的线程中执行所有的写入请求。尽管这并没有减少总体系统资源（CPU、磁盘带宽等），但是这可以允许SQLite在数据库正在写入时提前将控制器返回给调用者。
+<br />Normally, when SQLite writes to a database file, it waits until the write
 operation is finished before returning control to the calling application.
 Since writing to the file-system is usually very slow compared with CPU
 bound operations, this can be a performance bottleneck. The asynchronous I/O
@@ -152,15 +155,18 @@ reduce the overall system resources (CPU, disk bandwidth etc.), it does
 allow SQLite to return control to the caller quickly even when writing to
 the database.
 
-<h2>1.0 FUNCTIONALITY</h2>
+<h2>1.0 功能
+<br />1.0 FUNCTIONALITY</h2>
 
-<p>With asynchronous I/O, write requests are handled by a separate thread
+<p>在异步I/O中，写入请求都是由运行在后台的一个独立线程来处理的。这意味着，启动数据库写入的线程不需要等待（通常很慢的）磁盘I/O的执行。写入看起来会执行的非常快速，实际上，它和平常一样在后台缓慢的执行着。
+<br />With asynchronous I/O, write requests are handled by a separate thread
 running in the background.  This means that the thread that initiates
 a database write does not have to wait for (sometimes slow) disk I/O
 to occur.  The write seems to happen very quickly, though in reality
 it is happening at its usual slow pace in the background.
 
-<p>Asynchronous I/O appears to give better responsiveness, but at a price.
+<p>异步I/O的出现提供了更好的响应性能，而不是开销。这会失去持久性。在SQLite默认的I/O后端中，一旦完成写入，你就可以确认信息已经安全的写入到磁盘上了。在异步I/O中，情况不是这样了。如果在写入数据库之后，异步写入线程完成之前你的程序发生了崩溃或者意外断电，那么数据库改动可能还没有写入到磁盘上，下一个用户可能就无法看到你的改动。
+<br />Asynchronous I/O appears to give better responsiveness, but at a price.
 You lose the Durable property.  With the default I/O backend of SQLite,
 once a write completes, you know that the information you wrote is
 safely on disk.  With the asynchronous I/O, this is not the case.  If
@@ -169,35 +175,43 @@ write but before the asynchronous write thread has completed, then the
 database change might never make it to disk and the next user of the
 database might not see your change.
 
-<p>You lose Durability with asynchronous I/O, but you still retain the
+<p>在异步I/O中你失去了持久性，但是依然保持着ACID中的其它特性：原子性、一致性和隔离性。许多应用程序没有持久性也一样能运行的很好。
+<br />You lose Durability with asynchronous I/O, but you still retain the
 other parts of ACID:  Atomic,  Consistent, and Isolated.  Many
 applications get along fine without the Durability.
 
-<h3>1.1 How it Works</h3>
+<h3>1.1 如何运行的
+<br />1.1 How it Works</h3>
 
-<p>Asynchronous I/O works by creating an SQLite <a href="c3ref/vfs.html">VFS object</a>
+<p>异步I/O是创建了一个SQLite <a href="c3ref/vfs.html">VFS 对象</a>并使用<a href="c3ref/vfs_find.html">sqlite3_vfs_register()</a>注册进来。当文件通过这个VFS打开的文件需要写入时（使用vfs xWrite()方法），数据不是直接写入到磁盘中，而是写入到一个后台线程管理的“写入队列”中。
+<br />Asynchronous I/O works by creating an SQLite <a href="c3ref/vfs.html">VFS object</a>
 and registering it with <a href="c3ref/vfs_find.html">sqlite3_vfs_register()</a>.
 When files opened via 
 this VFS are written to (using the vfs xWrite() method), the data is not 
 written directly to disk, but is placed in the "write-queue" to be
 handled by the background thread.
 
-<p>When files opened with the asynchronous VFS are read from 
+<p>当读取使用异步VFS打开的文件（使用vfs xRead()方法）时，会从磁盘和写入队列中读取数据，所以从vfs读取者的角度来看，xWrite()似乎已经完成了。
+<br />When files opened with the asynchronous VFS are read from 
 (using the vfs xRead() method), the data is read from the file on 
 disk and the write-queue, so that from the point of view of
 the vfs reader the xWrite() appears to have already completed.
 
-<p>The asynchronous I/O VFS is registered (and unregistered) by calls to the 
+<p>异步I/O VFS通过调用API函数sqlite3async_initialize() 和 sqlite3async_shutdown()来完成注册与取消。详细内容参见下面的“编译与使用”一节。
+<br />The asynchronous I/O VFS is registered (and unregistered) by calls to the 
 API functions sqlite3async_initialize() and sqlite3async_shutdown().
 See section "Compilation and Usage" below for details.
 
-<h3>1.2 Limitations</h3>
+<h3>1.2 局限性
+<br />1.2 Limitations</h3>
 
-<p>In order to gain experience with the main ideas surrounding asynchronous 
+<p>为了增加使用异步I/O的主观体验，这个实现刻意的保持简单。额外的功能可能会在未来加入。
+<br />In order to gain experience with the main ideas surrounding asynchronous 
 IO, this implementation is deliberately kept simple. Additional 
 capabilities may be added in the future.
 
-<p>For example, as currently implemented, if writes are happening at a 
+<p>例如，在目前的实现中，如果一段稳定的写入超过了后台写入线程的I/O能力，待写入队列就会无限制的增长。如果这种状态持续足够长时间，那么主系统就会出现内存不足。一个复杂的模块可以持续对待写入队列进行监控，当队列太长时可以停止接受新的写入请求。
+<br />For example, as currently implemented, if writes are happening at a 
 steady stream that exceeds the I/O capability of the background writer
 thread, the queue of pending write operations will grow without bound.
 If this goes on for long enough, the host system could run out of memory. 
@@ -205,28 +219,33 @@ A more sophisticated module could to keep track of the quantity of
 pending writes and stop accepting new write requests when the queue of 
 pending writes grows too large.
 
-<h3>1.3 Locking and Concurrency</h3>
+<h3>1.3 锁和并发
+<br />1.3 Locking and Concurrency</h3>
 
-<p>Multiple connections from within a single process that use this
+<p>一个进程中的多个连接上如果使用了这个异步I/O实现，那么可能会并发的访问同一个数据库文件。从用户角度来看，如果所有连接都来自同一个进程，那么“标准”SQLite和使用了异步后台的SQLite提供的并发性没有任何区别。
+<br />Multiple connections from within a single process that use this
 implementation of asynchronous IO may access a single database
 file concurrently. From the point of view of the user, if all
 connections are from within a single process, there is no difference
 between the concurrency offered by "normal" SQLite and SQLite
 using the asynchronous backend.
 
-<p>If file-locking is enabled (it is enabled by default), then connections
+<p>如果启用了文件锁（默认时启用的），那么来自多个进程的连接也同样可以读写数据库文件。但是并发性会降低：
+<br />If file-locking is enabled (it is enabled by default), then connections
 from multiple processes may also read and write the database file.
 However concurrency is reduced as follows:
 
 <ul>
-<li><p> When a connection using asynchronous IO begins a database
+<li><p> 当一个使用了异步I/O的连接开始一个数据库事务，数据库会立即上锁。但是在写入队列中所有的相关操作都同步到磁盘中之前时不会释放锁的。这就是说（假如），在"<a href="lang_transaction.html">COMMIT</a>" 或 "<a href="lang_transaction.html">ROLLBACK</a>"已经执行了之后数据库可能还会保持一段时间锁。
+<br />When a connection using asynchronous IO begins a database
         transaction, the database is locked immediately. However the
         lock is not released until after all relevant operations
         in the write-queue have been flushed to disk. This means
         (for example) that the database may remain locked for some 
         time after a "<a href="lang_transaction.html">COMMIT</a>" or "<a href="lang_transaction.html">ROLLBACK</a>" is issued.
 
-<li><p> If an application using asynchronous IO executes transactions
+<li><p> 如果一个使用异步I/O的应用程序连续快速的执行事务，其他数据库使用者可能会很难获取到锁。这是因为当执行<a href="lang_transaction.html">BEGIN</a>时，会立即简历一个数据库锁。但是当相应的COMMIT或ROLLBACK执行时，在写入队列中所有相关的内容全部同步完成之前是不会释放锁的。这个结果就是，如果在一个COMMIT的写入队列完成同步之前又执行了一个BEGIN，那么数据库就不会释放锁，也就阻止了其它进程访问数据库。
+<br />If an application using asynchronous IO executes transactions
         in quick succession, other database users may be effectively
         locked out of the database. This is because when a <a href="lang_transaction.html">BEGIN</a>
         is executed, a database lock is established immediately. But
@@ -238,7 +257,8 @@ However concurrency is reduced as follows:
         the database.
 </ul>
 
-<p>File-locking may be disabled at runtime using the sqlite3async_control()
+<p>在运行时可以使用sqlite3async_control() API来禁用文件锁。在NFS或其它网络文件系统中，如果取消了与服务器同步的来回请求时所需的文件锁，那么可以提高性能。但是，如果在禁用了文件锁的时候多个线程同时访问同一个数据库文件，那么可能会发生应用崩溃或者数据库损坏。
+<br />File-locking may be disabled at runtime using the sqlite3async_control()
 API (see below). This may improve performance when an NFS or other 
 network file-system, as the synchronous round-trips to the server be 
 required to establish file locks are avoided. However, if multiple 
@@ -247,10 +267,12 @@ is disabled, application crashes and database corruption is a likely
 outcome.
 
 
-<h2>2.0 COMPILATION AND USAGE</h2>
+<h2>2.0 编译与使用
+<br />2.0 COMPILATION AND USAGE</h2>
 
 <p>
-The asynchronous IO extension consists of a single file of C code
+异步I/O扩展由一个C源码文件(sqlite3async.c)和一个头文件(sqlite3async.h)组成。位于SQLite源码数的<a href="http://www.sqlite.org/src/dir?name=ext/async"><tt>ext/async/</tt> 子文件夹</a>中，这里定义了提供给应用程序来激活和控制模块功能的C API。
+<br />The asynchronous IO extension consists of a single file of C code
 (sqlite3async.c), and a header file (sqlite3async.h), located in the
 <a href="http://www.sqlite.org/src/dir?name=ext/async">
 <tt>ext/async/</tt> subfolder</a> of the SQLite source tree, that defines the 
@@ -258,37 +280,46 @@ C API used by applications to activate and control the modules
 functionality.
 
 <p>
-To use the asynchronous IO extension, compile sqlite3async.c as
+使用异步I/O模块，需要将sqlite3async.c 作为使用SQLite的应用的一部分来编译。然后使用sqlite3async.h里面定义的API来初始化和配置模块。
+<br />To use the asynchronous IO extension, compile sqlite3async.c as
 part of the application that uses SQLite. Then use the APIs defined
 in sqlite3async.h to initialize and configure the module.
 
 <p>
-The asynchronous IO VFS API is described in detail in comments in 
+异步IO VFS API在sqlite3async.h的注释中有详细描述。使用API通常包含下面几步：
+<br />The asynchronous IO VFS API is described in detail in comments in 
 sqlite3async.h. Using the API usually consists of the following steps:
 
 <ol>
-<li><p>Register the asynchronous IO VFS with SQLite by calling the
+<li><p>调用sqlite3async_initialize() 函数将异步I/O VFS注册到SQLite中。
+<br />Register the asynchronous IO VFS with SQLite by calling the
        sqlite3async_initialize() function.
 
-<li><p>Create a background thread to perform write operations and call
+<li><p>调用创建一个后台线程来执行写入操作与调用sqlite3async_run()。
+<br />Create a background thread to perform write operations and call
        sqlite3async_run().
 
-<li><p>Use the normal SQLite API to read and write to databases via 
+<li><p>使用标准SQLite API通过异步I/O VFS读写数据库。
+<br />Use the normal SQLite API to read and write to databases via 
        the asynchronous IO VFS.
 </ol>
 
-<p>Refer to comments in the
+<p>更多信息参见<a href="http://www.sqlite.org/src/finfo?name=ext/async/sqlite3async.h">sqlite3async.h 头文件</a>的注释。
+<br />Refer to comments in the
 <a href="http://www.sqlite.org/src/finfo?name=ext/async/sqlite3async.h">
 sqlite3async.h header file</a> for details.
 
 
-<h2>3.0 PORTING</h2>
+<h2>3.0 移植
+<br />3.0 PORTING</h2>
 
-<p>Currently the asynchronous IO extension is compatible with win32 systems
+<p>目前的异步I/O扩展可以兼容win32系统和支持pthread接口的系统，包括Mac OS X、Linux和其它各种Unix。
+<br />Currently the asynchronous IO extension is compatible with win32 systems
 and systems that support the pthreads interface, including Mac OS X, Linux, 
 and other varieties of Unix. 
 
-<p>To port the asynchronous IO extension to another platform, the user must
+<p>要想将异步I/O扩展移植到其他平台上，用户需要为新平台实现互斥锁和条件变量原语。目前没有外部的接口来支持这样做，不过修改sqlite3async.c的源码来包含新平台上的并非原语是比较容易的事情。更多信息在sqlite3async.c中搜索"PORTING FUNCTIONS"注释内容。然后重新实现下面这些函数：
+<br />To port the asynchronous IO extension to another platform, the user must
 implement mutex and condition variable primitives for the new platform.
 Currently there is no externally available interface to allow this, but
 modifying the code within sqlite3async.c to include the new platforms
@@ -304,6 +335,7 @@ static void async_cond_signal(int eCond);
 static void async_sched_yield(void);
 </pre></blockquote>
 
-<p>The functionality required of each of the above functions is described
+<p>上面这些函数的具体功能参见sqlite3async.c中的注释。
+<br />The functionality required of each of the above functions is described
 in comments in sqlite3async.c.
 
