@@ -134,24 +134,39 @@ a:visited { color: #734559 }
 
     <div class=fancy>
     <div style="font-size:2em;text-align:center;color:#044a64">
-      SQLite Foreign Key Support
+      SQLite 外键支持
+<br />SQLite Foreign Key Support
     </div>
     <div style="font-size:1.5em;margin:1em;color:#044a64">
-      Table Of Contents</div>
-    <div id=toc> <div style="margin-left:6ex"><a href="#fk_basics">1. Introduction to Foreign Key Constraints</a></div><div style="margin-left:6ex"><a href="#fk_enable">2. 
+      内容目录
+<br />Table Of Contents</div>
+    <div id=toc> <div style="margin-left:6ex"><a href="#fk_basics">1. 介绍外键约束
+<br />1. Introduction to Foreign Key Constraints</a></div><div style="margin-left:6ex"><a href="#fk_enable">2.启用外键支持
+<br />2. 
   Enabling Foreign Key Support
-</a></div><div style="margin-left:6ex"><a href="#fk_indexes">3. Required and Suggested Database Indexes</a></div><div style="margin-left:6ex"><a href="#fk_advanced">4. Advanced Foreign Key Constraint Features</a></div><div style="margin-left:12ex"><a href="#fk_composite">4.1. Composite Foreign Key Constraints</a></div><div style="margin-left:12ex"><a href="#fk_deferred">4.2. Deferred Foreign Key Constraints</a></div><div style="margin-left:12ex"><a href="#fk_actions">4.3. 
-  ON DELETE and ON UPDATE Actions
-</a></div><div style="margin-left:6ex"><a href="#fk_schemacommands">5. CREATE, ALTER and DROP TABLE commands</a></div><div style="margin-left:6ex"><a href="#fk_unsupported">6. Limits and Unsupported Features</a></div> </div>
+</a></div><div style="margin-left:6ex"><a href="#fk_indexes">3.必须的和推荐的数据库索引
+<br />3. Required and Suggested Database Indexes</a></div><div style="margin-left:6ex"><a href="#fk_advanced">4. 高级外键约束特性
+<br />4. Advanced Foreign Key Constraint Features</a></div><div style="margin-left:12ex"><a href="#fk_composite">4.1 复合外键约束
+<br />4.1. Composite Foreign Key Constraints</a></div><div style="margin-left:12ex"><a href="#fk_deferred">4.2 延时外键约束
+<br />4.2. Deferred Foreign Key Constraints</a></div><div style="margin-left:12ex"><a href="#fk_actions">4.3. 
+  ON DELETE 和 ON UPDATE 行为
+<br />ON DELETE and ON UPDATE Actions
+</a></div><div style="margin-left:6ex"><a href="#fk_schemacommands">5. CREATE、ALTER和DROP TABLE命令
+<br />5. CREATE, ALTER and DROP TABLE commands</a></div><div style="margin-left:6ex"><a href="#fk_unsupported">6. 限制和不支持的特性
+<br />6. Limits and Unsupported Features</a></div> </div>
     <div class=startsearch></div>
   
 
-<h2 style="margin-left:1.0em">  Overview</h2>
+<h2 style="margin-left:1.0em">  概览
+<br />Overview</h2>
 
-<p>This document describes the support for SQL foreign key constraints
+<p>本文介绍了SQLite 3.6.19引入的SQL外键约束支持。
+<br />This document describes the support for SQL foreign key constraints
    introduced in SQLite version 3.6.19. 
 
-<p>The first section introduces the 
+<p>本文的第一部分通过示例和文档后续所需使用的术语定义来引入SQLite外键的概念。
+第二部分介绍应用程序启用外键约束所需的步奏（默认时禁用的）。第三部分使用外键约束必须创建的一些索引，以及一些为了提高外键约束运行性能所创建的索引。第四部分介绍SQLite支持的外键的一些高级特性。第五部分如何增强<a href="lang_altertable.html">ALTER</a> 和 <a href="lang_droptable.html">DROP TABLE</a>命令，以便支持外键约束。最后第六章列举当前实现中缺失的特性和限制。
+<br />The first section introduces the 
    concept of an SQL foreign key by example and defines the terminology 
    used for the remainder of the document. Section 2 describes the steps 
    an application must take in order to enable foreign key constraints in 
@@ -164,14 +179,17 @@ a:visited { color: #734559 }
    enhanced to support foreign key constraints. Finally, section 6 
    enumerates the missing features and limits of the current implementation.
 
-<p>This document does not contain a full description of the syntax used
+<p>本文档没有包含SQLite中创建外键约束语法的完整描述，这些内容可以在<a href="lang_createtable.html">CREATE TABLE</a>语句的文档中找到。
+<br />This document does not contain a full description of the syntax used
    to create foreign key constraints in SQLite. This may be found as 
    part of the documentation for the <a href="lang_createtable.html">CREATE TABLE</a> statement.
 
-<h1 id="fk_basics">1. Introduction to Foreign Key Constraints</h1>
+<h1 id="fk_basics">1. 介绍外键约束
+<br />1. Introduction to Foreign Key Constraints</h1>
 
   <p>
-    SQL foreign key constraints are used to enforce "exists" relationships 
+    SQLite外键约束用来强制表之间的“存在”关系。例如，考虑一下使用下面SQLite命令创建的数据库结构：
+<br />SQL foreign key constraints are used to enforce "exists" relationships 
     between tables. For example, consider a database schema created using 
     the following SQL commands:
 
@@ -182,12 +200,14 @@ a:visited { color: #734559 }
 CREATE TABLE track(
   trackid     INTEGER,
   trackname   TEXT, 
-  trackartist INTEGER     <b>-- Must map to an artist.artistid!</b>
+  trackartist INTEGER     <b>-- 必须映射到一个artist.artistid！  Must map to an artist.artistid!</b>
 );
 </table></div>
 
   <p>
-    The applications using this database are entitled to assume that for
+    使用这个数据库的应用应当可以假设<i>track</i>表中的每一行记录都在<i>artist</i>表中存在一条相对应的记录。毕竟定义中的备注是这么说的。
+    不幸的是，如果一个用户使用一个外部工具来编辑数据库，或者应用中存在bug，当向<i>track</i>表中插入一条记录之后没能在<i>artist</i>表中插入相应的记录。又或者从<i>artist</i>表中删除了数据，在<i>track</i>表中遗留下了一条在<i>artist</i>表中没有任何相应记录的孤立记录。这就可能导致之后的应用出现故障，或者使得应用程序的编码变得更加困难。
+<br />The applications using this database are entitled to assume that for
     each row in the <i>track</i> table there exists a corresponding row in the
     <i>artist</i> table. After all, the comment in the declaration says so.
     Unfortunately, if a user edits the database using an external tool or 
@@ -200,7 +220,9 @@ CREATE TABLE track(
     application more difficult.
 
   <p>
-    One solution is to add an SQL foreign key constraint to the database 
+    一个解决方案是在数据库中添加一个SQLite外键约束，以此来强制<i>artist</i> 和 
+    <i>track</i>两表之间的关系。这样一来，通过修改<i>track</i>表的定义来增加一个外键约束：
+<br />One solution is to add an SQL foreign key constraint to the database 
     schema to enforce the relationship between the <i>artist</i> and 
     <i>track</i> table. To do so, a foreign key definition may be added
     by modifying the declaration of the <i>track</i> table to the following:
@@ -214,7 +236,8 @@ CREATE TABLE track(
 </table></div>
 
   <p>
-    This way, the constraint is enforced by SQLite. Attempting to insert
+    这样子，由SQLite来执行约束。当向<i>track</i>表中插入一条记录，而这条记录在<i>artist</i>表中没有对应记录的使用，会直接失败，同样的，当从<i>artist</i>表中删除一条记录，而<i>track</i>表中还存在一条依赖的记录时，也一样会失败。有一个例外：如果表<i>track</i>中加了外键的列是一个NULL，那么不需要在<i>artist</i>表中存在对应的记录。用SQL来表示就是，对于<i>track</i>表中的每一行记录，下面的表达式都是true：
+<br />This way, the constraint is enforced by SQLite. Attempting to insert
     a row into the <i>track</i> table that does not correspond to any
     row in the <i>artist</i> table will fail, as will attempting to
     delete a row from the <i>artist</i> table when there exist dependent 
@@ -226,16 +249,19 @@ CREATE TABLE track(
 <div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em">trackartist IS NULL OR EXISTS(SELECT 1 FROM artist WHERE artistid=trackartist)
 </table></div>
 
-  <p>Tip: If the application requires a stricter relationship between 
+  <p>贴士：如果应用程序需要在<i>artist</i> 和 <i>track</i>之间建立一个严格的关系，即<i>trackartist</i>列不允许出现NULL值，那么只需要简单的在定义中加入“NOT NULL”约束就可以了。
+<br />Tip: If the application requires a stricter relationship between 
      <i>artist</i> and <i>track</i>, where NULL values are not permitted 
      in the <i>trackartist</i> column, simply add the appropriate 
      "NOT NULL" constraint to the schema.
 
-  <p>There are several other ways to add an equivalent foreign key declaration 
+  <p>在<a href="lang_createtable.html">CREATE TABLE</a>语句中还有几个不同的方式来添加等价的外键定义。具体内容参见<a href="lang_createtable.html">CREATE TABLE 文档</a>。
+<br />There are several other ways to add an equivalent foreign key declaration 
      to a <a href="lang_createtable.html">CREATE TABLE</a> statement. Refer to the 
      <a href="lang_createtable.html">CREATE TABLE documentation</a> for details.
 
-  <p>The following SQLite command-line session illustrates the effect of the
+  <p>下面的SQLite命令行回话列举了<i>track</i>表上所加的外键约束带来的影响：
+<br />The following SQLite command-line session illustrates the effect of the
      foreign key constraint added to the <i>track</i> table:
 
 <div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em">sqlite&gt; SELECT * FROM artist;
@@ -250,28 +276,33 @@ trackid  trackname          trackartist
 11       That's Amore       1  
 12       Christmas Blues    1  
 13       My Way             2  
-
+sqlite&gt; <i>-- 这条会失败，因为插入到trackartist列的值3在artist表中没有相应的记录。</i>
 sqlite&gt; <i>-- This fails because the value inserted into the trackartist column (3)</i>
 sqlite&gt; <i>-- does not correspond to row in the artist table.</i>
 sqlite&gt; INSERT INTO track VALUES(14, 'Mr. Bojangles', 3);
 <b>SQL error: foreign key constraint failed</b>
 
+sqlite&gt; <i>-- 这条会成功，因为trackartist中插入的是一个NULL。这时候并不需要artist表中存在相应的记录。</i>
 sqlite&gt; <i>-- This succeeds because a NULL is inserted into trackartist. A</i>
 sqlite&gt; <i>-- corresponding row in the artist table is not required in this case.</i>
 sqlite&gt; INSERT INTO track VALUES(14, 'Mr. Bojangles', NULL);
 
+sqlite&gt; <i>-- 修改已经插入的记录的trackartist字段也无法成功，因为新值3在artist表中没有下相应的记录。</i>
 sqlite&gt; <i>-- Trying to modify the trackartist field of the record after it has </i>
 sqlite&gt; <i>-- been inserted does not work either, since the new value of trackartist (3)</i>
 sqlite&gt; <i>-- Still does not correspond to any row in the artist table.</i>
 sqlite&gt; UPDATE track SET trackartist = 3 WHERE trackname = 'Mr. Bojangles';
 <b>SQL error: foreign key constraint failed</b>
 
+sqlite&gt; <i>-- 在artist表中插入所需的记录，然后就可以将已经插入的记录的trackartist更新为3了。这是因为artist表中存在相对应的记录。</i>
 sqlite&gt; <i>-- Insert the required row into the artist table. It is then possible to</i>
 sqlite&gt; <i>-- update the inserted row to set trackartist to 3 (since a corresponding</i>
 sqlite&gt; <i>-- row in the artist table now exists).</i>
 sqlite&gt; INSERT INTO artist VALUES(3, 'Sammy Davis Jr.');
 sqlite&gt; UPDATE track SET trackartist = 3 WHERE trackname = 'Mr. Bojangles';
 
+sqlite&gt; <i>-- 现在"Sammy Davis Jr." (artistid = 3)已经插入到数据库中，</i>
+sqlite&gt; <i>-- 这时候就可以在不违反外键约束的情况下使用这个artist插入一条新的track。</i>
 sqlite&gt; <i>-- Now that "Sammy Davis Jr." (artistid = 3) has been added to the database,</i>
 sqlite&gt; <i>-- it is possible to INSERT new tracks using this artist without violating</i>
 sqlite&gt; <i>-- the foreign key constraint:</i>
@@ -279,24 +310,30 @@ sqlite&gt; INSERT INTO track VALUES(15, 'Boogie Woogie', 3);
 </table></div>
 
   <p>
-    As you would expect, it is not possible to manipulate the database to a state
+    正如你所期望的，删除或者更新<i>artist</i>表中的记录也同样不能违反外键约束：
+<br />As you would expect, it is not possible to manipulate the database to a state
     that violates the foreign key constraint by deleting or updating rows in the 
     <i>artist</i> table either:
-<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em">sqlite&gt; <i>-- Attempting to delete the artist record for "Frank Sinatra" fails, since</i>
+<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em">
+sqlite&gt; <i>-- 删除artist中的"Frank Sinatra"记录失败，因为track表中包含一条引用该记录的记录。</i>
+sqlite&gt; <i>-- Attempting to delete the artist record for "Frank Sinatra" fails, since</i>
 sqlite&gt; <i>-- the track table contains a row that refer to it.</i>
 sqlite&gt; DELETE FROM artist WHERE artistname = 'Frank Sinatra';
 <b>SQL error: foreign key constraint failed</b>
 
+sqlite&gt; <i>-- 删除track表中所有引用artist "Frank Sinatra"的记录，只有这时才能删除artist记录。</i>
 sqlite&gt; <i>-- Delete all the records from the track table that refer to the artist</i>
 sqlite&gt; <i>-- "Frank Sinatra". Only then is it possible to delete the artist.</i>
 sqlite&gt; DELETE FROM track WHERE trackname = 'My Way';
 sqlite&gt; DELETE FROM artist WHERE artistname = 'Frank Sinatra';
 
+sqlite&gt; <i>-- 修改artist中一条被track表引用的记录的artistid会失败。</i>
 sqlite&gt; <i>-- Try to update the artistid of a row in the artist table while there</i>
 sqlite&gt; <i>-- exists records in the track table that refer to it. </i>
 sqlite&gt; UPDATE artist SET artistid=4 WHERE artistname = 'Dean Martin';
 <b>SQL error: foreign key constraint failed</b>
 
+sqlite&gt; <i>-- 一旦引用artist中记录的所有记录都删除了，就可以修改这行的artistid了。</i>
 sqlite&gt; <i>-- Once all the records that refer to a row in the artist table have</i>
 sqlite&gt; <i>-- been deleted, it is possible to modify the artistid of the row.</i>
 sqlite&gt; DELETE FROM track WHERE trackname IN('That''s Amore', 'Christmas Blues');
@@ -304,56 +341,67 @@ sqlite&gt; UPDATE artist SET artistid=4 WHERE artistname = 'Dean Martin';
 </table></div>
 
   <p>
-    SQLite uses the following terminology:
+    SQLite使用下列术语：
+<br />SQLite uses the following terminology:
 <a name="parentchild"></a>
 
   <ul>
-    <li><p>The <b>parent table</b> is the table that a foreign key constraint
+    <li><p><b>父表</b>就是外键约束引用的表。在这章的例子中，父表就是<i>artist</i>表。其它一些书籍和文章将这称之为<i>被引用表</i>，这也算是对的，但是这可能会导致混淆。
+<br />The <b>parent table</b> is the table that a foreign key constraint
         refers to. The parent table in the example in this section is the
         <i>artist</i> table. Some books and articles refer to this as the
         <i>referenced table</i>, which is arguably more correct, but tends
         to lead to confusion.
 
-    <li><p>The <b>child table</b> is the table that a foreign key constraint
+    <li><p><b>子表</b>就是使用了外键约束，包含REFERENCES子句的表。在示例中<i>track</i>表就是子表。其它一些数据和文章将这称之为<i>引用表</i>。
+<br />The <b>child table</b> is the table that a foreign key constraint
         is applied to and the table that contains the REFERENCES clause.
         The example in this section uses the <i>track</i> table
         as the child table. Other books and articles refer to this as the
         <i>referencing table</i>.
 
-    <li><p>The <b>parent key</b> is the column or set of columns in the parent 
+    <li><p><b>父键</b>是外键约束所引用的父表中的一列或者一组列。这通常是父表的主键，但不是必须的。父键必须是父表中命名的列，不能是<a href="lang_createtable.html#rowid">rowid</a>。
+<br />The <b>parent key</b> is the column or set of columns in the parent 
         table that the foreign key constraint refers to. This is normally, but
         not always, the primary key of the parent table.  The parent key must
         be a named column or columns in the parent table, not the <a href="lang_createtable.html#rowid">rowid</a>.
 
-    <li><p>The <b>child key</b> is the column or set of columns in the child 
+    <li><p><b>子键</b>时子表中包含外键约束、加有REFERENCES子句的列或列集合。
+<br />The <b>child key</b> is the column or set of columns in the child 
         table that are constrained by the foreign key constraint and which
         hold the REFERENCES clause.
   </ul>
 
   <p>
-    The foreign key constraint is satisfied if for each row in the child table 
+    如果子表中每行记录都有一个或多个子键时NULL则符合外键约束。或者是父表中存在一条记录，其中每个父键列的值都与对应的子键列的值相等，则符合外键约束。
+<br />The foreign key constraint is satisfied if for each row in the child table 
     either one or more of the child key columns are NULL, or there exists a 
     row in the parent table for which each parent key column contains a value
     equal to the value in its associated child key column.
 
   <p>
-    In the above paragraph, the term "equal" means equal when values are 
+    在上一段中，“相等”是指使用<a href="datatype3.html#comparisons">这里指定的规则</a>进行比较相等。遵循下面说明：
+<br />In the above paragraph, the term "equal" means equal when values are 
     compared using the rules <a href="datatype3.html#comparisons">specified 
     here</a>. The following clarifications apply:
     
   <ul>
-    <li><p>When comparing text values, the <a href="datatype3.html#collation">collating sequence</a>
+    <li><p>当比较文本值时，使用父键关联的<a href="datatype3.html#collation">排序器</a>。
+<br />When comparing text values, the <a href="datatype3.html#collation">collating sequence</a>
         associated with the parent key column is always used.
-    <li><p>When comparing values, if the parent key column has an <a href="datatype3.html#affinity">affinity</a>,
+    <li><p>当比较值时，如果父键列有<a href="datatype3.html#affinity">亲和性</a>，那么在执行比较前将这个亲和性应用于子键值上。
+<br />When comparing values, if the parent key column has an <a href="datatype3.html#affinity">affinity</a>,
         then that affinity is applied to the child key value before the
         comparison is performed.  
   </ul>
 
 <h1 id="fk_enable">2. 
-  Enabling Foreign Key Support
+  启用外键支持
+<br />Enabling Foreign Key Support
 </h1>
   <p>
-    In order to use foreign key constraints in SQLite, the library must
+    如果要在SQLite中使用外键，那么编译库的时候必须不能定义<a href="compile.html#omit_foreign_key">SQLITE_OMIT_FOREIGN_KEY</a>和<a href="compile.html#omit_trigger">SQLITE_OMIT_TRIGGER</a>。如果定义了SQLITE_OMIT_TRIGGER而没有定义SQLITE_OMIT_FOREIGN_KEY，那么在SQLite 3.6.19版之前的行为是——会解析外键定义，也可以使用<a href="pragma.html#pragma_foreign_key_list">PRAGMA foreign_key_list</a>查询，但是不会执行外键约束。在这种配置中<a href="pragma.html#pragma_foreign_keys">PRAGMA foreign_keys</a>命令是一个空操作。如果定义了SQLITE_OMIT_FOREIGN_KEY，那么外键定义都不会被解析（指定一个外键约束会导致语法错误）。
+<br />In order to use foreign key constraints in SQLite, the library must
     be compiled with neither <a href="compile.html#omit_foreign_key">SQLITE_OMIT_FOREIGN_KEY</a> or 
     <a href="compile.html#omit_trigger">SQLITE_OMIT_TRIGGER</a> defined. If SQLITE_OMIT_TRIGGER is defined 
     but SQLITE_OMIT_FOREIGN_KEY is not, then SQLite behaves as it did prior 
@@ -365,7 +413,8 @@ sqlite&gt; UPDATE artist SET artistid=4 WHERE artistname = 'Dean Martin';
     key definition is a syntax error).
 
   <p>
-    Assuming the library is compiled with foreign key constraints enabled,
+    假设编译库时启用了外键约束，还需要在应用运行时使用<a href="pragma.html#pragma_foreign_keys">PRAGMA foreign_keys</a>启用。例如：
+<br />Assuming the library is compiled with foreign key constraints enabled,
     it must still be enabled by the application at runtime, using the
     <a href="pragma.html#pragma_foreign_keys">PRAGMA foreign_keys</a> command. For example:
 
@@ -373,7 +422,8 @@ sqlite&gt; UPDATE artist SET artistid=4 WHERE artistname = 'Dean Martin';
 </table></div>
 
   <p>
-    Foreign key constraints are disabled by default 
+    外键约束默认时禁用的（为了向后兼容性），所以每个<a href="c3ref/sqlite3.html">数据库连接</a>都需要单独启用。（如意，在未来的SQLite发行版中，可能会修改为默认启用外键约束。认真的开发者不应该假定默认情况外键是否启用，而应该把启用或者禁用当做是必须的事情。）应用程序还可以使用<a href="pragma.html#pragma_foreign_keys">PRAGMA foreign_keys</a>语句来检查当前是否启用了外键。下面的命令行会话展示了这一点：
+<br />Foreign key constraints are disabled by default 
     (for backwards compatibility),
     so must be enabled separately for each <a href="c3ref/sqlite3.html">database connection</a>
     separately.
@@ -395,22 +445,27 @@ sqlite> PRAGMA foreign_keys;
 0
 </table></div>
 
-  <p>Tip: If the command "PRAGMA foreign_keys" returns no data instead of a
+  <p>贴士：如果"PRAGMA foreign_keys"命令没有返回数据（即没有返回一行包含“0”或“1”的记录），那么就是你使用的SQLite版本不支持外键（可能是因为版本低于3.6.19或编译时定义了<a href="compile.html#omit_foreign_key">SQLITE_OMIT_FOREIGN_KEY</a> 或 
+     <a href="compile.html#omit_trigger">SQLITE_OMIT_TRIGGER</a>）。
+<br />Tip: If the command "PRAGMA foreign_keys" returns no data instead of a
      single row containing "0" or "1", then the version of SQLite you are
      using does not support foreign keys (either because it is older than
      3.6.19 or because it was compiled with <a href="compile.html#omit_foreign_key">SQLITE_OMIT_FOREIGN_KEY</a> or 
      <a href="compile.html#omit_trigger">SQLITE_OMIT_TRIGGER</a> defined).
 
   <p>
-    It is not possible to enable or disable foreign key constraints
+    在执行<a href="lang_transaction.html">多条语句的事务</a>的过程中时无法启用或者禁止外键约束的（这时SQLite没有位于<a href="c3ref/get_autocommit.html">自动提交模式</a>）。如果这么去做了，不会返回错误，只是没有任何效果。
+<br />It is not possible to enable or disable foreign key constraints
     in the middle of a <a href="lang_transaction.html">multi-statement transaction</a> (when SQLite
     is not in <a href="c3ref/get_autocommit.html">autocommit mode</a>).  Attempting to do so does not return
     an error; it simply has no effect.
 
-<h1 id="fk_indexes">3. Required and Suggested Database Indexes</h1>
+<h1 id="fk_indexes">3. 必须的和推荐的数据库索引
+<br />3. Required and Suggested Database Indexes</h1>
 
   <p>
-    Usually, the parent key of a foreign key constraint is the primary key of
+    通常，外键约束中的父键时父表的主键。如果不是主键，那么所有父键列必须使用UNIQUE约束或者有UNIQUE索引。如果父键列有UNIQUE索引，那么这个索引必须使用父表的CREATE TABLE语句指定的排序器。例如：
+<br />Usually, the parent key of a foreign key constraint is the primary key of
     the parent table. If they are not the primary key, then the parent key
     columns must be collectively subject to a UNIQUE constraint or have
     a UNIQUE index. 
@@ -434,7 +489,8 @@ CREATE TABLE child7(r REFERENCES parent(c));                           <i>-- Err
 </table></div>
 
   <p>
-    The foreign key constraints created as part of tables <i>child1</i>, 
+   创建包含外键约束的表<i>child1</i>、<i>child2</i> 和 <i>child3</i>都是可行的。创建包含外建索引的表<i>child4</i>会产生错误，这是因为虽然父键加了索引，但是不是UNIQUE索引。为表<i>child5</i>创建外键会产生错误是因为虽然父键列有唯一索引，但是索引使用了不同的排序器。表<i>child6</i>和<i>child7</i>的出错时因为虽然父键都有UNIQUE索引，但是父键都不是精确匹配一个单独的UNIQUE索引。
+<br />The foreign key constraints created as part of tables <i>child1</i>, 
     <i>child2</i> and <i>child3</i> are all fine. The foreign key
     declared as part of table <i>child4</i> is an error because even though
     the parent key column is indexed, the index is not UNIQUE.
@@ -446,7 +502,8 @@ CREATE TABLE child7(r REFERENCES parent(c));                           <i>-- Err
     exact match to the columns of a single UNIQUE index.
 
   <p>
-    If the database schema contains foreign key errors that require looking
+    如果数据库结构包含一个需哟啊查看多个表的定义才能确定的外键错误，那么这个错误在创建完表以后也不会被检查到。这种错误会组织应用程序通过预编译SQL语句修改子表或父表的内容。当修改内容时报告的错误是“DML错误”，当修改结构时报告的错误是“DDL 错误”。所以，换句话说，需要查看父子两表才能确定的外键约束配置错误时DML错误。对于外键DML错误，通常英语错误信息一般是"foreign key mismatch"，不过如果父表不存在，则也可能是"no such table"。当遇到下面情况会报告外键DML错误：
+<br />If the database schema contains foreign key errors that require looking
     at more than one table definition to identify, then those errors are not
     detected when the tables are created. Instead, such errors prevent
     the application from preparing SQL statements that modify the content
@@ -461,19 +518,24 @@ CREATE TABLE child7(r REFERENCES parent(c));                           <i>-- Err
     Foreign key DML errors are may be reported if:
 
   <ul>
-    <li> The parent table does not exist, or
-    <li> The parent key columns named in the foreign key constraint do
+    <li> 父表不存在，或者
+<br />The parent table does not exist, or
+    <li> 外键约束中指定的父键列不存在，或者
+<br />The parent key columns named in the foreign key constraint do
          not exist, or
-    <li> The parent key columns named in the foreign key constraint are not
+    <li> 外键约束中指定的父键列不是父表的主键，也没有使用CREATE TABLE中指定的排序器限制的唯一约束，或者
+<br />The parent key columns named in the foreign key constraint are not
          the primary key of the parent table and are not subject to a unique
          constraint using collating sequence specified in the CREATE TABLE, or
-    <li> The child table references the primary key of the parent without
+    <li> 子表引用父表主键时忽略了指定主键列，并且父表中主键列数与子键的列数不相同。
+<br />The child table references the primary key of the parent without
          specifying the primary key columns and the number of primary key
          columns in the parent do not match the number of child key columns.
   </ul>
 
   <p>
-    The last bullet above is illustrated by the following:
+    下面说明一下上面最后一个情况：
+<br />The last bullet above is illustrated by the following:
 
 <div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em">CREATE TABLE parent2(a, b, PRIMARY KEY(a,b));
 
@@ -483,7 +545,8 @@ CREATE TABLE child10(x,y,z, FOREIGN KEY(x,y,z) REFERENCES parent2);    <i>-- Err
 </table></div>
 
   <p>
-    By contrast, if foreign key errors can be recognized simply by looking
+    相比之下，如果外键错误可以简单的通过检查子表定义就能确定，而无需查看父表定义，那么，子表的<a href="lang_createtable.html">CREATE TABLE</a>语句就会失败。因为这个错误是发生在修改结构的时候，所以这是一个DDL错误。不管在创建表时是否启用了外键约束，外键DDL错误都会报告出来。
+<br />By contrast, if foreign key errors can be recognized simply by looking
     at the definition of the child table and without having to consult the
     parent table definition, then the 
     <a href="lang_createtable.html">CREATE TABLE</a> statement for the child table fails.  Because the error
@@ -493,7 +556,8 @@ CREATE TABLE child10(x,y,z, FOREIGN KEY(x,y,z) REFERENCES parent2);    <i>-- Err
     table is created.
 
   <p>
-    Indices are not required for child key columns but they are almost
+    子键列上的索引不是必须的，但是通常总是有益的。回到<a href="#fk_basics">第一节</a>的示例中，每次应用程序从<i>artist</i>表（父表）中删除一条记录时，总要执行一条SELECT语句来搜索<i>track</i>表（子表）中引用的记录。
+<br />Indices are not required for child key columns but they are almost
     always beneficial. Returning to
     the example in <a href="#fk_basics">section 1</a>, each time an application
     deletes a row from the <i>artist</i> table (the parent table), it
@@ -504,7 +568,8 @@ CREATE TABLE child10(x,y,z, FOREIGN KEY(x,y,z) REFERENCES parent2);    <i>-- Err
 </table></div>
 
  <p>
-   where ? in the above is replaced with the value of the <i>artistid</i>
+   上面问号的位置会替换为要从<i>artist</i>表中删除的记录的<i>artistid</i>值（回忆一下，<i>trackartist</i>列时子键，<i>artistid</i>列是父键）。或者更常见的是：
+<br />where ? in the above is replaced with the value of the <i>artistid</i>
    column of the record being deleted from the <i>artist</i> table (recall
    that the <i>trackartist</i> column is the child key and the <i>artistid</i>
    column is the parent key). Or, more generally:
@@ -513,7 +578,8 @@ CREATE TABLE child10(x,y,z, FOREIGN KEY(x,y,z) REFERENCES parent2);    <i>-- Err
 </table></div>
 
  <p>
-   If this SELECT returns any rows at all, then SQLite concludes that
+   如果SELECT返回了记录，那么SQLite就可以确定从父表上删除的记录违反了外键约束，并且返回一个错误。同样的，如果修改了父键的内容，或者父表插入一条新记录时，这个查询都需要运行。如果这个查询不能使用索引，那么就会强制对子表全表扫描。在一个较大的数据库上，这个的代价就会很高了。
+<br /> If this SELECT returns any rows at all, then SQLite concludes that
    deleting the row from the parent table would violate the foreign key
    constraint and returns an error.
    Similar queries may be run if the content of the parent key
@@ -523,7 +589,8 @@ CREATE TABLE child10(x,y,z, FOREIGN KEY(x,y,z) REFERENCES parent2);    <i>-- Err
    be prohibitively expensive.
 
  <p>
-   So, in most real systems, an index should be created on the child key columns
+   所以，在大多数真实的系统中，每个外键索引的子键上也应当建立一个索引。子键上的索引不需要（通常也不是）一个UNIQUE索引。再次回到第一节的示例，高效实行外键约束的完整数据库定义可能是：
+<br />So, in most real systems, an index should be created on the child key columns
    of each foreign key constraint. The child key index does not have
    to be (and usually will not be) a UNIQUE index.
    Returning again to the example in section 1, the
@@ -543,19 +610,23 @@ CREATE INDEX trackindex ON track(trackartist);
 </table></div>
 
   <p>
-    The block above uses a shorthand form to create the foreign key constraint.
+    上面的代码中使用了一个创建外键约束的简写形式。在列定义里附加一个 "REFERENCES <i>&lt;parent-table&gt;</i>"子句可以创建一个引用<i>&lt;parent-table&gt;</i>主键的外键约束。更多信息参见<a href="lang_createtable.html">CREATE TABLE</a>文档。
+<br />The block above uses a shorthand form to create the foreign key constraint.
     Attaching a "REFERENCES <i>&lt;parent-table&gt;</i>" clause to a column
     definition creates a foreign key constraint that maps the column to the
     primary key of <i>&lt;parent-table&gt;</i>. Refer to the <a href="lang_createtable.html">CREATE TABLE</a> 
     documentation for further details.
 
 
-<h1 id="fk_advanced">4. Advanced Foreign Key Constraint Features</h1>
+<h1 id="fk_advanced">4. 高级外键约束特性
+<br />4. Advanced Foreign Key Constraint Features</h1>
 
-<h2 id="fk_composite">4.1. Composite Foreign Key Constraints</h2>
+<h2 id="fk_composite">4.1 复合外键约束
+<br />4.1. Composite Foreign Key Constraints</h2>
 
   <p>
-    A composite foreign key constraint is one where the child and parent keys
+    当子键和父键都是复合键的时候就是一个复合外键约束。例如，下面的数据库结构：
+<br />A composite foreign key constraint is one where the child and parent keys
     are both composite keys. For example, consider
     the following database schema:
 
@@ -576,25 +647,30 @@ CREATE TABLE song(
 </table></div>
 
   <p>
-    In this system, each entry in the song table is required to map to an entry
+    在这个系统中，song表中的每个记录都需要映射到一个album表的记录，映射条件是相同的artist和album组合。
+<br />In this system, each entry in the song table is required to map to an entry
     in the album table with the same combination of artist and album.
 
   <p>
-    Parent and child keys must have the same cardinality.
+    父键和子键的基数必须相同。在SQLite中，如果子键列中任何一个（这个例子中的songartist和songalbum）是NULL，那么就不需要有对应的父表记录。
+<br />Parent and child keys must have the same cardinality.
     In SQLite, if any of the child key columns (in this case songartist 
     and songalbum) are NULL, then there is no requirement for a corresponding
     row in the parent table.
 
-<h2 id="fk_deferred">4.2. Deferred Foreign Key Constraints</h2>
+<h2 id="fk_deferred">4.2 延时外键约束
+<br />4.2. Deferred Foreign Key Constraints</h2>
 
   <p>
-    Each foreign key constraint in SQLite is classified as either immediate
+    SQLite中的每个外键约束都会分为立即的还是延时的。外键约束默认时立即的。目前为止所有提出的外键示例都是立即外键约束。
+<br />Each foreign key constraint in SQLite is classified as either immediate
      or deferred. Foreign key constraints are immediate by default.
      All the foreign key examples presented
      so far have been of immediate foreign key constraints.
 
   <p>
-    If a statement modifies the contents of the database so that an immediate 
+    如果一条语句修改数据库的内容，一个立即外建约束会在语句的末尾处发生违约，并抛出一个异常，语句的影响会恢复。相比而言，如果一条语句修改数据库的内容违反了延时外键约束，这个违约不会立即报告。延时外键约束会等到事务<a href="lang_transaction.html">COMMIT</a>的时候才做检查。所以只要用户有一个打开的事务，那么数据库就允许存在违反任意数量延时外键约束的状态存在。但是如果在<a href="lang_transaction.html">COMMIT</a>时依然违反外键约束，那么提交就会失败。
+<br />If a statement modifies the contents of the database so that an immediate 
     foreign key constraint is in violation at the conclusion the statement, 
     an exception is thrown and 
     the effects of the statement are reverted. By contrast, if
@@ -609,40 +685,45 @@ CREATE TABLE song(
     violation.
 
   <p>
-    If the current statement is not inside an explicit transaction (a 
+    如果当前语句不是位于一个明确的事务中（一个<a href="lang_transaction.html">BEGIN</a>/<a href="lang_transaction.html">COMMIT</a>/<a href="lang_transaction.html">ROLLBACK</a>块），那么一旦语句执行完成，隐式的事务就会提交。这种情况下，延时约束的行为和立即约束是一样的。
+<br />If the current statement is not inside an explicit transaction (a 
     <a href="lang_transaction.html">BEGIN</a>/<a href="lang_transaction.html">COMMIT</a>/<a href="lang_transaction.html">ROLLBACK</a> block), then an implicit
     transaction is committed
     as soon as the statement has finished executing. In this case deferred
     constraints behave the same as immediate constraints.
 
   <p>
-    To mark a foreign key constraint as deferred, its declaration must
+    要想创建一个延时外键约束，定义中必须包含下面的子句：
+<br />To mark a foreign key constraint as deferred, its declaration must
     include the following clause:
 
-<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em">DEFERRABLE INITIALLY DEFERRED                <i>-- A deferred foreign key constraint</i>
+<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em">DEFERRABLE INITIALLY DEFERRED                <i>--一个延时外键约束 A deferred foreign key constraint</i>
 </table></div>
 
   <p>
-    The full syntax for specifying foreign key constraints is available as part
+    外键约束的完整语法在<a href="lang_createtable.html">CREATE TABLE</a>文档中。使用下面的任何一条语句替换上面的短语就可以创建一个立即外键约束。
+<br />The full syntax for specifying foreign key constraints is available as part
     of the <a href="lang_createtable.html">CREATE TABLE</a> documentation. Replacing the phrase above
     with any of the following 
     creates an immediate foreign key constraint.
 
 <div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em">NOT DEFERRABLE INITIALLY DEFERRED            <i>-- An immediate foreign key constraint</i>
-NOT DEFERRABLE INITIALLY IMMEDIATE           <i>-- An immediate foreign key constraint</i>
-NOT DEFERRABLE                               <i>-- An immediate foreign key constraint</i>
-DEFERRABLE INITIALLY IMMEDIATE               <i>-- An immediate foreign key constraint</i>
-DEFERRABLE                                   <i>-- An immediate foreign key constraint</i>
+NOT DEFERRABLE INITIALLY IMMEDIATE           <i>-- 一个立即外键约束 An immediate foreign key constraint</i>
+NOT DEFERRABLE                               <i>-- 一个立即外键约束 An immediate foreign key constraint</i>
+DEFERRABLE INITIALLY IMMEDIATE               <i>-- 一个立即外键约束 An immediate foreign key constraint</i>
+DEFERRABLE                                   <i>-- 一个立即外键约束 An immediate foreign key constraint</i>
 </table></div>
 
-  <p>The <a href="pragma.html#pragma_defer_foreign_keys">defer_foreign_keys pragma</a> can be used to temporarily change all foreign
+  <p>使用<a href="pragma.html#pragma_defer_foreign_keys">defer_foreign_keys pragma</a>可以临时将所有的外键约束都改为延时的，无需关系它们时如何创建的。
+<br />The <a href="pragma.html#pragma_defer_foreign_keys">defer_foreign_keys pragma</a> can be used to temporarily change all foreign
     key constraints to deferred regardless of how they are declared.
 
   <p>
-    The following example illustrates the effect of using a deferred foreign
+    下面的示例展示了使用延时外键约束的效果。
+<br />The following example illustrates the effect of using a deferred foreign
     key constraint.
 
-<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em"><i>-- Database schema. Both tables are initially empty. </i>
+<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em"><i>-- 数据库结构，两个表初始都是空的。Database schema. Both tables are initially empty. </i>
 CREATE TABLE artist(
   artistid    INTEGER PRIMARY KEY, 
   artistname  TEXT
@@ -653,6 +734,8 @@ CREATE TABLE track(
   trackartist INTEGER REFERENCES artist(artistid) <b>DEFERRABLE INITIALLY DEFERRED</b>
 );
 
+sqlite3&gt; <i>-- 如果是立即外键约束，这个INSERT就会导致一个错误（因为artist表中没有artistid=5的记录）。</i>
+sqlite&gt; <i>-- 但是，这个是一个延时约束，并且是一个打开的事务，所以不会发生错误。</i>
 sqlite3&gt; <i>-- If the foreign key constraint were immediate, this INSERT would</i>
 sqlite3&gt; <i>-- cause an error (since as there is no row in table artist with</i>
 sqlite3&gt; <i>-- artistid=5). But as the constraint is deferred and there is an</i>
@@ -660,12 +743,14 @@ sqlite3&gt; <i>-- open transaction, no error occurs.</i>
 sqlite3&gt; BEGIN;
 sqlite3&gt;   INSERT INTO track VALUES(1, 'White Christmas', 5);
 
+sqlite3&gt; <i>-- 下面的COMMIT会失败，因为数据库的状态不符合延时外键约束。事务依旧打开着。</i>
 sqlite3&gt; <i>-- The following COMMIT fails, as the database is in a state that</i>
 sqlite3&gt; <i>-- does not satisfy the deferred foreign key constraint. The</i>
 sqlite3&gt; <i>-- transaction remains open.</i>
 sqlite3&gt; COMMIT;
 <b>SQL error: foreign key constraint failed</b>
 
+sqlite3&gt; <i>-- 在向artist表插入一条artistid=5的记录后，符合了延时外键约束。这时候就可以正常的提交事务了。</i>
 sqlite3&gt; <i>-- After inserting a row into the artist table with artistid=5, the</i>
 sqlite3&gt; <i>-- deferred foreign key constraint is satisfied. It is then possible</i>
 sqlite3&gt; <i>-- to commit the transaction without error.</i>
@@ -673,7 +758,8 @@ sqlite3&gt;   INSERT INTO artist VALUES(5, 'Bing Crosby');
 sqlite3&gt; COMMIT;
 </table></div>
   <p>
-    A <a href="lang_savepoint.html">nested savepoint</a> transaction may be RELEASEd while the
+    当数据库的状态不满足延时外键约束时，会RELEASEA <a href="lang_savepoint.html">嵌套的 savepoint</a>。另一方面，一个事务savepoint（如果当前不是在打开的事务中，那么就是打开一个非嵌套savepoint），需要和COMMIT服从一样的限制——当数据库处于会失败的状态时会RELEASE它。
+<br /><a href="lang_savepoint.html">nested savepoint</a> transaction may be RELEASEd while the
     database is in a state that does not satisfy a deferred foreign key 
     constraint. A transaction savepoint (a non-nested savepoint that was
     opened while there was not currently an open transaction), on the 
@@ -681,35 +767,41 @@ sqlite3&gt; COMMIT;
     to RELEASE it while the database is in such a state will fail.
 
   <p>
-    If a COMMIT statement (or the RELEASE of a transaction SAVEPOINT) fails
+    如果一个COMMIT语句（或者SAVEPOINT事务中的RELEASE）失败了，由于数据库目前的状态违反了延时外键约束，并且当前时<a href="lang_savepoint.html">嵌套 savepoints</a>，那么嵌套savepoint会继续打开。
+<br />If a COMMIT statement (or the RELEASE of a transaction SAVEPOINT) fails
     because the database is currently in a state that violates a deferred
     foreign key constraint and there are currently
     <a href="lang_savepoint.html">nested savepoints</a>, the nested savepoints remain open.
 
 
-<h2 id="fk_actions">4.3. 
+<h2 id="fk_actions">4.3 ON DELETE 和 ON UPDATE 行为
+<br />4.3. 
   ON DELETE and ON UPDATE Actions
 </h2>
 
   <p>
-    Foreign key ON DELETE and ON UPDATE clauses are used to configure actions
+    外键的ON DELETE 和 ON UPDATE 子句用来配置在从父表删除记录时（ON DELETE）或更新已有记录中父键值时（ON UPDATE）的行为。一个外键约束可以为ON DELETE和ON UPDATE配置不同的行为。在很多方面，外键行为类似于触发器。
+<br />Foreign key ON DELETE and ON UPDATE clauses are used to configure actions
     that take place when deleting rows from the parent table (ON DELETE), or 
     modifying the parent key values of existing rows (ON UPDATE). A single
     foreign key constraint may have different actions configured for ON DELETE
     and ON UPDATE. Foreign key actions are similar to triggers in many ways.
 
   <p>
-    The ON DELETE and ON UPDATE action associated with each foreign key in an
+    在一个SQLite数据库中，每个外键关联的ON DELETE和ON UPDATE行为可以是"NO ACTION"、"RESTRICT"、"SET NULL"、"SET DEFAULT"或"CASCADE"之一。如果没有明确指定行为，那么默认时“NO ACTION”。
+<br />The ON DELETE and ON UPDATE action associated with each foreign key in an
     SQLite database is one of "NO ACTION", "RESTRICT", "SET NULL",
     "SET DEFAULT" or "CASCADE". If an action is not explicitly specified, it 
     defaults to "NO ACTION".
 
   <ul>
-    <li><p> <b>NO ACTION</b>: Configuring "NO ACTION" means just that: when a
+    <li><p> <b>NO ACTION</b>：配置“NO ACTION”的意义只是当父键修改或删除后不会有行为发生。
+<br />: Configuring "NO ACTION" means just that: when a
      parent key is modified or deleted from the database, no special action is
      taken.
 
-    <li><p> <b>RESTRICT</b>: The "RESTRICT" action means that the application
+    <li><p> <b>RESTRICT</b>：“RESTRICT”行为表示当存在一个或多个子键指向这个父键的时候会禁止应用删除（对于ON DELETE RESTRICT）或修改（对于ON UPDATE RESTRICT）父键。RESTRICT行为和正常的外键约束行为的区别是RESTRICT行为会在字段一更新后就立即执行，而不是像立即约束中等到当前语句的末尾，或延时约束中等到当前事务的末尾才执行。即使这个外键约束时延时约束，如果配置了RESTRICT行为，只要修改或删除了子键依赖的父键，SQLite都会立即返回一个错误。
+<br />: The "RESTRICT" action means that the application
       is prohibited from deleting (for ON DELETE RESTRICT) or modifying
       (for ON UPDATE RESTRICT) a parent key when there exists one or more child
       keys mapped to it. The difference between the effect of a RESTRICT
@@ -723,19 +815,22 @@ sqlite3&gt; COMMIT;
       return an error immediately if a parent key with dependent child keys is 
       deleted or modified.
 
-    <li><p> <b>SET NULL</b>: If the configured action is "SET NULL", then when
+    <li><p> <b>SET NULL</b>：如果配置了“SET NULL”行为，那么当删除（对于ON DELETE SET NULL）或修改（对于ON UPDATE SET NULL）父键时，子表中所有映射到这个父键的记录的子键都会被设置为NULL值。
+<br />: If the configured action is "SET NULL", then when
       a parent key is deleted (for ON DELETE SET NULL) or modified (for ON 
       UPDATE SET NULL), the child key columns of all rows in the child table
       that mapped to the parent key are set to contain SQL NULL values.
 
-    <li><p> <b>SET DEFAULT</b>: The "SET DEFAULT" actions are similar to
+    <li><p> <b>SET DEFAULT</b>：“SET DEFAULT”行为与“SET NULL”类似，只是每个子键列会设置成列默认值，而不是NULL。如何为表中的列指定默认值请参见<a href="lang_createtable.html">CREATE TABLE</a>文档。
+<br />: The "SET DEFAULT" actions are similar to
       "SET NULL",
       except that each of the child key columns is set to contain the columns 
       default value instead of NULL. Refer to the <a href="lang_createtable.html">CREATE TABLE</a> 
       documentation for details on how default values are assigned to table
       columns.
 
-    <li><p> <b>CASCADE</b>: A "CASCADE" action propagates the delete or update
+    <li><p> <b>CASCADE</b>：“CASCADE”行为会将父键上的删除或更新行为传播到依赖的子键上。对于一个“ON DELETE CASCADE”行为，这意味着子表中所有与删除的父键相关联的记录都会被删除掉。对于“ON UPDATE CASCADE”行为，这意味着，存储在所有依赖的子键中的值都会被修改为新父键的值。
+<br />: A "CASCADE" action propagates the delete or update
       operation on the parent key to each dependent child key. For an "ON 
       DELETE CASCADE" action, this means that each row in the child table that
       was associated with the deleted parent row is also deleted. For an "ON
@@ -744,11 +839,12 @@ sqlite3&gt; COMMIT;
   </ul>
 
   <p>
-    For example, adding an "ON UPDATE CASCADE" clause to the foreign key as
+    例如，在第一章的示例中，按下面所示在外间上加一个“ON UPDATE CASCADE”子句，这样就允许用户在不破坏引用完整性的情况下更新artistid列（外键约束中的父键）：
+<br />For example, adding an "ON UPDATE CASCADE" clause to the foreign key as
     shown below enhances the example schema from section 1 to allow the user
     to update the artistid (the parent key of the foreign key constraint) 
     column without breaking referential integrity:
-<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em"><i>-- Database schema</i>
+<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em"><i>-- 数据库模式 Database schema</i>
 CREATE TABLE artist(
   artistid    INTEGER PRIMARY KEY, 
   artistname  TEXT
@@ -772,6 +868,9 @@ trackid  trackname          trackartist
 12       Christmas Blues    1
 13       My Way             2  
 
+sqlite&gt; <i>-- 更新artist中“Dean Martin”记录的artistid列。通常这回触发约束，</i>
+sqlite&gt; <i>-- 因为这回孤立track表中的两条依赖记录。但是在外键约束定义后加上ON UPDATE CASCADE子句后，</i>
+sqlite&gt; <i>-- 会使更新“叠加”到子表上，防止违反外间约束。</i>
 sqlite&gt; <i>-- Update the artistid column of the artist record for "Dean Martin".</i>
 sqlite&gt; <i>-- Normally, this would raise a constraint, as it would orphan the two</i>
 sqlite&gt; <i>-- dependent records in the track table. However, the ON UPDATE CASCADE clause</i>
@@ -794,7 +893,8 @@ trackid  trackname          trackartist
 </table></div>
 
   <p>
-    Configuring an ON UPDATE or ON DELETE action does not mean that the foreign
+    配置了ON UPDATE 或 ON DELETE行为并不意味着就不需要满足外键约束了。例如，如果配置了一个“ON DELETE SET DEFAULT”行为，但是父表中没有符合子键列默认值的记录，那么删除一个存在依赖子键的父键依然会导致外键约束。例如：
+<br />Configuring an ON UPDATE or ON DELETE action does not mean that the foreign
     key constraint does not need to be satisfied. For example, if an
     "ON DELETE SET DEFAULT" action is configured,
     but there is no row in the parent table 
@@ -802,7 +902,7 @@ trackid  trackname          trackartist
     a parent key while dependent child keys exist still causes a foreign key
     violation. For example:
 
-<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em"><i>-- Database schema</i>
+<div class=codeblock style="margin:0 15ex"><table width=100% style="border:1px solid #80a796;padding:0 1ex;background-color:#EEEEEE"><tr><td><pre style="font-size:1.1em"><i>-- 数据库模式 Database schema</i>
 CREATE TABLE artist(
   artistid    INTEGER PRIMARY KEY, 
   artistname  TEXT
@@ -823,6 +923,8 @@ trackid  trackname          trackartist
 -------  -----------------  -----------
 14       Mr. Bojangles      3
 
+sqlite&gt; <i>-- 从父表中删除一条记录会使依赖其的子键记录被设置为默认值整数0。</i>
+qlite&gt; <i>-- 但是，这个值在父表中没有任何对应记录。这就违反了外键约束，也就会抛出一个异常。</i>
 sqlite&gt; <i>-- Deleting the row from the parent table causes the child key</i>
 sqlite&gt; <i>-- value of the dependent row to be set to integer value 0. However, this</i>
 sqlite&gt; <i>-- value does not correspond to any row in the parent table. Therefore</i>
@@ -830,6 +932,7 @@ sqlite&gt; <i>-- the foreign key constraint is violated and an is exception thro
 sqlite&gt; DELETE FROM artist WHERE artistname = 'Sammy Davis Jr.';
 <b>SQL error: foreign key constraint failed</b>
 
+sqlite&gt; <i>-- 这一次，值0对应了父表中的一条记录，因此，DELETE语句就不会违反外键约束了，也就不会抛出异常了。</i>
 sqlite&gt; <i>-- This time, the value 0 does correspond to a parent table row. And</i>
 sqlite&gt; <i>-- so the DELETE statement does not violate the foreign key constraint</i>
 sqlite&gt; <i>-- and no exception is thrown.</i>
@@ -848,7 +951,8 @@ trackid  trackname          trackartist
 </table></div>
 
   <p>
-    Those familiar with <a href="lang_createtrigger.html">SQLite triggers</a>
+    熟悉<a href="lang_createtrigger.html">SQLite 触发器</a>的用户会注意到，上面示例中所演示的“ON DELETE SET DEFAULT”的效果与下面的AFTER DELETE触发器很相似：
+<br />Those familiar with <a href="lang_createtrigger.html">SQLite triggers</a>
     will have noticed that the 
     "ON DELETE SET DEFAULT" action demonstrated in the example above is
     similar in effect to the following AFTER DELETE trigger:
@@ -858,20 +962,27 @@ END;
 </table></div>
 
   <p>
-    Whenever a row in the parent table of a foreign key constraint is deleted,
+    当一个外键约束的父表中的记录被删除了，或者父键列中存储的值被修改了，触发的事件的逻辑顺序如下：
+<br />Whenever a row in the parent table of a foreign key constraint is deleted,
     or when the values stored in the parent key column or columns are modified, 
     the logical sequence of events is:
 
   <ol>
-   <li> Execute applicable BEFORE trigger programs,
-   <li> Check local (non foreign key) constraints,
-   <li> Update or delete the row in the parent table,
-   <li> Perform any required foreign key actions,
-   <li> Execute applicable AFTER trigger programs.
+   <li> 执行应用程序的BEFORE触发器程序，
+<br />Execute applicable BEFORE trigger programs,
+   <li> 检查自身（非外键）约束，
+<br />Check local (non foreign key) constraints,
+   <li> 更新或删除父表中的记录，
+<br />Update or delete the row in the parent table,
+   <li> 完成任何所需的外键行为，
+<br />Perform any required foreign key actions,
+   <li> 执行应用程序的AFTER 触发器程序。
+<br />Execute applicable AFTER trigger programs.
   </ol>
 
   <p>
-    There is one important difference between ON UPDATE foreign key actions and
+    在ON UPDATE 外键行为和SQL触发器之间有一个重要的区别时，只有当父键的值修改时才会执行ON UPDATE 行为，所以，新的父键值与老值不相同。例如：
+<br />There is one important difference between ON UPDATE foreign key actions and
     SQL triggers. An ON UPDATE action is only taken if the values of the
     parent key are modified so that the new parent key values are 
     not equal to the old. For example:
@@ -890,6 +1001,7 @@ y
 ----
 key
 
+sqlite&gt; <i>-- 由于下面的UPDATE语句没有真正修改父键值，所以ON UPDATE行为不会执行，子键值也不会设置为NULL。</i>
 sqlite&gt; <i>-- Since the following UPDATE statement does not actually modify</i>
 sqlite&gt; <i>-- the parent key value, the ON UPDATE action is not performed and</i>
 sqlite&gt; <i>-- the child key value is not set to NULL.</i>
@@ -899,6 +1011,7 @@ y
 ----
 key
 
+sqlite&gt; <i>-- 这一次，因为UPDATE语句修改了父键值，所以就会执行ON UPDATE行为，子键会被设置为NULL。</i>
 sqlite&gt; <i>-- This time, since the UPDATE statement does modify the parent key</i>
 sqlite&gt; <i>-- value, the ON UPDATE action is performed and the child key is set</i>
 sqlite&gt; <i>-- to NULL.</i>
@@ -909,15 +1022,18 @@ y
 null
 </table></div>
 
-<h1 id="fk_schemacommands">5. CREATE, ALTER and DROP TABLE commands</h1>
+<h1 id="fk_schemacommands">5. CREATE、ALTER和DROP TABLE命令
+<br />5. CREATE, ALTER and DROP TABLE commands</h1>
 
   <p>
-    This section describes the way the <a href="lang_createtable.html">CREATE TABLE</a>, <a href="lang_altertable.html">ALTER TABLE</a>,
+    这一节主要讲述<a href="lang_createtable.html">CREATE TABLE</a>、<a href="lang_altertable.html">ALTER TABLE</a>和<a href="lang_droptable.html">DROP TABLE</a>命令与SQLite的外键之间相互作用的方法。
+<br />This section describes the way the <a href="lang_createtable.html">CREATE TABLE</a>, <a href="lang_altertable.html">ALTER TABLE</a>,
     and <a href="lang_droptable.html">DROP TABLE</a> commands
     interact with SQLite's foreign keys.
 
   <p>
-    A <a href="lang_createtable.html">CREATE TABLE</a> command operates the same whether or not
+    无论是否<a href="foreignkeys.html#fk_enable">启用了外键约束</a>，<a href="lang_createtable.html">CREATE TABLE</a>命令都是一样的运行。当创建表的时候，并不会检查外键约束的父键定义。无法阻止用户创建一个父表不存在或父键列不存在或父键没有遵守PRIMARY KEY或UNIQUE约束的外键定义。
+<br />A <a href="lang_createtable.html">CREATE TABLE</a> command operates the same whether or not
     <a href="foreignkeys.html#fk_enable">foreign key constraints are enabled</a>.  The parent key definitions of 
     foreign key constraints are not checked when a table is created. There is
     nothing stopping the user from creating a foreign key definition that
@@ -925,18 +1041,21 @@ null
     do not exist or are not collectively bound by a PRIMARY KEY or UNIQUE constraint.
 
   <p>
-    The <a href="lang_altertable.html">ALTER TABLE</a> command works differently in two respects when foreign
+    <a href="lang_altertable.html">ALTER TABLE</a>命令根据是否启用了外键约束会使用两种不同的方式：
+<br />The <a href="lang_altertable.html">ALTER TABLE</a> command works differently in two respects when foreign
     key constraints are enabled:
 
   <ul>
     <li><p> 
-         It is not possible to use the "ALTER TABLE ... ADD COLUMN" syntax
+         除非新列的默认值时NULL，否则无法使用“ALTER TABLE ... ADD COLUMN”语法来增加一个包含REFERENCES子句的列。如果这么去执行会返回一个错误。
+<br />It is not possible to use the "ALTER TABLE ... ADD COLUMN" syntax
          to add a column that includes a REFERENCES clause, unless the default
          value of the new column is NULL. Attempting to do so returns an
          error.
 
     <li><p> 
-         If an "ALTER TABLE ... RENAME TO" command is used to rename a table
+         如果使用“ALTER TABLE ... RENAME TO”命令来重命名一个外键约束中的父表名，那么会修改外键约束定义使用新名字指向父表。存储在sqlite_master表中的子表的CREATE TABLE语句文本也会更新新父表的名字。
+<br />If an "ALTER TABLE ... RENAME TO" command is used to rename a table
          that is the parent table of one or more foreign key constraints, the
          definitions of the foreign key constraints are modified to refer to
          the parent table by its new name. The text of the child CREATE
@@ -945,7 +1064,8 @@ null
   </ul>
 
   <p>
-    If foreign key constraints are enabled when it is prepared, the 
+    当启用了外键约束后，<a href="lang_droptable.html">DROP TABLE</a>命令会隐式执行<a href="lang_delete.html">DELETE</a>在删除表之前移除表中的所有记录。隐式的DELETE不会触发任何触发器，但是会执行外键行为和约束验证。如果违反了一个立即外键约束，DROP TABLE语句会失败，表也不会被卸载。如果违反了延时外键约束，那么在提交事务的时候，如果依然违反外键约束，那么会报告一个错误。隐式DELETE中遇到的"foreign key mismatch"错误都会被忽略。
+<br />If foreign key constraints are enabled when it is prepared, the 
     <a href="lang_droptable.html">DROP TABLE</a> command performs an implicit <a href="lang_delete.html">DELETE</a> to remove all
     rows from the table before dropping it. The implicit DELETE does not cause
     any SQL triggers to fire, but may invoke foreign key actions or constraint
@@ -957,7 +1077,9 @@ null
     of an implicit DELETE are ignored.
 
   <p>
-    The intent of these enhancements to the <a href="lang_altertable.html">ALTER TABLE</a> and <a href="lang_droptable.html">DROP TABLE</a>
+    对<a href="lang_altertable.html">ALTER TABLE</a>和<a href="lang_droptable.html">DROP TABLE</a>命令进行这些增加的目的时确保这些命令不会产生一个违反外键约束的数据库，至少是在启用外键的时候。但是这个规则有一个例外。
+    如果一个父键在父表定义中没有受限于PRIMARY KEY或UNIQUE约束，但是借助于一个<a href="lang_createindex.html">CREATE INDEX</a>命令创建的索引受限于UNIQUE约束。那么，就可以建立子表，而不会触发“foreign key mismatch”错误。如果从数据库中卸载了这个UNIQUE索引，那么父表自身也会卸载，而不会报出任何错误。但是，这样会导致数据库中外键约束的子表中存在没有指向任何外键表记录的记录。这种情况是可以被避免的，只要父键的PRIMARY KEY或UNIQUE约束都是在父表定义中添加的，而不是使用额外的UNIQUE索引就可以了。
+<br />The intent of these enhancements to the <a href="lang_altertable.html">ALTER TABLE</a> and <a href="lang_droptable.html">DROP TABLE</a>
     commands is to ensure that they cannot be used to create a database that
     contains foreign key violations, at least while foreign key constraints are
     enabled. There is one exception to this rule though. If a parent key is
@@ -974,7 +1096,8 @@ null
     by external UNIQUE indexes.
 
   <p>
-    The properties of the <a href="lang_droptable.html">DROP TABLE</a> and <a href="lang_altertable.html">ALTER TABLE</a> commands described
+    上面介绍的<a href="lang_droptable.html">DROP TABLE</a>和<a href="lang_altertable.html">ALTER TABLE</a>命令属性只有当启用了外键才会使用。如果用户认为这些时不合适的，那么变通方案就是在执行DROP或ALTER TABLE命令之前使用<a href="pragma.html#pragma_foreign_keys">PRAGMA foreign_keys</a> 来禁用外键约束。当然，一旦禁用了外键约束，就没有任何办法来组织用户破坏外键约束，这也会导致出现不一致的数据库。
+<br />The properties of the <a href="lang_droptable.html">DROP TABLE</a> and <a href="lang_altertable.html">ALTER TABLE</a> commands described
     above only apply if foreign keys are enabled. If the user considers them
     undesirable, then the workaround is to use <a href="pragma.html#pragma_foreign_keys">PRAGMA foreign_keys</a> to 
     disable foreign key constraints before executing the DROP or ALTER TABLE 
@@ -984,14 +1107,17 @@ null
    
     
 
-<h1 id="fk_unsupported">6. Limits and Unsupported Features</h1>
+<h1 id="fk_unsupported">6. 限制和不支持的特性
+<br />6. Limits and Unsupported Features</h1>
 
   <p>
-    This section lists a few limitations and omitted features that are not
+    本节罗列了少量别处没有提及的限制和忽略的特性。
+<br />This section lists a few limitations and omitted features that are not
     mentioned elsewhere.
 
   <ol>
-    <li><p> 
+    <li><p> <b>不支持MATCH子句。</b>依照SQL92，在一个复合外键定义后面可以附加一个MATCH子句，用来修改子键中出现NULL值时的处理方式。如果指定了“MATCH SIMPLE”，那么如果子键之中存在一个或多个NULL时不需要有与之对应的父表记录。如果指定了“MATCH FULL”，那么如果所有的子键值都是NULL，那么不需要在父表有对应的记录，但是所有子键值都必须时NULL。最后，如果外键约束指定为“MATCH PARTIAL”并且有一个子键值是NULL，那么父表中必须至少有一行记录能匹配子键的非NULL值。
+<br />
       <b>No support for the MATCH clause.</b> According to SQL92, a MATCH clause
          may be attached to a composite foreign key definition to modify the way
          NULL values that occur in child keys are handled. If "MATCH SIMPLE" is
@@ -1005,10 +1131,13 @@ null
          non-NULL child key values match the parent key values.
 
        <p>
-         SQLite parses MATCH clauses (i.e. does not report a syntax error
+         SQLite解析MATCH子句（如果你指定了不会报语法错误），但是不会实施。在SQLite中所有的外键约束都指定为MATCH SIMPLE。
+<br />SQLite parses MATCH clauses (i.e. does not report a syntax error
          if you specify one), but does not enforce them. All foreign key 
          constraints in SQLite are handled as if MATCH SIMPLE were specified.
     <li> <p>
+    <b>不支持立即约束和延时约束之间切换。</b>许多系统允许用户在运行时将某个外键约束在<a href="#fk_deferred">延时</a>和立即之间进行切换（例如使用ORACLE的“SET CONSTRAINT”命令）。SQLite不支持这个，在SQLite中，外键约束在创建时就被永久指定了是延时的还是立即的。
+<br />
       <b>No support for switching constraints between deferred and immediate 
          mode.</b> Many systems allow the user to toggle individual foreign key
          constraints between <a href="#fk_deferred">deferred</a> and immediate 
@@ -1017,6 +1146,8 @@ null
          permanently marked as deferred or immediate when it is created.
 
     <li><p>
+    <b>外键行为中的递归限制。</b><a href="limits.html#max_trigger_depth">SQLITE_MAX_TRIGGER_DEPTH</a>和<a href="c3ref/c_limit_attached.html#sqlitelimittriggerdepth">SQLITE_LIMIT_TRIGGER_DEPTH</a> 设置决定了触发器程序的最大递归升读。由于这些限制，<a href="foreignkeys.html#fk_actions">外键行为</a>被看做时一个触发器程序。<a href="pragma.html#pragma_recursive_triggers">PRAGMA recursive_triggers</a>设置对于外键行为是无效的。也不可能禁用递归外键行为。
+<br />
       <b>Recursion limit on foreign key actions.</b> The 
          <a href="limits.html#max_trigger_depth">SQLITE_MAX_TRIGGER_DEPTH</a> and <a href="c3ref/c_limit_attached.html#sqlitelimittriggerdepth">SQLITE_LIMIT_TRIGGER_DEPTH</a>
          settings determine the maximum allowable depth of trigger
