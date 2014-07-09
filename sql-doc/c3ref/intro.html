@@ -130,28 +130,34 @@ a:visited { color: #734559 }
   
 
 
-<p>These pages define the C-language interface to SQLite.</p>
+<p>本内容定义了SQLite的C语言接口。
+<br />These pages define the C-language interface to SQLite.</p>
 
-<p>This is not a tutorial.  These
+<p>这并不是一个简易指南，这些内容是非常精确的，不易读的。如果想要简易介绍，参见<a href="../quickstart.html">SQLite 3分钟入门</a>和<a href="../cintro.html">SQLite C/C++接口简介</a>。
+<br />This is not a tutorial.  These
 pages are designed to be precise, not easy to read.
 For a tutorial introduction see
 <a href="../quickstart.html">SQLite In 3 Minutes Or Less</a> and/or
 the <a href="../cintro.html">Introduction To The SQLite C/C++ Interface</a>.
 </p>
 
-<p>This version of the C-language interface reference is
+<p>这一版的C语言接口参考被分割为多个小页面以方便阅读。如果喜欢一个页面的人，也可以在<a href="../capi3ref.html">一个大 HTML 文件</a>中找到相同的内容。
+<br />This version of the C-language interface reference is
 broken down into small pages for easy viewing.  The
 same content is also available as a
 <a href="../capi3ref.html">single large HTML file</a>
 for those who prefer that format.</p>
 
-<p>The content on these pages is extracted from comments
+<p>这些页面的内容都是从源码文件的注释中提取出来的。
+<br />The content on these pages is extracted from comments
 in the source code.</p>
 
-<p>The interface is broken down into three categories:</p>
+<p>接口被拆分到三个分类当中：
+<br />The interface is broken down into three categories:</p>
 
 <ol>
-<li><p><a href="objlist.html"><b>List Of Objects.</b></a>
+<li><p><a href="objlist.html"><b>对象列表。</b></a>这是SQLite库中使用的所有抽象对象和数据类型的列表。一共大概有数十个对象，但是最重要的三个对象是：数据库连接对象<a href="../c3ref/sqlite3.html">sqlite3</a>，预编译语句对象<a href="../c3ref/stmt.html">sqlite3_stmt</a>和64位整数类型<a href="../c3ref/int64.html">sqlite3_int64</a>。
+<br /><a href="objlist.html"><b>List Of Objects.</b></a>
     This is a list of all abstract objects and datatypes used by the
     SQLite library.  There are couple dozen objects in total, but
     the three most important objects are:
@@ -159,7 +165,8 @@ in the source code.</p>
     prepared statement object <a href="../c3ref/stmt.html">sqlite3_stmt</a>, and the 64-bit integer
     type <a href="../c3ref/int64.html">sqlite3_int64</a>.</p></li>
 
-<li><p><a href="constlist.html"><b>List Of Constants.</b></a>
+<li><p><a href="constlist.html"><b>常量列表。</b></a>这里是SQLite中使用的数值常量列表，这些都定义在sqlite3.h头文件中。这些常量中有各种接口的数值返回值（例如：<a href="../c3ref/c_abort.html">SQLITE_OK</a>），也有传入函数来控制行为的标志（例如：<a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_READONLY</a>）。
+<br /><a href="constlist.html"><b>List Of Constants.</b></a>
     This is a list of numeric constants used by SQLite and represented by
     #defines in the sqlite3.h header file.  These constants
     are things such as numeric return parameters from
@@ -167,7 +174,8 @@ in the source code.</p>
     into functions to control behavior
     (ex: <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_READONLY</a>).</p></li>
 
-<li><p><a href="funclist.html"><b>List Of Functions.</b></a>
+<li><p><a href="funclist.html"><b>函数列表。</b></a>这里是所有操作<a href="objlist.html">对象</a>、使用或返回<a href="constlist.html">常量</a>的函数或方法。这里有很多函数，但是大部分应用程序只使用很少的一部分。
+<br /><a href="funclist.html"><b>List Of Functions.</b></a>
     This is a list of all functions and methods operating on the 
     <a href="objlist.html">objects</a> and using and/or
     returning <a href="constlist.html">constants</a>.  There
