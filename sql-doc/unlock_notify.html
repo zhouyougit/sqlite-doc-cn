@@ -143,13 +143,16 @@ a:visited { color: #734559 }
   h1,h2 { clear: both ; text-align: center }
 </style>
 
-<h1>Using the sqlite3_unlock_notify() API</h1>
+<h1>使用sqlite3_unlock_notify() API
+<br />Using the sqlite3_unlock_notify() API</h1>
 
 <pre>
-<span style="color:blue;font-style:italic">/* This example uses the pthreads API */</span>
+<span style="color:blue;font-style:italic">/* 这个示例使用 pthreads API */
+/* This example uses the pthreads API */</span>
 #include &lt;pthread.h&gt;
 
 <span style="color:blue;font-style:italic">/*</span>
+<span style="color:blue;font-style:italic">** 当注册解锁通知回调的时候会把这个结构体实例的指针当做用户上下文传入。</span>
 <span style="color:blue;font-style:italic">** A pointer to an instance of this structure is passed as the user-context</span>
 <span style="color:blue;font-style:italic">** pointer when registering for an unlock-notify callback.</span>
 <span style="color:blue;font-style:italic">*/</span>
@@ -161,6 +164,7 @@ struct UnlockNotification {
 };
 
 <span style="color:blue;font-style:italic">/*</span>
+<span style="color:blue;font-style:italic">** 这个函数是注册的解锁通知回调函数。</span>
 <span style="color:blue;font-style:italic">** This function is an unlock-notify callback registered with SQLite.</span>
 <span style="color:blue;font-style:italic">*/</span>
 static void unlock_notify_cb(void **apArg, int nArg){
@@ -175,14 +179,20 @@ static void unlock_notify_cb(void **apArg, int nArg){
 }
 
 <span style="color:blue;font-style:italic">/*</span>
+<span style="color:blue;font-style:italic">** 这个函数假设SQLite API调用（包括<a href="c3ref/prepare.html">sqlite3_prepare_v2</a>() </span>和<a href="c3ref/step.html">sqlite3_step</a>()）</span>
+<span style="color:blue;font-style:italic">  ** 只会返回SQLITE_LOCKED。参数是相应的数据库连接。</span>
 <span style="color:blue;font-style:italic">** This function assumes that an SQLite API call (either <a href="c3ref/prepare.html">sqlite3_prepare_v2</a>() </span>
 <span style="color:blue;font-style:italic">** or <a href="c3ref/step.html">sqlite3_step</a>()) has just returned SQLITE_LOCKED. The argument is the</span>
 <span style="color:blue;font-style:italic">** associated database connection.</span>
 <span style="color:blue;font-style:italic">**</span>
+<span style="color:blue;font-style:italic">** 这个函数调用<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify</a>()</span>来注册一个解锁通知回调，然后一直阻塞</span>
+<span style="color:blue;font-style:italic">  ** 到注册完回调函数并返回SQLITE_OK。这时候调用者重试失败的操作。
 <span style="color:blue;font-style:italic">** This function calls <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify</a>() to register for an </span>
 <span style="color:blue;font-style:italic">** unlock-notify callback, then blocks until that callback is delivered </span>
 <span style="color:blue;font-style:italic">** and returns SQLITE_OK. The caller should then retry the failed operation.</span>
 <span style="color:blue;font-style:italic">**</span>
+<span style="color:blue;font-style:italic">** 否则，如果<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify</a>()表明阻塞会导致系统死锁，那么这个函数会立即返回</span>
+<span style="color:blue;font-style:italic">  ** SQLITE_LOCKED。这种情况下，调用者不能再次尝试，而应该回滚当前事务。</span>
 <span style="color:blue;font-style:italic">** Or, if <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify</a>() indicates that to block would deadlock </span>
 <span style="color:blue;font-style:italic">** the system, then this function returns SQLITE_LOCKED immediately. In </span>
 <span style="color:blue;font-style:italic">** this case the caller should not retry the operation and should roll </span>
@@ -192,18 +202,23 @@ static int wait_for_unlock_notify(<a href="c3ref/sqlite3.html">sqlite3</a> *db){
   int rc;
   UnlockNotification un;
 
+  <span style="color:blue;font-style:italic">/* 初始化UnlockNotification结构体*/</span>
   <span style="color:blue;font-style:italic">/* Initialize the UnlockNotification structure. */</span>
   un.fired = 0;
   pthread_mutex_init(&un.mutex, 0);
   pthread_cond_init(&un.cond, 0);
 
+  <span style="color:blue;font-style:italic">/* 注册解锁通知回调 */</span>
   <span style="color:blue;font-style:italic">/* Register for an unlock-notify callback. */</span>
   rc = <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify</a>(db, unlock_notify_cb, (void *)&un);
   assert( rc==SQLITE_LOCKED || rc==SQLITE_OK );
 
+  <span style="color:blue;font-style:italic">/* 调用<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify</a>() 返回SQLITE_LOCKED或SQLITE_OK */</span>
   <span style="color:blue;font-style:italic">/* The call to <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify</a>() always returns either SQLITE_LOCKED </span>
 <span style="color:blue;font-style:italic">  ** or SQLITE_OK. </span>
 <span style="color:blue;font-style:italic">  **</span>
+<span style="color:blue;font-style:italic">  ** 如果返回SQLITE_LOCKED， 那么系统会死锁，这时候这个方法要返回SQLITE_LOCKED给调用者，</span>
+<span style="color:blue;font-style:italic">  ** 以回滚当前事务。否则，一直阻塞到解锁通知回调执行，然后返回SQLITE_OK。</span>
 <span style="color:blue;font-style:italic">  ** If SQLITE_LOCKED was returned, then the system is deadlocked. In this</span>
 <span style="color:blue;font-style:italic">  ** case this function needs to return SQLITE_LOCKED to the caller so </span>
 <span style="color:blue;font-style:italic">  ** that the current transaction can be rolled back. Otherwise, block</span>
@@ -217,6 +232,7 @@ static int wait_for_unlock_notify(<a href="c3ref/sqlite3.html">sqlite3</a> *db){
     pthread_mutex_unlock(&un.mutex);
   }
 
+  <span style="color:blue;font-style:italic">/* 销毁互斥体和条件变量。 */</span>
   <span style="color:blue;font-style:italic">/* Destroy the mutex and condition variables. */</span>
   pthread_cond_destroy(&un.cond);
   pthread_mutex_destroy(&un.mutex);
@@ -225,12 +241,17 @@ static int wait_for_unlock_notify(<a href="c3ref/sqlite3.html">sqlite3</a> *db){
 }
 
 <span style="color:blue;font-style:italic">/*</span>
+<span style="color:blue;font-style:italic">** 这个函数是<a href="c3ref/step.html">sqlite3_step</a>()函数的一个封装。这个函数与step()类似，</span>
+<span style="color:blue;font-style:italic">** 但是如果无法获取所需的共享缓存锁时，这个函数会阻塞，直到锁可用为止。这种情况下，</span>
+<span style="color:blue;font-style:italic">  ** 标准API 的step()函数总是返回SQLITE_LOCKED。</span>
 <span style="color:blue;font-style:italic">** This function is a wrapper around the SQLite function <a href="c3ref/step.html">sqlite3_step</a>().</span>
 <span style="color:blue;font-style:italic">** It functions in the same way as step(), except that if a required</span>
 <span style="color:blue;font-style:italic">** shared-cache lock cannot be obtained, this function may block waiting for</span>
 <span style="color:blue;font-style:italic">** the lock to become available. In this scenario the normal API step()</span>
 <span style="color:blue;font-style:italic">** function always returns SQLITE_LOCKED.</span>
 <span style="color:blue;font-style:italic">**</span>
+<span style="color:blue;font-style:italic">** 如果这个函数返回SQLITE_LOCKED，调用者就需要回滚当前事务，并稍后重试。</span>
+<span style="color:blue;font-style:italic">  ** 否则的话可能会导致系统死锁。</span>
 <span style="color:blue;font-style:italic">** If this function returns SQLITE_LOCKED, the caller should rollback</span>
 <span style="color:blue;font-style:italic">** the current transaction (if any) and try again later. Otherwise, the</span>
 <span style="color:blue;font-style:italic">** system may become deadlocked.</span>
@@ -246,12 +267,17 @@ int sqlite3_blocking_step(<a href="c3ref/stmt.html">sqlite3_stmt</a> *pStmt){
 }
 
 <span style="color:blue;font-style:italic">/*</span>
+<span style="color:blue;font-style:italic">** 这个函数是对<a href="c3ref/prepare.html">sqlite3_prepare_v2</a>()函数的封装。这个函数与prepare_v2()类似，</span>
+<span style="color:blue;font-style:italic">** 但是如果无法获取所需的共享缓存锁时，这个函数会阻塞，直到锁可用为止。这种情况下，</span>
+<span style="color:blue;font-style:italic">  ** 标准API 的prepare_v2()函数总是返回SQLITE_LOCKED。</span>
 <span style="color:blue;font-style:italic">** This function is a wrapper around the SQLite function <a href="c3ref/prepare.html">sqlite3_prepare_v2</a>().</span>
 <span style="color:blue;font-style:italic">** It functions in the same way as prepare_v2(), except that if a required</span>
 <span style="color:blue;font-style:italic">** shared-cache lock cannot be obtained, this function may block waiting for</span>
 <span style="color:blue;font-style:italic">** the lock to become available. In this scenario the normal API prepare_v2()</span>
 <span style="color:blue;font-style:italic">** function always returns SQLITE_LOCKED.</span>
 <span style="color:blue;font-style:italic">**</span>
+<span style="color:blue;font-style:italic">** 如果这个函数返回SQLITE_LOCKED，调用者就需要回滚当前事务，并稍后重试。</span>
+<span style="color:blue;font-style:italic">  ** 否则的话可能会导致系统死锁。</span>
 <span style="color:blue;font-style:italic">** If this function returns SQLITE_LOCKED, the caller should rollback</span>
 <span style="color:blue;font-style:italic">** the current transaction (if any) and try again later. Otherwise, the</span>
 <span style="color:blue;font-style:italic">** system may become deadlocked.</span>
@@ -274,7 +300,8 @@ int sqlite3_blocking_prepare_v2(
 
 
 <p>
-  When two or more connections access the same database in shared-cache 
+  在共享缓存模式中，当两个以上链接访问同一个数据库的时候，会对每个表单独使用读锁和写锁（共享锁和互斥锁）来确保并发执行事务时候的隔离性。在写入一个表之前，必须在这个表上获取一个写（互斥）锁。在读取之前，必须获取一个读（共享）锁。在事务结束时，链接会释放持有的所有锁。如果一个链接无法获取所需的锁，那么调用<a href="c3ref/step.html">sqlite3_step()</a>会返回SQLITE_LOCKED。
+<br />When two or more connections access the same database in shared-cache 
   mode, read and write (shared and exclusive) locks on individual tables
   are used to ensure that concurrently executing transactions are kept 
   isolated. Before writing to a table, a write (exclusive) lock must be 
@@ -284,14 +311,16 @@ int sqlite3_blocking_prepare_v2(
   the call to <a href="c3ref/step.html">sqlite3_step()</a> returns SQLITE_LOCKED.
 
 <p>
-  Although it is less common, a call to <a href="c3ref/prepare.html">sqlite3_prepare()</a> or
+  偶尔还会遇到调用<a href="c3ref/prepare.html">sqlite3_prepare()</a>或<a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>的时候，如果无法获取每个附加库的sqlite_master表的读锁，那么也会返回SQLITE_LOCKED。这些API需要读取存储在sqlite_master表中的数据库模式，以此将SQL语句编译为<a href="c3ref/stmt.html">sqlite3_stmt*</a>对象。
+<br />Although it is less common, a call to <a href="c3ref/prepare.html">sqlite3_prepare()</a> or
   <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a> may also return SQLITE_LOCKED if it cannot obtain
   a read-lock on the sqlite_master table of each attached database. These
   APIs need to read the schema data contained in the sqlite_master table
   in order to compile SQL statements to <a href="c3ref/stmt.html">sqlite3_stmt*</a> objects.
 
 <p>
-  This article presents a technique using the SQLite <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>
+  本文介绍的技术是使用SQLite的<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>接口来实现当调用<a href="c3ref/step.html">sqlite3_step()</a>和<a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>时如果遇到无法获取所需锁的时候能够阻塞一直等到所需的锁可用，而不是立即返回一个SQLITE_LOCKED。如果函数sqlite3_blocking_step()或sqlite3_blocking_prepare_v2()返回了一个SQLITE_LOCKED，这表示如果阻塞会导致系统死锁。
+<br />This article presents a technique using the SQLite <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>
   interface such that calls to <a href="c3ref/step.html">sqlite3_step()</a> and <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>
   block until the required locks are available instead of returning 
   SQLITE_LOCKED immediately. If the
@@ -300,13 +329,15 @@ int sqlite3_blocking_prepare_v2(
   deadlock the system.
 
 <p>
-  The <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> API, which is only available if the library is
+  只有在编译库时预处理器定义了符号<a href="compile.html#enable_unlock_notify">SQLITE_ENABLE_UNLOCK_NOTIFY</a>时才能使用<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> API。具体<a href="c3ref/unlock_notify.html">文档在这里</a>。本文并不是一篇可替代的完整API文档！
+<br />The <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> API, which is only available if the library is
   compiled with the pre-processor symbol <a href="compile.html#enable_unlock_notify">SQLITE_ENABLE_UNLOCK_NOTIFY</a> defined,
   is <a href="c3ref/unlock_notify.html">documented here</a>. This article is not a
   substitute for reading the full API documentation!
 
 <p>
-  The <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> interface is designed for use in systems
+  <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>接口是为每个<a href="c3ref/sqlite3.html">数据库连接</a>都分配一个单独的线程的系统设计的。在实现中，没有阻止一个线程运行多个数据库连接。但是<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>接口每次只能在一个连接上使用，所以，这里提供的锁逻辑只适用于一个线程一个数据库连接的情况。
+<br />The <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> interface is designed for use in systems
   that have a separate thread assigned to each <a href="c3ref/sqlite3.html">database connection</a>.  There
   is nothing in the implementation that prevents a single thread from running
   multiple database connections.  However, the <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>
@@ -314,10 +345,12 @@ int sqlite3_blocking_prepare_v2(
   resolution logic presented here will only work for a single 
   database connection per thread.
 
-<p><b>The sqlite3_unlock_notify() API</b>
+<p><b>sqlite3_unlock_notify()  API
+<br />The sqlite3_unlock_notify() API</b>
 
 <p>
-  After a call to <a href="c3ref/step.html">sqlite3_step()</a> or <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a> returns 
+  在调用<a href="c3ref/step.html">sqlite3_step()</a>或<a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>返回SQLITE_LOCKED之后，<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> API会注册一个解锁通知的回调函数。当阻塞<a href="c3ref/step.html">sqlite3_step()</a>或<a href="c3ref/prepare.html">sqlite3_prepare_v2()</a>调用的持有表所的数据库连接随后完成了事务并释放了锁之后，SQLite会执行解锁通知回调。例如，如果调用sqlite3_step()会读取表X，而另一个连接Y正持有表X的写锁，那么sqlite3_step()会返回SQLITE_LOCKED。如果这时候调用<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>，那么在连接Y的事务结束后会执行解锁通知回调。其中解锁通知回调等待的连接，也就是本例中的连接Y，被称为“阻塞连接”。
+<br />After a call to <a href="c3ref/step.html">sqlite3_step()</a> or <a href="c3ref/prepare.html">sqlite3_prepare_v2()</a> returns 
   SQLITE_LOCKED, the <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> API may be invoked to register 
   for an unlock-notify callback. The unlock-notify callback is invoked by 
   SQLite after the database connection holding the table-lock that prevented
@@ -331,7 +364,8 @@ int sqlite3_blocking_prepare_v2(
   connection Y, is known as the "blocking connection".
 
 <p>
-  If a call to sqlite3_step() that attempts to write to a database table
+  如果调用sqlite3_step()写入一个数据库表，但是返回了SQLITE_LOCK，那么至少有一个连接持有这个数据库表的读锁。这种情况下，SQLite简单的选择这些连接中的一个，然后在这个连接的事务完成后执行解锁通知回调。不管sqlite3_step()调用是被多少个连接阻塞的，当注册的解锁通知回调执行时并不能保证所需的锁是可用的，只能说时可能可以。
+<br />If a call to sqlite3_step() that attempts to write to a database table
   returns SQLITE_LOCKED, then more than one other connection may be holding 
   a read-lock on the database table in question. In this case SQLite simply
   selects one of those other connections arbitrarily and issues the 
@@ -341,7 +375,8 @@ int sqlite3_blocking_prepare_v2(
   guaranteed that the required lock is available, only that it may be.
 
 <p>
-  When the unlock-notify callback is issued, it is issued from within a
+  当执行解锁通知回调时，这个调用是在阻塞连接相应的sqlite3_step()或sqlite3_close()调用中执行的。在一个解锁通知回调中时不允许执行sqlite3_XXX() API函数的。解锁通知回调中应该是通知其他等待的线程或者调度一些稍后发生的行为。
+<br />When the unlock-notify callback is issued, it is issued from within a
   call to sqlite3_step() (or sqlite3_close()) associated with the blocking 
   connection. It is illegal to invoke any sqlite3_XXX() API functions from
   within an unlock-notify callback. The expected use is that the unlock-notify
@@ -349,21 +384,26 @@ int sqlite3_blocking_prepare_v2(
   to take place later.
 
 <p>
-  The algorithm used by the sqlite3_blocking_step() function is as follows:
+  sqlite3_blocking_step()函数中使用的算法如下所示：
+<br />The algorithm used by the sqlite3_blocking_step() function is as follows:
 
 <ol>
-  <li><p> Call sqlite3_step() on the supplied statement handle. If the call
+  <li><p> 调用sqlite3_step()来处理提供的语句。如果调用返回的不是SQLITE_LOCKED，那么将这个值返回给用户，否则继续。
+<br />Call sqlite3_step() on the supplied statement handle. If the call
        returns anything other than SQLITE_LOCKED, then return this value
        to the caller. Otherwise, continue.
 
-  <li><p> Invoke <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> on the database connection handle
+  <li><p> 在处理语句相应的数据库连接上执行<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>，注册一个解锁通知回调。如果unlock_notify()调用返回SQLITE_LOCKED，那么将这个值返回给调用者。
+<br />Invoke <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> on the database connection handle
        associated with the supplied statement handle to register for an
        unlock-notify callback. If the call to unlock_notify() returns
        SQLITE_LOCKED, then return this value to the caller.
 
-  <li><p> Block until the unlock-notify callback is invoked by another thread.
+  <li><p> 在另一个线程调用解锁通知回调之前一直保持阻塞。
+<br />Block until the unlock-notify callback is invoked by another thread.
 
-  <li><p> Call sqlite3_reset() on the statement handle. Since an 
+  <li><p> 调用sqlite3_reset()，因为之前第一次调用sqlite3_step()的时候返回了一个SQLITE_LOCKED错误（不会出现第一次调用sqlite3_step()返回SQLITE_ROW而后续的调用返回SQLITE_LOCKED），在这个时候重置语句处理器，以免影响查询结果。如果这个时候不调用sqlite3_reset()，那么下一次调用sqlite3_step()会返回SQLITE_MISUSE。
+<br />Call sqlite3_reset() on the statement handle. Since an 
        SQLITE_LOCKED error may only occur on the first call to sqlite3_step()
        (it is not possible for one call to sqlite3_step() to return 
        SQLITE_ROW and then the next SQLITE_LOCKED), the statement handle may 
@@ -372,36 +412,44 @@ int sqlite3_blocking_prepare_v2(
        called at this point, the next call to sqlite3_step() would return
        SQLITE_MISUSE.
 
-  <li><p> Return to step 1.
+  <li><p> 返回第一步。
+<br />Return to step 1.
 </ol>
 
 <p>
-  The algorithm used by the sqlite3_blocking_prepare_v2() function is similar,
+  sqlite3_blocking_prepare_v2()函数中的算法与此类似，只是会忽略第四步（重置语句处理器）。
+<br />The algorithm used by the sqlite3_blocking_prepare_v2() function is similar,
   except that step 4 (resetting the statement handle) is omitted.
 
 
-<p><b>Writer Starvation</b>
+<p><b>写饥饿
+<br />Writer Starvation</b>
 
 <p>
-  Multiple connections may hold a read-lock simultaneously.  If many threads
+  多个连接可能会同时持有读锁。如果多个线程都叠加着请求读锁，就可能会出现总是有至少一个线程持有读锁的情况。这时，这个表上的写锁等待可能就会永远等待下去。这种情况就叫做“写饥饿”。
+<br />Multiple connections may hold a read-lock simultaneously.  If many threads
   are acquiring overlapping read-locks, it might be the case that at least
   one thread is always holding a read lock.
   Then a table waiting for a write-lock will wait forever.
   This scenario is called "writer starvation."
 
 <p>
-  SQLite helps applications avoid writer starvation. After any attempt to
+  SQLite帮助应用程序避免了写饥饿。在多次尝试获取写锁失败后（由于一个或多个连接持有读锁），所有试图在共享缓存上打开一个新事务的请求都会失败，直到下面两个条件其中之一为真：
+<br />SQLite helps applications avoid writer starvation. After any attempt to
   obtain a write-lock on a table fails (because one or more other 
   connections are holding read-locks), all attempts to open new transactions
   on the shared-cache fail until one of the following is true:
 
 <ul>
-  <li> The current writer concludes its transaction, OR
-  <li> The number of open read-transactions on the shared-cache drops to zero.
+  <li> 当前的写入者结束了它的事务，或者
+<br />The current writer concludes its transaction, OR
+  <li> 共享缓存上的读事务数量降为零。
+<br />The number of open read-transactions on the shared-cache drops to zero.
 </ul>
 
 <p>
-  Failed attempts to open new read-transactions return SQLITE_LOCKED to the
+  打开新读事务都会失败并返回一个SQLITE_LOCKED给调用者。如果调用者这是用调用<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>注册一个解锁通知回调，那么阻塞线程就是当前共享内存上正打开着写入事务的连接。这就阻止饿了写饥饿，因为如果不再有新的读事务打开，并且假设所有已有的读事务都最终会结束，那么写入者最总就会有机会获取所需的写锁。
+<br />Failed attempts to open new read-transactions return SQLITE_LOCKED to the
   caller. If the caller then calls <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> to register for
   an unlock-notify callback, the blocking connection is the connection that
   currently has an open write-transaction on the shared-cache. This prevents
@@ -410,9 +458,11 @@ int sqlite3_blocking_prepare_v2(
   writer will eventually have an opportunity to obtain the required
   write-lock.
 
-<p><b>The pthreads API</b>
+<p><b>pthread API
+<br />The pthreads API</b>
 
-  <p> By the time <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> is invoked by
+  <p>当wait_for_unlock_notify()调用<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>的时候，有可能阻塞sqlite3_step()或sqlite3_prepare_v2()的阻塞连接已经完成了其事务。这种情况下，会在<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>调用返回之前，立即执行解锁通知回调。也有可能会在<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>调用完成但是线程开始等待之前由其它线程执行解锁通知回调来异步通知。
+<br /> By the time <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> is invoked by
       wait_for_unlock_notify(), it is possible that the blocking connection
       that prevented the sqlite3_step() or sqlite3_prepare_v2() call from 
       succeeding has already finished its transaction. In this case, the 
@@ -422,55 +472,72 @@ int sqlite3_blocking_prepare_v2(
       <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> is called but before the thread starts waiting 
       to be asynchronously signaled. 
 
-  <p> Exactly how such a potential race-condition is handled depends on the
+  <p> 具体如何处理这种可能的竞争条件，取决于应用程序使用的线程和同步原语。这个示例使用的pthread，现代的类UNIX系统包括Linux都提供了这个接口。
+<br />Exactly how such a potential race-condition is handled depends on the
       threads and synchronization primitives interface used by the application.
       This example uses pthreads, the interface provided by modern UNIX-like 
       systems, including Linux.
 
-  <p> The pthreads interface provides the pthread_cond_wait() function. 
+  <p> pthread接口提供了pthread_cond_wait()函数，这个函数允许调用者同时释放一个互斥锁并等待异步信号。使用这个函数、一个“fired”标志和一个互斥锁，上面说的竞争条件就可以按照下面的方法消除：
+<br />The pthreads interface provides the pthread_cond_wait() function. 
       This function allows the caller to simultaneously release a mutex
       and start waiting for an asynchronous signal. Using this function,
       a "fired" flag and a mutex, the race-condition described above may
       be eliminated as follows:
 
-  <p> When the unlock-notify callback is invoked, which may be before the
+  <p> 如果调用解锁通知回调发生在调用<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>的线程开始等待异步信号之前，会执行如下事情：
+<br />When the unlock-notify callback is invoked, which may be before the
       thread that called <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> begins waiting for the 
       asynchronous signal, it does the following:
 
     <ol>
-      <li> Obtains the mutex.
-      <li> Sets the "fired" flag to true.
-      <li> Attempts to signal a waiting thread.
-      <li> Releases the mutex.
+      <li> 获取互斥锁。
+<br />Obtains the mutex.
+      <li> “fired”标志设置为true。
+<br />Sets the "fired" flag to true.
+      <li> 尝试通知等待线程。
+<br />Attempts to signal a waiting thread.
+      <li> 释放互斥锁。
+<br />Releases the mutex.
     </ol>
 
-  <p> When the wait_for_unlock_notify() thread is ready to begin waiting for
+  <p> 当wait_for_unlock_notify()线程准备开始等待解锁通知回调到达时，会：
+<br />When the wait_for_unlock_notify() thread is ready to begin waiting for
       the unlock-notify callback to arrive, it:
 
     <ol>
-      <li> Obtains the mutex.
-      <li> Checks if the "fired" flag has been set. If so, the unlock-notify
+      <li> 获取互斥锁。
+<br />Obtains the mutex.
+      <li> 检查是否设置了“fired”标志。如果设置了，那么解锁通知回调已经执行了。释放互斥体，然后继续。
+<br />Checks if the "fired" flag has been set. If so, the unlock-notify
            callback has already been invoked. Release the mutex and continue.
-      <li> aAtomically releases the mutex and begins waiting for the
+      <li> 原子的释放互斥锁并开始等待异步信号。当信号到达时，继续执行。
+<br />aAtomically releases the mutex and begins waiting for the
            asynchronous signal. When the signal arrives, continue.
     </ol>
 
-  <p> This way, it doesn't matter if the unlock-notify callback has already
+  <p> 这种方法，就不用担心在wait_for_unlock_notify()现场开始的时候，解锁通知回调已经执行过了。
+<br />This way, it doesn't matter if the unlock-notify callback has already
       been invoked, or is being invoked, when the wait_for_unlock_notify() 
       thread begins blocking.
 
-<p><b>Possible Enhancements</b>
+<p><b>可能的增强
+<br />Possible Enhancements</b>
 
-  <p> The code in this article could be improved in at least two ways:
+  <p> 本文中的代码至少有两个改进的方向：
+<br />The code in this article could be improved in at least two ways:
 
   <ul>
-    <li> It could manage thread priorities.
-    <li> It could handle a special case of SQLITE_LOCKED that can occur
+    <li> 能够调整线程优先级。
+<br />It could manage thread priorities.
+    <li> 能处理卸载表或索引引起的特殊SQLITE_LOCKED情况。
+<br />It could handle a special case of SQLITE_LOCKED that can occur
          when dropping a table or index.
   </ul>
 
   <p>
-    Even though the <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> function only allows the caller
+    虽然<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>函数只允许调用者指定一个用户上下文的指针，但是解锁通知回调会传入一个这种上下文指针的数组。这是因为，当一个阻塞线程执行到事务末尾时，如果调用同样的C函数注册超过一个解锁通知回调，那么上下文指针会被整理到一个数组中，然后通过一个回调完成。如果每个线程都指定了一个优先级，那么会根据实现替换简单的随机顺序通知线程，而是改为先通知高优先级的线程，后通知低优先级的线程。
+<br />Even though the <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> function only allows the caller
     to specify a single user-context pointer, an unlock-notify callback 
     is passed an array of such context pointers. This is because if when
     a blocking connection concludes its transaction, if there is more
@@ -481,7 +548,8 @@ int sqlite3_blocking_prepare_v2(
     higher priority threads could be signaled before lower priority threads.
 
   <p>
-    If a "DROP TABLE" or "DROP INDEX" SQL command is executed, and the
+    如果执行“DROP TABLE”或“DROP INDEX”SQL命令，并且当前数据库连接上还有一个或多个正在执行的SELECT语句，那么会返回SQLITE_LOCKED。如果在这种情况下调用<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>，那么会立即执行指定的回调函数。重试“DROP TABLE”或“DROP INDEX”语句会返回另一个SQLITE_LOCKED错误。左边展示了sqlite3_blocking_step()内部的实现，这可能会导致无限循环。
+<br />If a "DROP TABLE" or "DROP INDEX" SQL command is executed, and the
     same database connection currently has one or more actively
     executing SELECT statements, then SQLITE_LOCKED is returned. If
     <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a> is called in this case, then the specified
@@ -491,7 +559,8 @@ int sqlite3_blocking_prepare_v2(
     left, this could cause an infinite loop.
 
   <p>
-    The caller could distinguish between this special "DROP TABLE|INDEX" 
+    调用者能够区分“DROP TABLE|INDEX”情况和其它使用<a href="c3ref/c_abort_rollback.html">扩展错误代码</a>的情况。当适合调用<a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>时，扩展错误码是SQLITE_LOCKED_SHAREDCACHE。否则在“DROP TABLE|INDEX”情况下，只有一个简单的SQLITE_LOCKED。另一个解决方案是可以限制一个查询重复尝试的次数（例如100）。虽然这个相比期望的效率会低一些，但是问题中的这个场景并不是经常会发生的。
+<br />The caller could distinguish between this special "DROP TABLE|INDEX" 
     case and other cases by using <a href="c3ref/c_abort_rollback.html">extended error codes</a>. When it is appropriate
     to call <a href="c3ref/unlock_notify.html">sqlite3_unlock_notify()</a>, the extended error code is
     SQLITE_LOCKED_SHAREDCACHE. Otherwise, in the "DROP TABLE|INDEX" case,
