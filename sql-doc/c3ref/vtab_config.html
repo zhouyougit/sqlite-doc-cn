@@ -128,7 +128,7 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Virtual Table Interface Configuration</h2><blockquote><pre>int sqlite3_vtab_config(sqlite3*, int op, ...);
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Virtual Table Interface Configuration</h2><blockquote><pre>int sqlite3_vtab_config(sqlite3*, int op, ...);
 </pre></blockquote><p>
 This function may be called by either the <a href="../vtab.html#xconnect">xConnect</a> or <a href="../vtab.html#xcreate">xCreate</a> method
 of a <a href="../vtab.html">virtual table</a> implementation to configure
@@ -140,7 +140,7 @@ xCreate virtual table method then the behavior is undefined.</p>
 <p>At present, there is only one option that may be configured using
 this function. (See <a href="../c3ref/c_vtab_constraint_support.html">SQLITE_VTAB_CONSTRAINT_SUPPORT</a>.)  Further options
 may be added in the future.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

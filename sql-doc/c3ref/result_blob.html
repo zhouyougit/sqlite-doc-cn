@@ -128,7 +128,7 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Setting The Result Of An SQL Function</h2><blockquote><pre>void sqlite3_result_blob(sqlite3_context*, const void*, int, void(*)(void*));
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Setting The Result Of An SQL Function</h2><blockquote><pre>void sqlite3_result_blob(sqlite3_context*, const void*, int, void(*)(void*));
 void sqlite3_result_double(sqlite3_context*, double);
 void sqlite3_result_error(sqlite3_context*, const char*, int);
 void sqlite3_result_error16(sqlite3_context*, const void*, int);
@@ -251,7 +251,7 @@ kind of <a href="../c3ref/value.html">sqlite3_value</a> object can be used with 
 <p>If these routines are called from within the different thread
 than the one containing the application-defined function that received
 the <a href="../c3ref/context.html">sqlite3_context</a> pointer, the results are undefined.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

@@ -128,7 +128,8 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>64-Bit Integer Types</h2><blockquote><pre>#ifdef SQLITE_INT64_TYPE
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>64位整数类型
+<br />64-Bit Integer Types</h2><blockquote><pre>#ifdef SQLITE_INT64_TYPE
   typedef SQLITE_INT64_TYPE sqlite_int64;
   typedef unsigned SQLITE_INT64_TYPE sqlite_uint64;
 #elif defined(_MSC_VER) || defined(__BORLANDC__)
@@ -141,18 +142,22 @@ a:visited { color: #734559 }
 typedef sqlite_int64 sqlite3_int64;
 typedef sqlite_uint64 sqlite3_uint64;
 </pre></blockquote><p>
-Because there is no cross-platform way to specify 64-bit integer types
+因为没有跨平台的制定64位整数类型的方法，所以SQLite包含了对64位有符号和无符号整数的定义。
+<br />Because there is no cross-platform way to specify 64-bit integer types
 SQLite includes typedefs for 64-bit signed and unsigned integers.</p>
 
-<p>The sqlite3_int64 and sqlite3_uint64 are the preferred type definitions.
+<p>sqlite3_int64 和 sqlite3_uint64是首选的类型定义，sqlite_int64 和 sqlite_uint64类型只是为了支持向后兼容性。
+<br />The sqlite3_int64 and sqlite3_uint64 are the preferred type definitions.
 The sqlite_int64 and sqlite_uint64 types are supported for backwards
 compatibility only.</p>
 
-<p>The sqlite3_int64 and sqlite_int64 types can store integer values
+<p>sqlite3_int64 和 sqlite_int64可以存储-9223372036854775808 和 +9223372036854775807之间（包含）的整数值。sqlite3_uint64 和 sqlite_uint64可以存储0 和 +18446744073709551615之间（包含）的整数值。
+<br />The sqlite3_int64 and sqlite_int64 types can store integer values
 between -9223372036854775808 and +9223372036854775807 inclusive.  The
 sqlite3_uint64 and sqlite_uint64 types can store integer values
 between 0 and +18446744073709551615 inclusive.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。
+<br />See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

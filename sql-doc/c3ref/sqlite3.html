@@ -128,9 +128,11 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Database Connection Handle</h2><blockquote><pre>typedef struct sqlite3 sqlite3;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>数据库连接句柄
+<br />Database Connection Handle</h2><blockquote><pre>typedef struct sqlite3 sqlite3;
 </pre></blockquote><p>
-Each open SQLite database is represented by a pointer to an instance of
+每次打开一个SQLite数据库都会使用一个名为“sqlite3”的不透明结构体实例的指针来表示。这里最好将sqlite3指针当做一个对象来看待。<a href="../c3ref/open.html">sqlite3_open()</a>、<a href="../c3ref/open.html">sqlite3_open16()</a>和<a href="../c3ref/open.html">sqlite3_open_v2()</a>是它的构造函数，<a href="../c3ref/close.html">sqlite3_close()</a>和<a href="../c3ref/close.html">sqlite3_close_v2()</a>是析构函数。有许多接口（例如：<a href="../c3ref/prepare.html">sqlite3_prepare_v2()</a>、<a href="../c3ref/create_function.html">sqlite3_create_function()</a>和<a href="../c3ref/busy_timeout.html">sqlite3_busy_timeout()</a>）都是这个sqlite3对象上的方法。
+<br />Each open SQLite database is represented by a pointer to an instance of
 the opaque structure named "sqlite3".  It is useful to think of an sqlite3
 pointer as an object.  The <a href="../c3ref/open.html">sqlite3_open()</a>, <a href="../c3ref/open.html">sqlite3_open16()</a>, and
 <a href="../c3ref/open.html">sqlite3_open_v2()</a> interfaces are its constructors, and <a href="../c3ref/close.html">sqlite3_close()</a>
@@ -139,7 +141,8 @@ interfaces (such as
 <a href="../c3ref/prepare.html">sqlite3_prepare_v2()</a>, <a href="../c3ref/create_function.html">sqlite3_create_function()</a>, and
 <a href="../c3ref/busy_timeout.html">sqlite3_busy_timeout()</a> to name but three) that are methods on an
 sqlite3 object.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。
+<br />See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

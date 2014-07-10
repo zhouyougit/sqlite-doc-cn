@@ -128,7 +128,7 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Mutex Methods Object</h2><blockquote><pre>typedef struct sqlite3_mutex_methods sqlite3_mutex_methods;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Mutex Methods Object</h2><blockquote><pre>typedef struct sqlite3_mutex_methods sqlite3_mutex_methods;
 struct sqlite3_mutex_methods {
   int (*xMutexInit)(void);
   int (*xMutexEnd)(void);
@@ -202,7 +202,7 @@ memory allocation for a fast or recursive mutex.</p>
 called, but only if the prior call to xMutexInit returned SQLITE_OK.
 If xMutexInit fails in any way, it is expected to clean up after itself
 prior to returning.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

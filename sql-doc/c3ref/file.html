@@ -128,19 +128,21 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>OS Interface Open File Handle</h2><blockquote><pre>typedef struct sqlite3_file sqlite3_file;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>操作系统接口，打开文件的句柄
+<br />OS Interface Open File Handle</h2><blockquote><pre>typedef struct sqlite3_file sqlite3_file;
 struct sqlite3_file {
-  const struct sqlite3_io_methods *pMethods;  /* Methods for an open file */
+  const struct sqlite3_io_methods *pMethods;  /* 一个打开文件的方法。Methods for an open file */
 };
 </pre></blockquote><p>
-An <a href="../c3ref/file.html">sqlite3_file</a> object represents an open file in the
+在<a href="../c3ref/vfs.html">操作系统接口层</a>，<a href="../c3ref/file.html">sqlite3_file</a>对象表示一个打开的文件。不同的操作系统实现会创建这个类的子类，追加一些自己使用的字段。pMethods是一个指向<a href="../c3ref/io_methods.html">sqlite3_io_methods</a>对象的指针，它定义了在打开的文件上执行I/O操作的方法。
+<br />An <a href="../c3ref/file.html">sqlite3_file</a> object represents an open file in the
 <a href="../c3ref/vfs.html">OS interface layer</a>.  Individual OS interface
 implementations will
 want to subclass this object by appending additional fields
 for their own use.  The pMethods entry is a pointer to an
 <a href="../c3ref/io_methods.html">sqlite3_io_methods</a> object that defines methods for performing
 I/O operations on the open file.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

@@ -128,7 +128,7 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Determine If An SQL Statement Writes The Database</h2><blockquote><pre>int sqlite3_stmt_readonly(sqlite3_stmt *pStmt);
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Determine If An SQL Statement Writes The Database</h2><blockquote><pre>int sqlite3_stmt_readonly(sqlite3_stmt *pStmt);
 </pre></blockquote><p>
 The sqlite3_stmt_readonly(X) interface returns true (non-zero) if
 and only if the <a href="../c3ref/stmt.html">prepared statement</a> X makes no direct changes to
@@ -155,7 +155,7 @@ database.  The <a href="../lang_attach.html">ATTACH</a> and <a href="../lang_det
 sqlite3_stmt_readonly() to return true since, while those statements
 change the configuration of a database connection, they do not make
 changes to the content of the database files on disk.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

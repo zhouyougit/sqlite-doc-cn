@@ -128,19 +128,23 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Custom Page Cache Object</h2><blockquote><pre>typedef struct sqlite3_pcache_page sqlite3_pcache_page;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>自定义页缓存对象
+<br />Custom Page Cache Object</h2><blockquote><pre>typedef struct sqlite3_pcache_page sqlite3_pcache_page;
 struct sqlite3_pcache_page {
-  void *pBuf;        /* The content of the page */
-  void *pExtra;      /* Extra information associated with the page */
+  void *pBuf;        /* 页的内容 The content of the page */
+  void *pExtra;      /* 页相关的扩展信息 Extra information associated with the page */
 };
 </pre></blockquote><p>
-The sqlite3_pcache_page object represents a single page in the
+sqlite3_pcache_page对象表示了页缓存中的一个页面。页缓存会为这个对象分配实例。各种页缓存的函数都使用指向这个对象的指针作为参数或者返回值。
+<br />The sqlite3_pcache_page object represents a single page in the
 page cache.  The page cache will allocate instances of this
 object.  Various methods of the page cache use pointers to instances
 of this object as parameters or as their return value.</p>
 
-<p>See <a href="../c3ref/pcache_methods2.html">sqlite3_pcache_methods2</a> for additional information.
-</p><p>See also lists of
+<p>更多信息参见<a href="../c3ref/pcache_methods2.html">sqlite3_pcache_methods2</a>
+<br />See <a href="../c3ref/pcache_methods2.html">sqlite3_pcache_methods2</a> for additional information.
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。
+<br />See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

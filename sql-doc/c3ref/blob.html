@@ -128,16 +128,19 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>A Handle To An Open BLOB</h2><blockquote><pre>typedef struct sqlite3_blob sqlite3_blob;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>一个打开的BLOB句柄
+<br />A Handle To An Open BLOB</h2><blockquote><pre>typedef struct sqlite3_blob sqlite3_blob;
 </pre></blockquote><p>
-An instance of this object represents an open BLOB on which
+这个对象的实例表示一个打开的BLOB，在这个对象上可以执行<a href="../c3ref/blob_open.html">增量 BLOB I/O</a>。这个对象使用<a href="../c3ref/blob_open.html">sqlite3_blob_open()</a>创建，使用<a href="../c3ref/blob_close.html">sqlite3_blob_close()</a>销毁。可以使用<a href="../c3ref/blob_read.html">sqlite3_blob_read()</a> 和 <a href="../c3ref/blob_write.html">sqlite3_blob_write()</a>接口来读写BLOB的一小段。<a href="../c3ref/blob_bytes.html">sqlite3_blob_bytes()</a>接口返回BLOB的字节大小。
+<br />An instance of this object represents an open BLOB on which
 <a href="../c3ref/blob_open.html">incremental BLOB I/O</a> can be performed.
 Objects of this type are created by <a href="../c3ref/blob_open.html">sqlite3_blob_open()</a>
 and destroyed by <a href="../c3ref/blob_close.html">sqlite3_blob_close()</a>.
 The <a href="../c3ref/blob_read.html">sqlite3_blob_read()</a> and <a href="../c3ref/blob_write.html">sqlite3_blob_write()</a> interfaces
 can be used to read or write small subsections of the BLOB.
 The <a href="../c3ref/blob_bytes.html">sqlite3_blob_bytes()</a> interface returns the size of the BLOB in bytes.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。
+<br />See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

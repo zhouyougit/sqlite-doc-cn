@@ -128,7 +128,7 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Virtual Table Instance Object</h2><blockquote><pre>struct sqlite3_vtab {
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Virtual Table Instance Object</h2><blockquote><pre>struct sqlite3_vtab {
   const sqlite3_module *pModule;  /* The module for this virtual table */
   int nRef;                       /* NO LONGER USED */
   char *zErrMsg;                  /* Error message from sqlite3_mprintf() */
@@ -148,7 +148,7 @@ take care that any prior string is freed by a call to <a href="../c3ref/free.htm
 prior to assigning a new string to zErrMsg.  After the error message
 is delivered up to the client application, the string will be automatically
 freed by sqlite3_free() and the zErrMsg field will be zeroed.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

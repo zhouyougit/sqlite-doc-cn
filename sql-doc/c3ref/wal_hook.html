@@ -128,7 +128,7 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Write-Ahead Log Commit Hook</h2><blockquote><pre>void *sqlite3_wal_hook(
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Write-Ahead Log Commit Hook</h2><blockquote><pre>void *sqlite3_wal_hook(
   sqlite3*, 
   int(*)(void *,sqlite3*,const char*,int),
   void*
@@ -165,7 +165,7 @@ previously registered write-ahead log callback. Note that the
 <a href="../c3ref/wal_autocheckpoint.html">sqlite3_wal_autocheckpoint()</a> interface and the
 <a href="../pragma.html#pragma_wal_autocheckpoint">wal_autocheckpoint pragma</a> both invoke <a href="../c3ref/wal_hook.html">sqlite3_wal_hook()</a> and will
 those overwrite any prior <a href="../c3ref/wal_hook.html">sqlite3_wal_hook()</a> settings.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

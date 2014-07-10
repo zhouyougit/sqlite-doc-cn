@@ -128,15 +128,19 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Online Backup Object</h2><blockquote><pre>typedef struct sqlite3_backup sqlite3_backup;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>在线备份对象
+<br />Online Backup Object</h2><blockquote><pre>typedef struct sqlite3_backup sqlite3_backup;
 </pre></blockquote><p>
-The sqlite3_backup object records state information about an ongoing
+sqlite3_backup对象记录了一个正在进行的在线备份操作的状态信息。sqlite3_backup对象是由<a href="../c3ref/backup_finish.html#sqlite3backupinit">sqlite3_backup_init()</a>调用创建的，通过<a href="../c3ref/backup_finish.html#sqlite3backupfinish">sqlite3_backup_finish()</a>调用销毁。
+<br />The sqlite3_backup object records state information about an ongoing
 online backup operation.  The sqlite3_backup object is created by
 a call to <a href="../c3ref/backup_finish.html#sqlite3backupinit">sqlite3_backup_init()</a> and is destroyed by a call to
 <a href="../c3ref/backup_finish.html#sqlite3backupfinish">sqlite3_backup_finish()</a>.</p>
 
-<p>See Also: <a href="../backup.html">Using the SQLite Online Backup API</a>
-</p><p>See also lists of
+<p>参见：<a href="../backup.html">使用SQLite在线备份 API</a>
+<br />See Also: <a href="../backup.html">Using the SQLite Online Backup API</a>
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。
+<br />See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

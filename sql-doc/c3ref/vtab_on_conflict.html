@@ -128,7 +128,7 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Determine The Virtual Table Conflict Policy</h2><blockquote><pre>int sqlite3_vtab_on_conflict(sqlite3 *);
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Determine The Virtual Table Conflict Policy</h2><blockquote><pre>int sqlite3_vtab_on_conflict(sqlite3 *);
 </pre></blockquote><p>
 This function may only be called from within a call to the <a href="../vtab.html#xupdate">xUpdate</a> method
 of a <a href="../vtab.html">virtual table</a> implementation for an INSERT or UPDATE operation. The
@@ -136,7 +136,7 @@ value returned is one of <a href="../c3ref/c_fail.html">SQLITE_ROLLBACK</a>, <a 
 <a href="../c3ref/c_abort.html">SQLITE_ABORT</a>, or <a href="../c3ref/c_fail.html">SQLITE_REPLACE</a>, according to the <a href="../lang_conflict.html">ON CONFLICT</a> mode
 of the SQL statement that triggered the call to the <a href="../vtab.html#xupdate">xUpdate</a> method of the
 <a href="../vtab.html">virtual table</a>.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

@@ -128,28 +128,38 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>SQL Statement Object</h2><blockquote><pre>typedef struct sqlite3_stmt sqlite3_stmt;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>SQL语句对象
+<br />SQL Statement Object</h2><blockquote><pre>typedef struct sqlite3_stmt sqlite3_stmt;
 </pre></blockquote><p>
-An instance of this object represents a single SQL statement.
+这个对象的实例表示一个SQL语句。这个对象在不同地方可能会称为“预编译语句（prepared statement）”或“已编译SQL语句（compiled SQL statement）”或“语句（statement）”。
+<br />An instance of this object represents a single SQL statement.
 This object is variously known as a "prepared statement" or a
 "compiled SQL statement" or simply as a "statement".</p>
 
-<p>The life of a statement object goes something like this:</p>
+<p>一个语句对象的生命期大概是这样的：
+<br />The life of a statement object goes something like this:</p>
 
 <p><ol>
-<li> Create the object using <a href="../c3ref/prepare.html">sqlite3_prepare_v2()</a> or a related
+<li> 使用<a href="../c3ref/prepare.html">sqlite3_prepare_v2()</a>或相关函数创建这个对象。
+<br />Create the object using <a href="../c3ref/prepare.html">sqlite3_prepare_v2()</a> or a related
 function.
-<li> Bind values to <a href="../c3ref/bind_blob.html">host parameters</a> using the sqlite3_bind_*()
+<li> 使用sqlite3_bind_*()接口将值绑定到<a href="../c3ref/bind_blob.html">主参数</a>上。
+<br />Bind values to <a href="../c3ref/bind_blob.html">host parameters</a> using the sqlite3_bind_*()
 interfaces.
-<li> Run the SQL by calling <a href="../c3ref/step.html">sqlite3_step()</a> one or more times.
-<li> Reset the statement using <a href="../c3ref/reset.html">sqlite3_reset()</a> then go back
+<li> 调用一次或多次 <a href="../c3ref/step.html">sqlite3_step()</a>来运行SQL。
+<br />Run the SQL by calling <a href="../c3ref/step.html">sqlite3_step()</a> one or more times.
+<li> 使用<a href="../c3ref/reset.html">sqlite3_reset()</a>重置语句，然后回到第2步。执行零次或多次。
+<br />Reset the statement using <a href="../c3ref/reset.html">sqlite3_reset()</a> then go back
 to step 2.  Do this zero or more times.
-<li> Destroy the object using <a href="../c3ref/finalize.html">sqlite3_finalize()</a>.
+<li> 使用<a href="../c3ref/finalize.html">sqlite3_finalize()</a>销毁这个对象。
+<br />Destroy the object using <a href="../c3ref/finalize.html">sqlite3_finalize()</a>.
 </ol></p>
 
-<p>Refer to documentation on individual methods above for additional
+<p>更多信息，请参考上面每个方法的文档。
+<br />Refer to documentation on individual methods above for additional
 information.
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。
+<br />See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>

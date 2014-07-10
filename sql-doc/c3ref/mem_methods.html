@@ -128,7 +128,7 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C Interface</h2></a><h2>Memory Allocation Routines</h2><blockquote><pre>typedef struct sqlite3_mem_methods sqlite3_mem_methods;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Memory Allocation Routines</h2><blockquote><pre>typedef struct sqlite3_mem_methods sqlite3_mem_methods;
 struct sqlite3_mem_methods {
   void *(*xMalloc)(int);         /* Memory allocation function */
   void (*xFree)(void*);          /* Free a prior allocation */
@@ -199,7 +199,7 @@ serialization.</p>
 
 <p>SQLite will never invoke xInit() more than once without an intervening
 call to xShutdown().
-</p><p>See also lists of
+</p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,
   <a href="constlist.html">Constants</a>, and
   <a href="funclist.html">Functions</a>.</p>
