@@ -128,9 +128,11 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Name Of The Folder Holding Database Files</h2><blockquote><pre>SQLITE_EXTERN char *sqlite3_data_directory;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>存储数据库文件的目录名
+<br />Name Of The Folder Holding Database Files</h2><blockquote><pre>SQLITE_EXTERN char *sqlite3_data_directory;
 </pre></blockquote><p>
-If this global variable is made to point to a string which is
+如果这个全局变量指向一个目录名字符串，那么所有指定相对路径的数据库文件和SQLite使用内置的windows <a href="../c3ref/vfs.html">VFS</a>时创建或访问的数据库文件都将是相对这个目录。如果这个变量是一个NULL指针，那么SQLite假设所有指定相对路径的数据库文件都是相对进程的当前目录。只有windows VFS使用这个全局变量，unx VFS会忽略这个值。
+<br />If this global variable is made to point to a string which is
 the name of a folder (a.k.a. directory), then all database files
 specified with a relative pathname and created or accessed by
 SQLite when using a built-in windows <a href="../c3ref/vfs.html">VFS</a> will be assumed
@@ -140,10 +142,12 @@ with a relative pathname are relative to the current directory
 for the process.  Only the windows VFS makes use of this global
 variable; it is ignored by the unix VFS.</p>
 
-<p>Changing the value of this variable while a database connection is
+<p>在数据库连接打开后修改这个变量值会导致数据库损坏。
+<br />Changing the value of this variable while a database connection is
 open can result in a corrupt database.</p>
 
-<p>It is not safe to read or modify this variable in more than one
+<p>同时在一个以上的线程中修改或读取这个变量是不安全的。如果在其他的线程中已经使用了<a href="../c3ref/sqlite3.html">数据库连接</a>，那么这时修改或读取这个变量是不安全的。这个变量被设计为只在进程初始化、调用其他任何SQLite接口之前执行一次，而在后续的过程中不会再修改这个变量。
+<br />It is not safe to read or modify this variable in more than one
 thread at a time.  It is not safe to read or modify this variable
 if a <a href="../c3ref/sqlite3.html">database connection</a> is being used at the same time in a separate
 thread.
@@ -152,7 +156,8 @@ as part of process initialization and before any SQLite interface
 routines have been called and that this variable remain unchanged
 thereafter.</p>
 
-<p>The <a href="../pragma.html#pragma_data_store_directory">data_store_directory pragma</a> may modify this variable and cause
+<p><a href="../pragma.html#pragma_data_store_directory">data_store_directory pragma</a>可以修改这个变量，并使之指向一块从<a href="../c3ref/free.html">sqlite3_malloc</a>获取的内存。另外<a href="../pragma.html#pragma_data_store_directory">data_store_directory pragma</a>会假设这变量指定的字符串一定是存储在从<a href="../c3ref/free.html">sqlite3_malloc</a>获取的内存中，并且会使用<a href="../c3ref/free.html">sqlite3_free</a>来释放内存。因此，如果直接修改这个变量，那么要么设置为NULL，要么指向从<a href="../c3ref/free.html">sqlite3_malloc</a>中分配的内存。否则，使用<a href="../pragma.html#pragma_data_store_directory">data_store_directory pragma</a>可能会失效。
+<br />The <a href="../pragma.html#pragma_data_store_directory">data_store_directory pragma</a> may modify this variable and cause
 it to point to memory obtained from <a href="../c3ref/free.html">sqlite3_malloc</a>.  Furthermore,
 the <a href="../pragma.html#pragma_data_store_directory">data_store_directory pragma</a> always assumes that any string
 that this variable points to is held in memory obtained from

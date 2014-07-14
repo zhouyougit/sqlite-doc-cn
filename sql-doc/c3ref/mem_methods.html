@@ -128,7 +128,8 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Memory Allocation Routines</h2><blockquote><pre>typedef struct sqlite3_mem_methods sqlite3_mem_methods;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>内存分配函数
+<br />Memory Allocation Routines</h2><blockquote><pre>typedef struct sqlite3_mem_methods sqlite3_mem_methods;
 struct sqlite3_mem_methods {
   void *(*xMalloc)(int);         /* Memory allocation function */
   void (*xFree)(void*);          /* Free a prior allocation */
@@ -140,10 +141,12 @@ struct sqlite3_mem_methods {
   void *pAppData;                /* Argument to xInit() and xShutdown() */
 };
 </pre></blockquote><p>
-An instance of this object defines the interface between SQLite
+这个对象的实例定义了SQLite和底层内存分配函数之间的接口。
+<br />An instance of this object defines the interface between SQLite
 and low-level memory allocation routines.</p>
 
-<p>This object is used in only one place in the SQLite interface.
+<p>这个对象只用于SQLite接口中的一个地方。当配置<a href="../c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a>或<a href="../c3ref/c_config_covering_index_scan.html#sqliteconfiggetmalloc">SQLITE_CONFIG_GETMALLOC</a>选项时，<a href="../c3ref/config.html">sqlite3_config()</a>的一个参数是指向这个对象实例的指针。在配置中创建一个这个对象的实例，并传入到<a href="../c3ref/config.html">sqlite3_config</a>(<a href="../c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a>)中，应用程序就可以给SQLite指定一个内存分配子系统来完成所有动态内存分配的工作。
+<br />This object is used in only one place in the SQLite interface.
 A pointer to an instance of this object is the argument to
 <a href="../c3ref/config.html">sqlite3_config()</a> when the configuration option is
 <a href="../c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a> or <a href="../c3ref/c_config_covering_index_scan.html#sqliteconfiggetmalloc">SQLITE_CONFIG_GETMALLOC</a>.
@@ -153,7 +156,8 @@ during configuration, an application can specify an alternative
 memory allocation subsystem for SQLite to use for all of its
 dynamic memory needs.</p>
 
-<p>Note that SQLite comes with several <a href="../malloc.html#altalloc">built-in memory allocators</a>
+<p>注意，SQLite中有几个<a href="../malloc.html#altalloc">内置内存分配器</a>，这些可以完美适用于绝大部分的应用程序，而这个对象只是适用于很小的一部分需要专用内存分配器的应用。这个对象经常用在SQLite测试中，用来指定一个可以模拟内存溢出等情况的内存分配器，以此来测试SQLite是否能从这种情况下恢复。
+<br />Note that SQLite comes with several <a href="../malloc.html#altalloc">built-in memory allocators</a>
 that are perfectly adequate for the overwhelming majority of applications
 and that this object is only useful to a tiny minority of applications
 with specialized memory allocation requirements.  This object is
@@ -162,16 +166,19 @@ memory allocator that simulates memory out-of-memory conditions in
 order to verify that SQLite recovers gracefully from such
 conditions.</p>
 
-<p>The xMalloc, xRealloc, and xFree methods must work like the
+<p>xMalloc、xRealloc和xFree函数的功能与标准C库中malloc()、realloc()和free()函数一样。SQLite保证xRealloc的第二个参数总是一个之前xRoundup调用返回的值。
+<br />The xMalloc, xRealloc, and xFree methods must work like the
 malloc(), realloc() and free() functions from the standard C library.
 SQLite guarantees that the second argument to
 xRealloc is always a value returned by a prior call to xRoundup.</p>
 
-<p>xSize should return the allocated size of a memory allocation
+<p>xSize可以返回之前从xMalloc 或 xRealloc中分配的内存的大小。分配的内存至少和需求一样大，不过也可能会大一些。
+<br />xSize should return the allocated size of a memory allocation
 previously obtained from xMalloc or xRealloc.  The allocated size
 is always at least as big as the requested size but may be larger.</p>
 
-<p>The xRoundup method returns what would be the allocated size of
+<p>xRoundup函数给定一个所需的内存尺寸，返回实际会分配的内存大小。大多数的内存分配器至少将分配的内存大小向上增加到下一个8的倍数。一些分配器会增加到更大的倍数，甚至2的幂。每次通过<a href="../c3ref/free.html">sqlite3_malloc()</a>或<a href="../c3ref/free.html">sqlite3_realloc()</a>分配内存时，会首先调用xRoundup。如果xRoundup返回0，则会导致相应的内存分配失败。
+<br />The xRoundup method returns what would be the allocated size of
 a memory allocation given a particular requested size.  Most memory
 allocators round up memory allocations at least to the next multiple
 of 8.  Some allocators round up to a larger multiple or to a power of 2.
@@ -179,14 +186,16 @@ Every memory allocation request coming in through <a href="../c3ref/free.html">s
 or <a href="../c3ref/free.html">sqlite3_realloc()</a> first calls xRoundup.  If xRoundup returns 0,
 that causes the corresponding memory allocation to fail.</p>
 
-<p>The xInit method initializes the memory allocator.  For example,
+<p>xInit函数初始化内存分配。例如，可能会分配所有所需的互斥体，或者初始化内部数据结构。xShutdown函数由<a href="../c3ref/initialize.html">sqlite3_shutdown()</a>间接执行，释放所有xInit请求的资源。pAppData指针是xInit和xShoutdown唯一的参数。
+<br />The xInit method initializes the memory allocator.  For example,
 it might allocate any require mutexes or initialize internal data
 structures.  The xShutdown method is invoked (indirectly) by
 <a href="../c3ref/initialize.html">sqlite3_shutdown()</a> and should deallocate any resources acquired
 by xInit.  The pAppData pointer is used as the only parameter to
 xInit and xShutdown.</p>
 
-<p>SQLite holds the <a href="../c3ref/c_mutex_fast.html">SQLITE_MUTEX_STATIC_MASTER</a> mutex when it invokes
+<p>当执行xInit函数时SQLite会持有<a href="../c3ref/c_mutex_fast.html">SQLITE_MUTEX_STATIC_MASTER</a>互斥锁，所以xInit函数不需要线程安全。xShutdown函数只在<a href="../c3ref/initialize.html">sqlite3_shutdown()</a>中调用，所以也不需要线程安全。对于其他的函数，只要<a href="../c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a>配置项是开启的（默认值），那么SQLite就会获取<a href="../c3ref/c_mutex_fast.html">SQLITE_MUTEX_STATIC_MEM</a>互斥锁，所以这些函数都是自动串行化的。但是，如果关闭了<a href="../c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a>，那么其它的这些函数就必须保证线程安全，否则就让自行安排串行化。
+<br />SQLite holds the <a href="../c3ref/c_mutex_fast.html">SQLITE_MUTEX_STATIC_MASTER</a> mutex when it invokes
 the xInit method, so the xInit method need not be threadsafe.  The
 xShutdown method is only called from <a href="../c3ref/initialize.html">sqlite3_shutdown()</a> so it does
 not need to be threadsafe either.  For all other methods, SQLite
@@ -197,7 +206,8 @@ However, if <a href="../c3ref/c_config_covering_index_scan.html#sqliteconfigmems
 methods must be threadsafe or else make their own arrangements for
 serialization.</p>
 
-<p>SQLite will never invoke xInit() more than once without an intervening
+<p>SQLite永远不会在调用xShutdown()之前，连续调用xInit()一次以上。
+<br />SQLite will never invoke xInit() more than once without an intervening
 call to xShutdown().
 </p><p>另行参见<a href="objlist.html">Objects</a>、<a href="constlist.html">Constants</a>和<a href="funclist.html">Functions</a>的列表。<br/>See also lists of
   <a href="objlist.html">Objects</a>,

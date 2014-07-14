@@ -128,15 +128,16 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>OS Interface Object</h2><blockquote><pre>typedef struct sqlite3_vfs sqlite3_vfs;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>操作系统接口对象
+<br />OS Interface Object</h2><blockquote><pre>typedef struct sqlite3_vfs sqlite3_vfs;
 typedef void (*sqlite3_syscall_ptr)(void);
 struct sqlite3_vfs {
-  int iVersion;            /* Structure version number (currently 3) */
-  int szOsFile;            /* Size of subclassed sqlite3_file */
-  int mxPathname;          /* Maximum file pathname length */
-  sqlite3_vfs *pNext;      /* Next registered VFS */
-  const char *zName;       /* Name of this virtual file system */
-  void *pAppData;          /* Pointer to application-specific data */
+  int iVersion;            /* 结构体版本号（当前为3）  Structure version number (currently 3) */
+  int szOsFile;            /* sqlite3_file的大小  Size of subclassed sqlite3_file */
+  int mxPathname;          /* 最大文件路径名长度  Maximum file pathname length */
+  sqlite3_vfs *pNext;      /* 下一个注册的VFS  Next registered VFS */
+  const char *zName;       /* 虚拟文件系统的名字  Name of this virtual file system */
+  void *pAppData;          /* 指向应用程序指定的数据  Pointer to application-specific data */
   int (*xOpen)(sqlite3_vfs*, const char *zName, sqlite3_file*,
                int flags, int *pOutFlags);
   int (*xDelete)(sqlite3_vfs*, const char *zName, int syncDir);
@@ -169,41 +170,48 @@ struct sqlite3_vfs {
   */
 };
 </pre></blockquote><p>
-An instance of the sqlite3_vfs object defines the interface between
+sqlite3_vfs对象的实例定义了SQLite核心和底层操作系统之间的接口。对象名字中的“vfs”表示“虚拟文件系统（virtual file system）”。详细信息参见<a href="../vfs.html">VFS 文档</a>。
+<br />An instance of the sqlite3_vfs object defines the interface between
 the SQLite core and the underlying operating system.  The "vfs"
 in the name of the object stands for "virtual file system".  See
 the <a href="../vfs.html">VFS documentation</a> for further information.</p>
 
-<p>The value of the iVersion field is initially 1 but may be larger in
+<p>iVersion 字段的最初值为1，但是在未来的版本中会变大。当iVersion值增加时，这个对象可能会追加额外的字段。注意，sqlite3_vfs对象的结构在SQLite 3.5.9版到 3.6.0版时发生了变动，但是iVersion 字段没有修改。
+<br />The value of the iVersion field is initially 1 but may be larger in
 future versions of SQLite.  Additional fields may be appended to this
 object when the iVersion value is increased.  Note that the structure
 of the sqlite3_vfs object changes in the transaction between
 SQLite version 3.5.9 and 3.6.0 and yet the iVersion field was not
 modified.</p>
 
-<p>The szOsFile field is the size of the subclassed <a href="../c3ref/file.html">sqlite3_file</a>
+<p>szOsFile字段是VFS使用的子类化的<a href="../c3ref/file.html">sqlite3_file</a>结构体的大小。mxPathname是这个VFS中路径名的最大长度。
+<br />The szOsFile field is the size of the subclassed <a href="../c3ref/file.html">sqlite3_file</a>
 structure used by this VFS.  mxPathname is the maximum length of
 a pathname in this VFS.</p>
 
-<p>Registered sqlite3_vfs objects are kept on a linked list formed by
+<p>注册的sqlite3_vfs 对象都保存在由pNext指针构成的链表中。<a href="../c3ref/vfs_find.html">sqlite3_vfs_register()</a>和<a href="../c3ref/vfs_find.html">sqlite3_vfs_unregister()</a>接口以线程安全的方式来管理这个链表。<a href="../c3ref/vfs_find.html">sqlite3_vfs_find()</a>用于搜索这个链表。应用程序和VFS实现都不会使用这个pNext指针。
+<br />Registered sqlite3_vfs objects are kept on a linked list formed by
 the pNext pointer.  The <a href="../c3ref/vfs_find.html">sqlite3_vfs_register()</a>
 and <a href="../c3ref/vfs_find.html">sqlite3_vfs_unregister()</a> interfaces manage this list
 in a thread-safe way.  The <a href="../c3ref/vfs_find.html">sqlite3_vfs_find()</a> interface
 searches the list.  Neither the application code nor the VFS
 implementation should use the pNext pointer.</p>
 
-<p>The pNext field is the only field in the sqlite3_vfs
+<p>pNext字段是sqlite3_vfs结构体中SQLite唯一会修改的字段。SQLite只有当持有一个特殊的静态互斥锁才能访问或修改这个字段。一旦sqlite3_vfs对象被注册了，应用程序就不能修改这个对象中的任何字段了。
+<br />The pNext field is the only field in the sqlite3_vfs
 structure that SQLite will ever modify.  SQLite will only access
 or modify this field while holding a particular static mutex.
 The application should never modify anything within the sqlite3_vfs
 object once the object has been registered.</p>
 
-<p>The zName field holds the name of the VFS module.  The name must
+<p>zName字段保存了这个VFS模块的名字。这个名字在VFS模块中必须是唯一的。
+<br />The zName field holds the name of the VFS module.  The name must
 be unique across all VFS modules.</p>
 
 <p><a name="sqlite3vfsxopen"></a>
 
-SQLite guarantees that the zFilename parameter to xOpen
+SQLite保证xOpen的zFilename参数只会是NULL或从xFullPathname()加上一个可选的后缀获取的字符串。如果zFilename参数中加入了一个后缀，那么会由一个“-”字符加上不多于11个字符组成。SQLite进一步保证这个字符串在xClose()调用之前都是有效且不会改变的。因为前一句话，所以，如果由于某些原因需要保存文件名的话，<a href="../c3ref/file.html">sqlite3_file</a>可以安全的存储一个指向文件名的指针。如果xOpen的zFilename参数是一个NULL指针，那么xOpen必须为这个文件创建iGetter独有的临时名字。一旦xFilename参数是NULL，那么也就意味着标志参数包含<a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_DELETEONCLOSE</a>。
+<br />SQLite guarantees that the zFilename parameter to xOpen
 is either a NULL pointer or string obtained
 from xFullPathname() with an optional suffix added.
 If a suffix is added to the zFilename parameter, it will
@@ -219,14 +227,16 @@ must invent its own temporary name for the file.  Whenever the
 xFilename parameter is NULL it will also be the case that the
 flags parameter will include <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_DELETEONCLOSE</a>.</p>
 
-<p>The flags argument to xOpen() includes all bits set in
+<p>xOpen()的标志参数包含<a href="../c3ref/open.html">sqlite3_open_v2()</a>的标志参数的所有位集合。如果使用<a href="../c3ref/open.html">sqlite3_open()</a>或<a href="../c3ref/open.html">sqlite3_open16()</a>，那么标志至少包含<a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_READWRITE</a> | <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_CREATE</a>。如果xOpen()打开一个只读文件，那么*pOutFlags会包含<a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_READONLY</a>。*pOutFlags中的其它位也可能会设置。
+<br />The flags argument to xOpen() includes all bits set in
 the flags argument to <a href="../c3ref/open.html">sqlite3_open_v2()</a>.  Or if <a href="../c3ref/open.html">sqlite3_open()</a>
 or <a href="../c3ref/open.html">sqlite3_open16()</a> is used, then flags includes at least
 <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_READWRITE</a> | <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_CREATE</a>.
 If xOpen() opens a file read-only then it sets *pOutFlags to
 include <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_READONLY</a>.  Other bits in *pOutFlags may be set.</p>
 
-<p>SQLite will also add one of the following flags to the xOpen()
+<p>根据打开的对象不同，SQLite还会在xOpen()调用中加入下列的标志：
+<br />SQLite will also add one of the following flags to the xOpen()
 call, depending on the object being opened:</p>
 
 <p><ul>
@@ -240,7 +250,8 @@ call, depending on the object being opened:</p>
 <li>  <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_WAL</a>
 </ul></p>
 
-<p>The file I/O implementation can use the object type flags to
+<p>文件I/O实现可以使用这些标志来改变处理文件的方式。例如，一个应用程序如果不关心崩溃后的恢复和回滚，那么可以使日志文件的打开变为空操作，写入日志也就同样是空操作，其他日志读取操作则都会返回SQLITE_IOERR。或者，实现可能会识别出数据库文件需要在随机顺序中执行页对齐扇区读写，因此相应的设置I/O子系统。
+<br />The file I/O implementation can use the object type flags to
 change the way it deals with files.  For example, an application
 that does not care about crash recovery or rollback might make
 the open of a journal file a no-op.  Writes to this journal would
@@ -249,19 +260,22 @@ SQLITE_IOERR.  Or the implementation might recognize that a database
 file will be doing page-aligned sector reads and writes in a random
 order and set up its I/O subsystem accordingly.</p>
 
-<p>SQLite might also add one of the following flags to the xOpen method:</p>
+<p>SQLite还可能在xOpen方法中加入下面的标志：
+<br />SQLite might also add one of the following flags to the xOpen method:</p>
 
 <p><ul>
 <li> <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_DELETEONCLOSE</a>
 <li> <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_EXCLUSIVE</a>
 </ul></p>
 
-<p>The <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_DELETEONCLOSE</a> flag means the file should be
+<p><a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_DELETEONCLOSE</a>标志表示这个文件在关闭时会删除。TEMP数据库和它的日志文件、瞬时数据库和子日志都会这是<a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_DELETEONCLOSE</a>这个标志。
+<br />The <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_DELETEONCLOSE</a> flag means the file should be
 deleted when it is closed.  The <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_DELETEONCLOSE</a>
 will be set for TEMP databases and their journals, transient
 databases, and subjournals.</p>
 
-<p>The <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_EXCLUSIVE</a> flag is always used in conjunction
+<p><a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_EXCLUSIVE</a>标志总是和<a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_CREATE</a>标志一起联合使用，这两个标志与POSIX open() API的O_EXCL和OCREAT标志类似。当标志SQLITE_OPEN_EXCLUSIVE与SQLITE_OPEN_CREATE成对出现时，表示必须创建一个文件，如果文件已经存在则返回错误。这个表示<i>不是</i>表示文件以排他访问模式打开。
+<br />The <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_EXCLUSIVE</a> flag is always used in conjunction
 with the <a href="../c3ref/c_open_autoproxy.html">SQLITE_OPEN_CREATE</a> flag, which are both directly
 analogous to the O_EXCL and O_CREAT flags of the POSIX open()
 API.  The SQLITE_OPEN_EXCLUSIVE flag, when paired with the
@@ -270,7 +284,8 @@ be created, and that it is an error if it already exists.
 It is <i>not</i> used to indicate the file should be opened
 for exclusive access.</p>
 
-<p>At least szOsFile bytes of memory are allocated by SQLite
+<p>SQLite至少会分配szOsFile 字节的内存用来存储xOpen中第三个参数传入的<a href="../c3ref/file.html">sqlite3_file</a>结构体。xOpen函数不需要为这个结构体分配内存，只需要填写这个结构体即可。注意，xOpen函数必须将sqlite3_file.pMethods设置为一个有效的<a href="../c3ref/io_methods.html">sqlite3_io_methods</a>对象，或者NULL。即使打开失败，xOpen也必须做这件事。不论xOpen调用是否失败，SQLite都期望在xOpen返回之后，sqlite3_file.pMethods是有效的。
+<br />At least szOsFile bytes of memory are allocated by SQLite
 to hold the  <a href="../c3ref/file.html">sqlite3_file</a> structure passed as the third
 argument to xOpen.  The xOpen method does not have to
 allocate the structure; it should just fill it in.  Note that
@@ -282,20 +297,23 @@ or failure of the xOpen call.</p>
 
 <p><a name="sqlite3vfsxaccess"></a>
 
-The flags argument to xAccess() may be <a href="../c3ref/c_access_exists.html">SQLITE_ACCESS_EXISTS</a>
+xAccess()的标志参数可以用<a href="../c3ref/c_access_exists.html">SQLITE_ACCESS_EXISTS</a>来测试一个文件是否存在，也可以用<a href="../c3ref/c_access_exists.html">SQLITE_ACCESS_READWRITE</a>标志来测试这个文件是否是可读可写的，还可以用<a href="../c3ref/c_access_exists.html">SQLITE_ACCESS_READ</a>标志来测试，这个文件是否是可读的。文件可以是一个目录。
+<br />The flags argument to xAccess() may be <a href="../c3ref/c_access_exists.html">SQLITE_ACCESS_EXISTS</a>
 to test for the existence of a file, or <a href="../c3ref/c_access_exists.html">SQLITE_ACCESS_READWRITE</a> to
 test whether a file is readable and writable, or <a href="../c3ref/c_access_exists.html">SQLITE_ACCESS_READ</a>
 to test whether a file is at least readable.   The file can be a
 directory.</p>
 
-<p>SQLite will always allocate at least mxPathname+1 bytes for the
+<p>SQLite会为xFullPathname的输出缓冲分配至少mxPathname+1个字节。输出缓冲的精确长度也会作为参数传入。如果输出缓冲不够大，则会返回一个<a href="../c3ref/c_abort.html">SQLITE_CANTOPEN</a>。由于这会被SQLite当做一个致命错误来处理，所以VFS实现应当尽量为mxPathname设置提供一个足够大的值。
+<br />SQLite will always allocate at least mxPathname+1 bytes for the
 output buffer xFullPathname.  The exact size of the output buffer
 is also passed as a parameter to both  methods. If the output buffer
 is not large enough, <a href="../c3ref/c_abort.html">SQLITE_CANTOPEN</a> should be returned. Since this is
 handled as a fatal error by SQLite, vfs implementations should endeavor
 to prevent this by setting mxPathname to a sufficiently large value.</p>
 
-<p>The xRandomness(), xSleep(), xCurrentTime(), and xCurrentTimeInt64()
+<p>xRandomness()、xSleep()、xCurrentTime()和xCurrentTimeInt64()接口严格来说并不是文件系统的一部分，但是为了完整性还是包含在了VFS结构体中。 xRandomness()会返回nByte个高质量的随机字节到zOut中。返回值是获取的随机字符的实际个数。xSleep()函数会使调用线程睡眠至少给出的毫秒数。xCurrentTime()函数返回当前日期的Julian Day Number浮点数。xCurrentTimeInt64() 函数返回一个Julian Day Number乘以86400000（一天24小时的毫秒数）的整数值。如果xCurrentTimeInt64()函数可用（iVersion大于等于2，并且函数指针不是NULL），SQLite就会使用这个函数来获取当前的日期和时间，如果xCurrentTimeInt64()函数不可用，就会回退为使用xCurrentTime()函数。
+<br />The xRandomness(), xSleep(), xCurrentTime(), and xCurrentTimeInt64()
 interfaces are not strictly a part of the filesystem, but they are
 included in the VFS structure for completeness.
 The xRandomness() function attempts to return nBytes bytes
@@ -313,7 +331,8 @@ date and time if that method is available (if iVersion is 2 or
 greater and the function pointer is not NULL) and will fall back
 to xCurrentTime() if xCurrentTimeInt64() is unavailable.</p>
 
-<p>The xSetSystemCall(), xGetSystemCall(), and xNestSystemCall() interfaces
+<p>xSetSystemCall()、xGetSystemCall()和xNestSystemCall()接口不是给SQLite内核使用的。一些VFS提供这些可选的接口以便测试VFS代码。测试程序可以通过使用自己控制的函数覆盖系统调用来实现模拟一些很难甚至不可能发生的错误。在每个不同的VFS中或者同一个VFS的不同版本中，可以覆盖的系统调用集合都是不同的。使用这些接口的应用程序必须准备好面对这其中的某些甚至全部都为NULL，或者在下一个发行版中它们的行为发生变化。如果VFS的iVersion小于3，应用程序就不能访问这些方法了。
+<br />The xSetSystemCall(), xGetSystemCall(), and xNestSystemCall() interfaces
 are not used by the SQLite core.  These optional interfaces are provided
 by some VFSes to facilitate testing of the VFS code. By overriding
 system calls with functions under its control, a test program can

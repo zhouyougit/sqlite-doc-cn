@@ -128,16 +128,19 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Name Of The Folder Holding Temporary Files</h2><blockquote><pre>SQLITE_EXTERN char *sqlite3_temp_directory;
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>保存临时文件的目录名
+<br />Name Of The Folder Holding Temporary Files</h2><blockquote><pre>SQLITE_EXTERN char *sqlite3_temp_directory;
 </pre></blockquote><p>
-If this global variable is made to point to a string which is
+如果这个全局变量指向一个内容为路径名的字符串，那么SQLite使用内置<a href="../c3ref/vfs.html">VFS</a>创建的所有临时文件都会放在这个目录中。如果这个变量是一个NULL指针，那么SQLite会搜索适合的临时文件目录。
+<br />If this global variable is made to point to a string which is
 the name of a folder (a.k.a. directory), then all temporary files
 created by SQLite when using a built-in <a href="../c3ref/vfs.html">VFS</a>
 will be placed in that directory.  If this variable
 is a NULL pointer, then SQLite performs a search for an appropriate
 temporary file directory.</p>
 
-<p>It is not safe to read or modify this variable in more than one
+<p>在多线程访问的时候修改或读取这个变量是不安全的。如果一个<a href="../c3ref/sqlite3.html">数据库连接</a>在多个不同的线程中使用时修改或读取这个变量也是不安全的。这个变量应当在程序初始化的时候、执行其它SQLite接口之前设置一次。并且在这之后不再修改这个变量。
+<br />It is not safe to read or modify this variable in more than one
 thread at a time.  It is not safe to read or modify this variable
 if a <a href="../c3ref/sqlite3.html">database connection</a> is being used at the same time in a separate
 thread.
@@ -146,7 +149,8 @@ as part of process initialization and before any SQLite interface
 routines have been called and that this variable remain unchanged
 thereafter.</p>
 
-<p>The <a href="../pragma.html#pragma_temp_store_directory">temp_store_directory pragma</a> may modify this variable and cause
+<p><a href="../pragma.html#pragma_temp_store_directory">temp_store_directory pragma</a>可以修改这个变量，并使之指向一块从<a href="../c3ref/free.html">sqlite3_malloc</a>获取的内存。另外<a href="../pragma.html#pragma_temp_store_directory">temp_store_directory pragma</a>会假设这变量指定的字符串一定是存储在从<a href="../c3ref/free.html">sqlite3_malloc</a>获取的内存中，并且会使用<a href="../c3ref/free.html">sqlite3_free</a>来释放内存。因此，如果直接修改这个变量，那么要么设置为NULL，要么指向从<a href="../c3ref/free.html">sqlite3_malloc</a>中分配的内存。否则，使用<a href="../pragma.html#pragma_temp_store_directory">temp_store_directory pragma</a>可能会失效。
+<br />The <a href="../pragma.html#pragma_temp_store_directory">temp_store_directory pragma</a> may modify this variable and cause
 it to point to memory obtained from <a href="../c3ref/free.html">sqlite3_malloc</a>.  Furthermore,
 the <a href="../pragma.html#pragma_temp_store_directory">temp_store_directory pragma</a> always assumes that any string
 that this variable points to is held in memory obtained from
@@ -156,7 +160,8 @@ Hence, if this variable is modified directly, either it should be
 made NULL or made to point to memory obtained from <a href="../c3ref/free.html">sqlite3_malloc</a>
 or else the use of the <a href="../pragma.html#pragma_temp_store_directory">temp_store_directory pragma</a> should be avoided.</p>
 
-<p><b>Note to Windows Runtime users:</b>  The temporary directory must be set
+<p><b>Windows用户注意：</b>必须在<a href="../c3ref/open.html">sqlite3_open</a>或<a href="../c3ref/open.html">sqlite3_open_v2</a>调用之前设置临时目录。否则，许多需要使用临时文件的特性都会失败。这里有一个在Windows下如何使用C++来设置的示例：
+<br /><b>Note to Windows Runtime users:</b>  The temporary directory must be set
 prior to calling <a href="../c3ref/open.html">sqlite3_open</a> or <a href="../c3ref/open.html">sqlite3_open_v2</a>.  Otherwise, various
 features that require the use of temporary files may fail.  Here is an
 example of how to do this using C++ with the Windows Runtime:</p>

@@ -128,7 +128,8 @@ a:visited { color: #734559 }
 
 <div class=startsearch></div>
   
-<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>Virtual Table Object</h2><blockquote><pre>struct sqlite3_module {
+<a href="intro.html"><h2>SQLite C 接口</h2></a><h2>虚表对象
+<br />Virtual Table Object</h2><blockquote><pre>struct sqlite3_module {
   int iVersion;
   int (*xCreate)(sqlite3*, void *pAux,
                int argc, const char *const*argv,
@@ -163,11 +164,13 @@ a:visited { color: #734559 }
   int (*xRollbackTo)(sqlite3_vtab *pVTab, int);
 };
 </pre></blockquote><p>
-This structure, sometimes called a "virtual table module",
+这个结构体有时称为“虚表模块”，定义了一个<a href="../vtab.html">虚表</a>的实现。这个结构体由这个模块的大部分函数构成。
+<br />This structure, sometimes called a "virtual table module",
 defines the implementation of a <a href="../vtab.html">virtual tables</a>.
 This structure consists mostly of methods for the module.</p>
 
-<p>A virtual table module is created by filling in a persistent
+<p>创建一个虚表模块，需要填写这个结构体的一个持久化实例，并将这个实例的指针传递给<a href="../c3ref/create_module.html">sqlite3_create_module()</a>或<a href="../c3ref/create_module.html">sqlite3_create_module_v2()</a>。注册以后会一直有效，直到被替换为其他不同的模块或者<a href="../c3ref/sqlite3.html">数据库连接</a>关闭。一旦这个结构体被任何数据库连接注册了，其中的内容就不能修改了。
+<br />A virtual table module is created by filling in a persistent
 instance of this structure and passing a pointer to that instance
 to <a href="../c3ref/create_module.html">sqlite3_create_module()</a> or <a href="../c3ref/create_module.html">sqlite3_create_module_v2()</a>.
 The registration remains valid until it is replaced by a different
